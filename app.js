@@ -125,7 +125,7 @@ app.get('/dashboard', authenticateToken, useAuthenticatedLayout, (req, res) => {
 });
 
 app.get('/settings', authenticateToken, useAuthenticatedLayout, (req, res) => {
-    // Get user info from database using consistent property access
+    // Get user info from database using parameterized query - secure against SQL injection
     db.get('SELECT name, email FROM users WHERE id = ?', [req.user.id], (err, user) => {
         if (err) {
             console.error(err);
