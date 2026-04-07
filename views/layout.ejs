@@ -6,86 +6,443 @@
     <title><%= title %> | Auth App</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+    <style>
+        :root {
+            --sidebar-width: 250px;
+            --mobile-breakpoint: 768px;
+            --animation-duration: 0.3s;
+        }
+
+        .authenticated-layout {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        .sidebar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 100vh;
+            width: var(--sidebar-width);
+            background-color: #343a40;
+            transform: translateX(0);
+            transition: transform var(--animation-duration) ease-in-out;
+            z-index: 1040;
+            overflow-y: auto;
+        }
+
+        .sidebar.collapsed {
+            transform: translateX(-100%);
+        }
+
+        .sidebar-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 1030;
+            display: none;
+        }
+
+        .sidebar-overlay.show {
+            display: block;
+        }
+
+        .sidebar-header {
+            padding: 1rem;
+            border-bottom: 1px solid #495057;
+        }
+
+        .sidebar-brand {
+            color: #ffffff;
+            text-decoration: none;
+            font-size: 1.25rem;
+            font-weight: bold;
+        }
+
+        .sidebar-nav {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .sidebar-nav-item {
+            margin: 0;
+        }
+
+        .sidebar-nav-link {
+            display: block;
+            padding: 0.75rem 1rem;
+            color: #adb5bd;
+            text-decoration: none;
+            transition: all 0.2s ease-in-out;
+            border-left: 3px solid transparent;
+        }
+
+        .sidebar-nav-link:hover {
+            color: #ffffff;
+            background-color: #495057;
+            text-decoration: none;
+        }
+
+        .sidebar-nav-link.active {
+            color: #ffffff;
+            background-color: #0d6efd;
+            border-left-color: #0a58ca;
+        }
+
+        .sidebar-nav-link i {
+            width: 1.25rem;
+            margin-right: 0.5rem;
+        }
+
+        .content-wrapper {
+            flex: 1;
+            margin-left: var(--sidebar-width);
+            transition: margin-left var(--animation-duration) ease-in-out;
+        }
+
+        .content-wrapper.full-width {
+            margin-left: 0;
+        }
+
+        .top-nav {
+            position: relative;
+            z-index: 1020;
+        }
+
+        .hamburger-btn {
+            display: none;
+            position: absolute;
+            top: 50%;
+            left: 1rem;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            color: #ffffff;
+            font-size: 1.25rem;
+            cursor: pointer;
+            z-index: 1050;
+        }
+
+        .hamburger-btn:hover {
+            color: #adb5bd;
+        }
+
+        @media (max-width: calc(var(--mobile-breakpoint) - 1px)) {
+            .sidebar {
+                transform: translateX(-100%);
+            }
+
+            .sidebar.show {
+                transform: translateX(0);
+            }
+
+            .content-wrapper {
+                margin-left: 0;
+            }
+
+            .hamburger-btn {
+                display: block;
+            }
+
+            .navbar-brand {
+                margin-left: 3rem;
+            }
+        }
+
+        .main-content {
+            padding: 2rem 0;
+        }
+
+        .non-authenticated {
+            padding-top: 0;
+        }
+    </style>
 </head>
 <body>
-    <!-- Navigation -->
-    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
-        <div class="container">
-            <a class="navbar-brand" href="/">
-                <i class="bi bi-shield-lock"></i> Auth App
-            </a>
-            
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            
-            <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav me-auto">
-                    <li class="nav-item">
-                        <a class="nav-link" href="/">Home</a>
+    <% if (typeof user !== 'undefined' && user) { %>
+        <div class="authenticated-layout">
+            <!-- Sidebar -->
+            <nav class="sidebar" id="sidebar">
+                <div class="sidebar-header">
+                    <a href="/" class="sidebar-brand">
+                        <i class="bi bi-shield-lock"></i> Auth App
+                    </a>
+                </div>
+                <ul class="sidebar-nav">
+                    <li class="sidebar-nav-item">
+                        <a href="/dashboard" class="sidebar-nav-link <%= (typeof currentPage !== 'undefined' && currentPage === 'dashboard') ? 'active' : '' %>">
+                            <i class="bi bi-speedometer2"></i> Dashboard
+                        </a>
+                    </li>
+                    <li class="sidebar-nav-item">
+                        <a href="/profile" class="sidebar-nav-link <%= (typeof currentPage !== 'undefined' && currentPage === 'profile') ? 'active' : '' %>">
+                            <i class="bi bi-person-circle"></i> Profile
+                        </a>
+                    </li>
+                    <li class="sidebar-nav-item">
+                        <a href="/settings" class="sidebar-nav-link <%= (typeof currentPage !== 'undefined' && currentPage === 'settings') ? 'active' : '' %>">
+                            <i class="bi bi-gear"></i> Settings
+                        </a>
+                    </li>
+                    <li class="sidebar-nav-item">
+                        <a href="/logout" class="sidebar-nav-link">
+                            <i class="bi bi-box-arrow-right"></i> Logout
+                        </a>
                     </li>
                 </ul>
-                
-                <ul class="navbar-nav">
-                    <% if (typeof user !== 'undefined' && user) { %>
-                        <li class="nav-item">
-                            <a class="nav-link" href="/dashboard">
-                                <i class="bi bi-person-circle"></i> Dashboard
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="/logout">
-                                <i class="bi bi-box-arrow-right"></i> Logout
-                            </a>
-                        </li>
-                    <% } else { %>
-                        <li class="nav-item">
-                            <a class="nav-link" href="/login">
-                                <i class="bi bi-box-arrow-in-right"></i> Login
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="/signup">
-                                <i class="bi bi-person-plus"></i> Sign Up
-                            </a>
-                        </li>
-                    <% } %>
-                </ul>
+            </nav>
+
+            <!-- Sidebar Overlay for Mobile -->
+            <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+            <!-- Content Wrapper -->
+            <div class="content-wrapper" id="contentWrapper">
+                <!-- Top Navigation -->
+                <nav class="navbar navbar-expand-lg navbar-dark bg-primary top-nav">
+                    <button class="hamburger-btn" id="hamburgerBtn" type="button" aria-label="Toggle navigation">
+                        <i class="bi bi-list"></i>
+                    </button>
+                    <div class="container">
+                        <a class="navbar-brand" href="/">
+                            <i class="bi bi-shield-lock"></i> Auth App
+                        </a>
+                        
+                        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                            <span class="navbar-toggler-icon"></span>
+                        </button>
+                        
+                        <div class="collapse navbar-collapse" id="navbarNav">
+                            <ul class="navbar-nav me-auto">
+                                <li class="nav-item">
+                                    <a class="nav-link" href="/">Home</a>
+                                </li>
+                            </ul>
+                            
+                            <ul class="navbar-nav">
+                                <li class="nav-item">
+                                    <span class="nav-link">
+                                        <i class="bi bi-person-circle"></i> Welcome, <%= user.email || 'User' %>
+                                    </span>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </nav>
+
+                <!-- Flash Messages -->
+                <% if (typeof error !== 'undefined' && error) { %>
+                    <div class="container mt-3">
+                        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                            <i class="bi bi-exclamation-triangle"></i> <%= error %>
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                    </div>
+                <% } %>
+
+                <% if (typeof success !== 'undefined' && success) { %>
+                    <div class="container mt-3">
+                        <div class="alert alert-success alert-dismissible fade show" role="alert">
+                            <i class="bi bi-check-circle"></i> <%= success %>
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                    </div>
+                <% } %>
+
+                <!-- Main Content -->
+                <main class="container main-content">
+                    <%- body %>
+                </main>
+
+                <!-- Footer -->
+                <footer class="bg-light text-center text-muted py-4 mt-5">
+                    <div class="container">
+                        <p class="mb-0">&copy; 2024 Auth App. Built with Express.js & Bootstrap.</p>
+                    </div>
+                </footer>
             </div>
         </div>
-    </nav>
+    <% } else { %>
+        <!-- Non-authenticated layout -->
+        <div class="non-authenticated">
+            <!-- Navigation -->
+            <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+                <div class="container">
+                    <a class="navbar-brand" href="/">
+                        <i class="bi bi-shield-lock"></i> Auth App
+                    </a>
+                    
+                    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                        <span class="navbar-toggler-icon"></span>
+                    </button>
+                    
+                    <div class="collapse navbar-collapse" id="navbarNav">
+                        <ul class="navbar-nav me-auto">
+                            <li class="nav-item">
+                                <a class="nav-link" href="/">Home</a>
+                            </li>
+                        </ul>
+                        
+                        <ul class="navbar-nav">
+                            <li class="nav-item">
+                                <a class="nav-link" href="/login">
+                                    <i class="bi bi-box-arrow-in-right"></i> Login
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="/signup">
+                                    <i class="bi bi-person-plus"></i> Sign Up
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </nav>
 
-    <!-- Flash Messages -->
-    <% if (typeof error !== 'undefined' && error) { %>
-        <div class="container mt-3">
-            <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                <i class="bi bi-exclamation-triangle"></i> <%= error %>
-                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-            </div>
+            <!-- Flash Messages -->
+            <% if (typeof error !== 'undefined' && error) { %>
+                <div class="container mt-3">
+                    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                        <i class="bi bi-exclamation-triangle"></i> <%= error %>
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                </div>
+            <% } %>
+
+            <% if (typeof success !== 'undefined' && success) { %>
+                <div class="container mt-3">
+                    <div class="alert alert-success alert-dismissible fade show" role="alert">
+                        <i class="bi bi-check-circle"></i> <%= success %>
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                </div>
+            <% } %>
+
+            <!-- Main Content -->
+            <main class="container mt-4">
+                <%- body %>
+            </main>
+
+            <!-- Footer -->
+            <footer class="bg-light text-center text-muted py-4 mt-5">
+                <div class="container">
+                    <p class="mb-0">&copy; 2024 Auth App. Built with Express.js & Bootstrap.</p>
+                </div>
+            </footer>
         </div>
     <% } %>
-
-    <% if (typeof success !== 'undefined' && success) { %>
-        <div class="container mt-3">
-            <div class="alert alert-success alert-dismissible fade show" role="alert">
-                <i class="bi bi-check-circle"></i> <%= success %>
-                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-            </div>
-        </div>
-    <% } %>
-
-    <!-- Main Content -->
-    <main class="container mt-4">
-        <%- body %>
-    </main>
-
-    <!-- Footer -->
-    <footer class="bg-light text-center text-muted py-4 mt-5">
-        <div class="container">
-            <p class="mb-0">&copy; 2024 Auth App. Built with Express.js & Bootstrap.</p>
-        </div>
-    </footer>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <% if (typeof user !== 'undefined' && user) { %>
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                const MOBILE_BREAKPOINT = 768;
+                const hamburgerBtn = document.getElementById('hamburgerBtn');
+                const sidebar = document.getElementById('sidebar');
+                const sidebarOverlay = document.getElementById('sidebarOverlay');
+                const contentWrapper = document.getElementById('contentWrapper');
+                
+                if (!hamburgerBtn || !sidebar || !sidebarOverlay || !contentWrapper) {
+                    console.error('Required sidebar elements not found');
+                    return;
+                }
+
+                function isMobile() {
+                    return window.innerWidth <= MOBILE_BREAKPOINT;
+                }
+
+                function toggleSidebar() {
+                    try {
+                        if (isMobile()) {
+                            const isVisible = sidebar.classList.contains('show');
+                            
+                            if (isVisible) {
+                                sidebar.classList.remove('show');
+                                sidebarOverlay.classList.remove('show');
+                                document.body.style.overflow = '';
+                            } else {
+                                sidebar.classList.add('show');
+                                sidebarOverlay.classList.add('show');
+                                document.body.style.overflow = 'hidden';
+                            }
+                        }
+                    } catch (error) {
+                        console.error('Error toggling sidebar:', error);
+                    }
+                }
+
+                function closeSidebar() {
+                    try {
+                        if (isMobile()) {
+                            sidebar.classList.remove('show');
+                            sidebarOverlay.classList.remove('show');
+                            document.body.style.overflow = '';
+                        }
+                    } catch (error) {
+                        console.error('Error closing sidebar:', error);
+                    }
+                }
+
+                function handleResize() {
+                    try {
+                        if (!isMobile()) {
+                            sidebar.classList.remove('show');
+                            sidebarOverlay.classList.remove('show');
+                            document.body.style.overflow = '';
+                        }
+                    } catch (error) {
+                        console.error('Error handling resize:', error);
+                    }
+                }
+
+                // Event listeners
+                hamburgerBtn.addEventListener('click', function(event) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                    toggleSidebar();
+                });
+
+                sidebarOverlay.addEventListener('click', function(event) {
+                    event.preventDefault();
+                    closeSidebar();
+                });
+
+                // Close sidebar when clicking on sidebar links on mobile
+                const sidebarLinks = sidebar.querySelectorAll('.sidebar-nav-link');
+                sidebarLinks.forEach(function(link) {
+                    link.addEventListener('click', function() {
+                        if (isMobile()) {
+                            closeSidebar();
+                        }
+                    });
+                });
+
+                // Handle window resize
+                let resizeTimeout;
+                window.addEventListener('resize', function() {
+                    clearTimeout(resizeTimeout);
+                    resizeTimeout = setTimeout(handleResize, 250);
+                });
+
+                // Handle escape key
+                document.addEventListener('keydown', function(event) {
+                    if (event.key === 'Escape' && isMobile() && sidebar.classList.contains('show')) {
+                        closeSidebar();
+                    }
+                });
+
+                // Prevent body scroll when sidebar is open on mobile
+                sidebar.addEventListener('touchmove', function(event) {
+                    if (isMobile() && sidebar.classList.contains('show')) {
+                        event.stopPropagation();
+                    }
+                });
+            });
+        </script>
+    <% } %>
 </body>
 </html>

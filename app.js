@@ -10,6 +10,16 @@ const { body, validationResult } = require('express-validator');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+// Constants
+const MOBILE_BREAKPOINT = 768;
+const JWT_EXPIRY = '24h';
+const COOKIE_MAX_AGE = 24 * 60 * 60 * 1000; // 24 hours
+const BCRYPT_SALT_ROUNDS = 10;
+const PASSWORD_MIN_LENGTH = 6;
+const PASSWORD_MAX_LENGTH = 128;
+const NAME_MIN_LENGTH = 2;
+const NAME_MAX_LENGTH = 50;
+
 // Ensure JWT_SECRET is provided - fail if not set
 if (!process.env.JWT_SECRET) {
     console.error('CRITICAL: JWT_SECRET environment variable must be set');
@@ -59,12 +69,19 @@ const authenticateToken = (req, res, next) => {
     });
 };
 
+// Middleware to add layout context for authenticated routes
+const addLayoutContext = (req, res, next) => {
+    res.locals.isAuthenticated = !!req.user;
+    res.locals.currentPage = req.route?.path || req.path;
+    next();
+};
+
 // Validation middleware
 const signupValidation = [
     body('name')
         .trim()
-        .isLength({ min: 2, max: 50 })
-        .withMessage('Name must be between 2 and 50 characters')
+        .isLength({ min: NAME_MIN_LENGTH, max: NAME_MAX_LENGTH })
+        .withMessage(`Name must be between ${NAME_MIN_LENGTH} and ${NAME_MAX_LENGTH} characters`)
         .matches(/^[a-zA-Z\s]+$/)
         .withMessage('Name can only contain letters and spaces'),
     body('email')
@@ -73,8 +90,8 @@ const signupValidation = [
         .normalizeEmail()
         .withMessage('Please provide a valid email address'),
     body('password')
-        .isLength({ min: 6, max: 128 })
-        .withMessage('Password must be between 6 and 128 characters')
+        .isLength({ min: PASSWORD_MIN_LENGTH, max: PASSWORD_MAX_LENGTH })
+        .withMessage(`Password must be between ${PASSWORD_MIN_LENGTH} and ${PASSWORD_MAX_LENGTH} characters`)
         .matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/)
         .withMessage('Password must contain at least one lowercase letter, one uppercase letter, and one number')
 ];
@@ -103,14 +120,60 @@ app.get('/login', (req, res) => {
     res.render('login', { error: null });
 });
 
-app.get('/dashboard', authenticateToken, (req, res) => {
+app.get('/dashboard', authenticateToken, addLayoutContext, (req, res) => {
     // Get user info from database
     db.get('SELECT name, email FROM users WHERE id = ?', [req.user.id], (err, user) => {
         if (err) {
-            console.error(err);
+            console.error('Database error fetching user:', err);
             return res.redirect('/login');
         }
-        res.render('dashboard', { user });
+        if (!user) {
+            console.error('User not found in database');
+            return res.redirect('/login');
+        }
+        res.render('dashboard', { 
+            user,
+            layout: 'authenticated-layout',
+            currentPage: '/dashboard'
+        });
+    });
+});
+
+app.get('/profile', authenticateToken, addLayoutContext, (req, res) => {
+    // Get user info from database
+    db.get('SELECT name, email FROM users WHERE id = ?', [req.user.id], (err, user) => {
+        if (err) {
+            console.error('Database error fetching user:', err);
+            return res.redirect('/login');
+        }
+        if (!user) {
+            console.error('User not found in database');
+            return res.redirect('/login');
+        }
+        res.render('profile', { 
+            user,
+            layout: 'authenticated-layout',
+            currentPage: '/profile'
+        });
+    });
+});
+
+app.get('/settings', authenticateToken, addLayoutContext, (req, res) => {
+    // Get user info from database
+    db.get('SELECT name, email FROM users WHERE id = ?', [req.user.id], (err, user) => {
+        if (err) {
+            console.error('Database error fetching user:', err);
+            return res.redirect('/login');
+        }
+        if (!user) {
+            console.error('User not found in database');
+            return res.redirect('/login');
+        }
+        res.render('settings', { 
+            user,
+            layout: 'authenticated-layout',
+            currentPage: '/settings'
+        });
     });
 });
 
@@ -122,10 +185,20 @@ app.post('/signup', signupValidation, async (req, res) => {
 
     const { name, email, password } = req.body;
     
+    // Additional server-side validation
+    if (!name || typeof name !== 'string') {
+        return res.render('signup', { error: 'Invalid name provided' });
+    }
+    if (!email || typeof email !== 'string') {
+        return res.render('signup', { error: 'Invalid email provided' });
+    }
+    if (!password || typeof password !== 'string') {
+        return res.render('signup', { error: 'Invalid password provided' });
+    }
+    
     try {
         // Hash password
-        const saltRounds = 10;
-        const hashedPassword = await bcrypt.hash(password, saltRounds);
+        const hashedPassword = await bcrypt.hash(password, BCRYPT_SALT_ROUNDS);
         
         // Insert user into database
         db.run('INSERT INTO users (name, email, password) VALUES (?, ?, ?)', 
@@ -135,7 +208,7 @@ app.post('/signup', signupValidation, async (req, res) => {
                     if (err.message.includes('UNIQUE constraint failed')) {
                         return res.render('signup', { error: 'Email already exists' });
                     }
-                    console.error(err);
+                    console.error('Database error during signup:', err);
                     return res.render('signup', { error: 'Registration failed' });
                 }
                 
@@ -144,7 +217,7 @@ app.post('/signup', signupValidation, async (req, res) => {
             }
         );
     } catch (error) {
-        console.error(error);
+        console.error('Signup error:', error);
         res.render('signup', { error: 'Registration failed' });
     }
 });
@@ -157,10 +230,18 @@ app.post('/login', loginValidation, (req, res) => {
 
     const { email, password } = req.body;
     
+    // Additional server-side validation
+    if (!email || typeof email !== 'string') {
+        return res.render('login', { error: 'Invalid email provided' });
+    }
+    if (!password || typeof password !== 'string') {
+        return res.render('login', { error: 'Invalid password provided' });
+    }
+    
     // Find user in database
     db.get('SELECT * FROM users WHERE email = ?', [email], async (err, user) => {
         if (err) {
-            console.error(err);
+            console.error('Database error during login:', err);
             return res.render('login', { error: 'Login failed' });
         }
         
@@ -180,26 +261,31 @@ app.post('/login', loginValidation, (req, res) => {
             const token = jwt.sign(
                 { id: user.id, email: user.email },
                 JWT_SECRET,
-                { expiresIn: '24h' }
+                { expiresIn: JWT_EXPIRY }
             );
             
             // Set cookie and redirect to dashboard
             res.cookie('token', token, { 
                 httpOnly: true, 
                 secure: process.env.NODE_ENV === 'production',
-                maxAge: 24 * 60 * 60 * 1000 // 24 hours
+                maxAge: COOKIE_MAX_AGE,
+                sameSite: 'strict'
             });
             
             res.redirect('/dashboard');
         } catch (error) {
-            console.error(error);
+            console.error('Login error:', error);
             res.render('login', { error: 'Login failed' });
         }
     });
 });
 
 app.post('/logout', (req, res) => {
-    res.clearCookie('token');
+    res.clearCookie('token', {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'strict'
+    });
     res.redirect('/');
 });
 
@@ -209,7 +295,7 @@ app.use((req, res) => {
 });
 
 app.use((err, req, res, next) => {
-    console.error(err.stack);
+    console.error('Unhandled error:', err.stack);
     res.status(500).send('Something broke!');
 });
 
@@ -222,7 +308,17 @@ app.listen(PORT, () => {
 process.on('SIGINT', () => {
     db.close((err) => {
         if (err) {
-            console.error(err.message);
+            console.error('Error closing database:', err.message);
+        }
+        console.log('Database connection closed.');
+        process.exit(0);
+    });
+});
+
+process.on('SIGTERM', () => {
+    db.close((err) => {
+        if (err) {
+            console.error('Error closing database:', err.message);
         }
         console.log('Database connection closed.');
         process.exit(0);

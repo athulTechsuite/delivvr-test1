@@ -1,0 +1,429 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Profile - Dashboard</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background-color: #f8f9fa;
+            color: #333;
+        }
+
+        /* Top Navigation */
+        .top-nav {
+            background-color: #fff;
+            border-bottom: 1px solid #dee2e6;
+            padding: 0 1rem;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+        }
+
+        .top-nav h1 {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: #495057;
+        }
+
+        /* Hamburger Menu Button */
+        .hamburger {
+            display: none;
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            padding: 0.5rem;
+            margin-right: 1rem;
+            color: #495057;
+        }
+
+        .hamburger:hover {
+            background-color: #f8f9fa;
+            border-radius: 4px;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            position: fixed;
+            top: 60px;
+            left: 0;
+            width: 250px;
+            height: calc(100vh - 60px);
+            background-color: #fff;
+            border-right: 1px solid #dee2e6;
+            overflow-y: auto;
+            transition: transform 0.3s ease;
+            z-index: 999;
+        }
+
+        .sidebar-nav {
+            padding: 1rem 0;
+        }
+
+        .nav-item {
+            display: block;
+            padding: 0.75rem 1.5rem;
+            color: #495057;
+            text-decoration: none;
+            transition: all 0.2s ease;
+            border: none;
+            width: 100%;
+            text-align: left;
+            background: none;
+            font-size: 1rem;
+            cursor: pointer;
+        }
+
+        .nav-item:hover {
+            background-color: #f8f9fa;
+            color: #007bff;
+        }
+
+        .nav-item.active {
+            background-color: #007bff;
+            color: #fff;
+            font-weight: 500;
+        }
+
+        .nav-item.active:hover {
+            background-color: #0056b3;
+            color: #fff;
+        }
+
+        /* Main Content */
+        .main-content {
+            margin-left: 250px;
+            margin-top: 60px;
+            min-height: calc(100vh - 60px);
+            padding: 2rem;
+            transition: margin-left 0.3s ease;
+        }
+
+        /* Sidebar Overlay for Mobile */
+        .sidebar-overlay {
+            display: none;
+            position: fixed;
+            top: 60px;
+            left: 0;
+            width: 100%;
+            height: calc(100vh - 60px);
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 998;
+        }
+
+        /* Profile Content */
+        .profile-container {
+            max-width: 800px;
+        }
+
+        .profile-header {
+            background-color: #fff;
+            border-radius: 8px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+        .profile-header h2 {
+            font-size: 2rem;
+            font-weight: 600;
+            color: #495057;
+            margin-bottom: 0.5rem;
+        }
+
+        .profile-header p {
+            color: #6c757d;
+            font-size: 1.1rem;
+        }
+
+        .profile-section {
+            background-color: #fff;
+            border-radius: 8px;
+            padding: 1.5rem 2rem;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+        .profile-section h3 {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: #495057;
+            margin-bottom: 1rem;
+        }
+
+        .profile-info {
+            display: grid;
+            grid-template-columns: 1fr 2fr;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .profile-label {
+            font-weight: 600;
+            color: #495057;
+        }
+
+        .profile-value {
+            color: #6c757d;
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 0.5rem 1rem;
+            background-color: #007bff;
+            color: #fff;
+            text-decoration: none;
+            border-radius: 4px;
+            border: none;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: background-color 0.2s ease;
+        }
+
+        .btn:hover {
+            background-color: #0056b3;
+        }
+
+        .btn-secondary {
+            background-color: #6c757d;
+        }
+
+        .btn-secondary:hover {
+            background-color: #545b62;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .hamburger {
+                display: block;
+            }
+
+            .sidebar {
+                transform: translateX(-100%);
+            }
+
+            .sidebar.open {
+                transform: translateX(0);
+            }
+
+            .sidebar-overlay.show {
+                display: block;
+            }
+
+            .main-content {
+                margin-left: 0;
+            }
+
+            .profile-info {
+                grid-template-columns: 1fr;
+                gap: 0.5rem;
+            }
+
+            .profile-header {
+                padding: 1.5rem;
+            }
+
+            .profile-section {
+                padding: 1rem 1.5rem;
+            }
+
+            .main-content {
+                padding: 1rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .profile-header h2 {
+                font-size: 1.5rem;
+            }
+
+            .profile-header p {
+                font-size: 1rem;
+            }
+
+            .profile-header {
+                padding: 1rem;
+            }
+
+            .profile-section {
+                padding: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Top Navigation -->
+    <nav class="top-nav">
+        <button class="hamburger" id="hamburgerBtn" aria-label="Toggle navigation">
+            ☰
+        </button>
+        <h1>Dashboard Application</h1>
+    </nav>
+
+    <!-- Sidebar Overlay -->
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+    <!-- Sidebar Navigation -->
+    <aside class="sidebar" id="sidebar">
+        <nav class="sidebar-nav">
+            <a href="/dashboard" class="nav-item">Dashboard</a>
+            <a href="/profile" class="nav-item active">Profile</a>
+            <a href="/settings" class="nav-item">Settings</a>
+            <button class="nav-item" onclick="handleLogout()">Logout</button>
+        </nav>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <div class="profile-container">
+            <div class="profile-header">
+                <h2>User Profile</h2>
+                <p>Manage your account information and preferences</p>
+            </div>
+
+            <div class="profile-section">
+                <h3>Personal Information</h3>
+                <div class="profile-info">
+                    <div class="profile-label">Full Name:</div>
+                    <div class="profile-value">John Doe</div>
+                    
+                    <div class="profile-label">Email:</div>
+                    <div class="profile-value">john.doe@example.com</div>
+                    
+                    <div class="profile-label">Phone:</div>
+                    <div class="profile-value">+1 (555) 123-4567</div>
+                    
+                    <div class="profile-label">Department:</div>
+                    <div class="profile-value">Engineering</div>
+                    
+                    <div class="profile-label">Position:</div>
+                    <div class="profile-value">Senior Software Engineer</div>
+                    
+                    <div class="profile-label">Location:</div>
+                    <div class="profile-value">San Francisco, CA</div>
+                </div>
+                <button class="btn">Edit Profile</button>
+            </div>
+
+            <div class="profile-section">
+                <h3>Account Settings</h3>
+                <div class="profile-info">
+                    <div class="profile-label">Account Created:</div>
+                    <div class="profile-value">January 15, 2024</div>
+                    
+                    <div class="profile-label">Last Login:</div>
+                    <div class="profile-value">Today at 9:30 AM</div>
+                    
+                    <div class="profile-label">Account Status:</div>
+                    <div class="profile-value">Active</div>
+                    
+                    <div class="profile-label">Two-Factor Auth:</div>
+                    <div class="profile-value">Enabled</div>
+                </div>
+                <button class="btn btn-secondary">Change Password</button>
+            </div>
+
+            <div class="profile-section">
+                <h3>Preferences</h3>
+                <div class="profile-info">
+                    <div class="profile-label">Language:</div>
+                    <div class="profile-value">English</div>
+                    
+                    <div class="profile-label">Time Zone:</div>
+                    <div class="profile-value">Pacific Time (PT)</div>
+                    
+                    <div class="profile-label">Email Notifications:</div>
+                    <div class="profile-value">Enabled</div>
+                    
+                    <div class="profile-label">Theme:</div>
+                    <div class="profile-value">Light</div>
+                </div>
+                <button class="btn">Update Preferences</button>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        // Mobile sidebar toggle functionality
+        const hamburgerBtn = document.getElementById('hamburgerBtn');
+        const sidebar = document.getElementById('sidebar');
+        const sidebarOverlay = document.getElementById('sidebarOverlay');
+
+        function toggleSidebar() {
+            sidebar.classList.toggle('open');
+            sidebarOverlay.classList.toggle('show');
+            
+            // Update hamburger icon
+            hamburgerBtn.textContent = sidebar.classList.contains('open') ? '✕' : '☰';
+        }
+
+        function closeSidebar() {
+            sidebar.classList.remove('open');
+            sidebarOverlay.classList.remove('show');
+            hamburgerBtn.textContent = '☰';
+        }
+
+        // Event listeners
+        hamburgerBtn.addEventListener('click', toggleSidebar);
+        sidebarOverlay.addEventListener('click', closeSidebar);
+
+        // Handle logout functionality
+        function handleLogout() {
+            if (confirm('Are you sure you want to logout?')) {
+                // In a real application, this would make an API call to logout
+                window.location.href = '/login';
+            }
+        }
+
+        // Close sidebar on window resize if mobile view is exited
+        window.addEventListener('resize', function() {
+            if (window.innerWidth > 768) {
+                closeSidebar();
+            }
+        });
+
+        // Handle keyboard navigation
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                closeSidebar();
+            }
+        });
+
+        // Prevent body scroll when sidebar is open on mobile
+        function toggleBodyScroll(disable) {
+            if (disable) {
+                document.body.style.overflow = 'hidden';
+            } else {
+                document.body.style.overflow = '';
+            }
+        }
+
+        // Update body scroll when sidebar state changes
+        const observer = new MutationObserver(function(mutations) {
+            mutations.forEach(function(mutation) {
+                if (mutation.type === 'attributes' && mutation.attributeName === 'class') {
+                    const isOpen = sidebar.classList.contains('open');
+                    if (window.innerWidth <= 768) {
+                        toggleBodyScroll(isOpen);
+                    }
+                }
+            });
+        });
+
+        observer.observe(sidebar, { attributes: true });
+    </script>
+</body>
+</html>
