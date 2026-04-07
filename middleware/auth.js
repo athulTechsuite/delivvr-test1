@@ -12,7 +12,13 @@ const authenticateToken = (req, res, next) => {
         return res.redirect('/login');
     }
 
-    jwt.verify(finalToken, process.env.JWT_SECRET || 'your-secret-key', (err, user) => {
+    const jwtSecret = process.env.JWT_SECRET;
+    if (!jwtSecret) {
+        console.error('JWT_SECRET environment variable is not set');
+        return res.status(500).json({ error: 'Server configuration error' });
+    }
+
+    jwt.verify(finalToken, jwtSecret, (err, user) => {
         if (err) {
             return res.redirect('/login');
         }
@@ -28,7 +34,13 @@ const redirectIfAuthenticated = (req, res, next) => {
     const finalToken = token || cookieToken;
 
     if (finalToken) {
-        jwt.verify(finalToken, process.env.JWT_SECRET || 'your-secret-key', (err, user) => {
+        const jwtSecret = process.env.JWT_SECRET;
+        if (!jwtSecret) {
+            console.error('JWT_SECRET environment variable is not set');
+            return res.status(500).json({ error: 'Server configuration error' });
+        }
+
+        jwt.verify(finalToken, jwtSecret, (err, user) => {
             if (!err && user) {
                 return res.redirect('/dashboard');
             }

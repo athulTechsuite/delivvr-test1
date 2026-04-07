@@ -1,7 +1,11 @@
 const express = require('express');
 const jwt = require('jsonwebtoken');
-const db = require('../database/db');
+const sqlite3 = require('sqlite3').verbose();
+const path = require('path');
 const router = express.Router();
+
+// Initialize database connection
+const db = new sqlite3.Database(path.join(__dirname, '../database/users.db'));
 
 // JWT authentication middleware
 const authenticateToken = (req, res, next) => {

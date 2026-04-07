@@ -7,10 +7,16 @@ const cookieParser = require('cookie-parser');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
-const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key-change-in-production';
 
-// Database setup
-const db = new sqlite3.Database('./users.db');
+// Ensure JWT_SECRET is provided - fail if not set
+if (!process.env.JWT_SECRET) {
+    console.error('CRITICAL: JWT_SECRET environment variable must be set');
+    process.exit(1);
+}
+const JWT_SECRET = process.env.JWT_SECRET;
+
+// Database setup - use consistent path with config/database.js
+const db = new sqlite3.Database('database.sqlite');
 
 // Create users table if it doesn't exist
 db.serialize(() => {

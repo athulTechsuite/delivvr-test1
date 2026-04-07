@@ -3,7 +3,7 @@ const bcrypt = require('bcrypt');
 const path = require('path');
 
 // Create database connection
-const dbPath = path.join(__dirname, '..', 'database.db');
+const dbPath = path.join(__dirname, '..', 'users.db');
 const db = new sqlite3.Database(dbPath);
 
 // Create users table if it doesn't exist
