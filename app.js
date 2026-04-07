@@ -110,7 +110,29 @@ app.get('/dashboard', authenticateToken, (req, res) => {
             console.error(err);
             return res.redirect('/login');
         }
-        res.render('dashboard', { user });
+        res.render('dashboard', { user, currentPage: 'Dashboard' });
+    });
+});
+
+app.get('/profile', authenticateToken, (req, res) => {
+    // Get user info from database
+    db.get('SELECT name, email FROM users WHERE id = ?', [req.user.id], (err, user) => {
+        if (err) {
+            console.error(err);
+            return res.redirect('/login');
+        }
+        res.render('profile', { user, currentPage: 'Profile' });
+    });
+});
+
+app.get('/settings', authenticateToken, (req, res) => {
+    // Get user info from database
+    db.get('SELECT name, email FROM users WHERE id = ?', [req.user.id], (err, user) => {
+        if (err) {
+            console.error(err);
+            return res.redirect('/login');
+        }
+        res.render('settings', { user, currentPage: 'Settings' });
     });
 });
 
