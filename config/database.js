@@ -1,11 +1,8 @@
 const sqlite3 = require('sqlite3').verbose();
 const path = require('path');
 
-// Database file path
-const dbPath = path.join(__dirname, '..', 'database.sqlite');
-
 // Create database connection
-const db = new sqlite3.Database(dbPath, (err) => {
+const db = new sqlite3.Database(path.join(__dirname, '..', 'database.sqlite'), (err) => {
     if (err) {
         console.error('Error opening database:', err.message);
     } else {
