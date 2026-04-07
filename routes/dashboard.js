@@ -28,7 +28,7 @@ const authenticateToken = (req, res, next) => {
 // Dashboard route - protected
 router.get('/', authenticateToken, (req, res) => {
     // Get user details from database
-    db.get('SELECT id, name, email FROM users WHERE id = ?', [req.user.userId], (err, user) => {
+    db.get('SELECT id, name, email FROM users WHERE id = ?', [req.user.id], (err, user) => {
         if (err) {
             console.error('Database error:', err);
             return res.status(500).render('error', { 
@@ -45,7 +45,58 @@ router.get('/', authenticateToken, (req, res) => {
         res.render('dashboard', {
             title: 'Dashboard',
             user: user,
-            success: req.query.success
+            success: req.query.success,
+            layout: 'authenticated-layout'
+        });
+    });
+});
+
+// Profile route - protected
+router.get('/profile', authenticateToken, (req, res) => {
+    // Get user details from database
+    db.get('SELECT id, name, email FROM users WHERE id = ?', [req.user.id], (err, user) => {
+        if (err) {
+            console.error('Database error:', err);
+            return res.status(500).render('error', { 
+                title: 'Error',
+                message: 'Database error occurred'
+            });
+        }
+        
+        if (!user) {
+            res.clearCookie('token');
+            return res.redirect('/login');
+        }
+
+        res.render('profile', {
+            title: 'Profile',
+            user: user,
+            layout: 'authenticated-layout'
+        });
+    });
+});
+
+// Settings route - protected
+router.get('/settings', authenticateToken, (req, res) => {
+    // Get user details from database
+    db.get('SELECT id, name, email FROM users WHERE id = ?', [req.user.id], (err, user) => {
+        if (err) {
+            console.error('Database error:', err);
+            return res.status(500).render('error', { 
+                title: 'Error',
+                message: 'Database error occurred'
+            });
+        }
+        
+        if (!user) {
+            res.clearCookie('token');
+            return res.redirect('/login');
+        }
+
+        res.render('settings', {
+            title: 'Settings',
+            user: user,
+            layout: 'authenticated-layout'
         });
     });
 });

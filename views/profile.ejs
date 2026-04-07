@@ -1,0 +1,107 @@
+<%- include('authenticated-layout', { 
+    title: 'Profile', 
+    currentPage: 'profile',
+    content: `
+        <div class="container-fluid">
+            <div class="row">
+                <div class="col-12">
+                    <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                        <h1 class="h2">Profile</h1>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="row">
+                <div class="col-md-8">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="card-title mb-0">User Profile Information</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="alert alert-info" role="alert">
+                                <i class="bi bi-info-circle me-2"></i>
+                                This is a placeholder profile page. User profile functionality has not been implemented yet.
+                            </div>
+                            
+                            <form>
+                                <div class="row mb-3">
+                                    <div class="col-md-6">
+                                        <label for="firstName" class="form-label">First Name</label>
+                                        <input type="text" class="form-control" id="firstName" value="John" disabled>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label for="lastName" class="form-label">Last Name</label>
+                                        <input type="text" class="form-control" id="lastName" value="Doe" disabled>
+                                    </div>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="email" class="form-label">Email Address</label>
+                                    <input type="email" class="form-control" id="email" value="john.doe@example.com" disabled>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="phone" class="form-label">Phone Number</label>
+                                    <input type="tel" class="form-control" id="phone" value="+1 (555) 123-4567" disabled>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="bio" class="form-label">Bio</label>
+                                    <textarea class="form-control" id="bio" rows="4" disabled>This is a sample bio text. Profile editing functionality will be implemented in a future update.</textarea>
+                                </div>
+                                
+                                <button type="button" class="btn btn-primary" disabled>
+                                    <i class="bi bi-save me-2"></i>Save Changes
+                                </button>
+                                <button type="button" class="btn btn-secondary ms-2" disabled>
+                                    <i class="bi bi-arrow-clockwise me-2"></i>Reset
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-4">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="card-title mb-0">Profile Picture</h5>
+                        </div>
+                        <div class="card-body text-center">
+                            <div class="mb-3">
+                                <img src="https://via.placeholder.com/150x150/6c757d/ffffff?text=User" 
+                                     alt="Profile Picture" 
+                                     class="rounded-circle img-fluid" 
+                                     style="width: 150px; height: 150px; object-fit: cover;">
+                            </div>
+                            <button type="button" class="btn btn-outline-primary btn-sm" disabled>
+                                <i class="bi bi-camera me-2"></i>Change Picture
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="card mt-3">
+                        <div class="card-header">
+                            <h5 class="card-title mb-0">Account Information</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row mb-2">
+                                <div class="col-sm-6"><strong>Member Since:</strong></div>
+                                <div class="col-sm-6">January 2024</div>
+                            </div>
+                            <div class="row mb-2">
+                                <div class="col-sm-6"><strong>Last Login:</strong></div>
+                                <div class="col-sm-6">Today, 2:30 PM</div>
+                            </div>
+                            <div class="row mb-2">
+                                <div class="col-sm-6"><strong>Account Status:</strong></div>
+                                <div class="col-sm-6">
+                                    <span class="badge bg-success">Active</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `
+}) %>

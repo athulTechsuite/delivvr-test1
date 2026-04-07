@@ -59,6 +59,12 @@ const authenticateToken = (req, res, next) => {
     });
 };
 
+// Authenticated layout middleware - sets layout for authenticated routes
+const useAuthenticatedLayout = (req, res, next) => {
+    res.locals.layout = 'authenticated-layout';
+    next();
+};
+
 // Validation middleware
 const signupValidation = [
     body('name')
@@ -103,14 +109,33 @@ app.get('/login', (req, res) => {
     res.render('login', { error: null });
 });
 
-app.get('/dashboard', authenticateToken, (req, res) => {
-    // Get user info from database
+app.get('/dashboard', authenticateToken, useAuthenticatedLayout, (req, res) => {
+    // Get user info from database using consistent property access
     db.get('SELECT name, email FROM users WHERE id = ?', [req.user.id], (err, user) => {
         if (err) {
             console.error(err);
             return res.redirect('/login');
         }
-        res.render('dashboard', { user });
+        res.render('dashboard', { 
+            user, 
+            currentPage: 'Dashboard',
+            pageTitle: 'Dashboard'
+        });
+    });
+});
+
+app.get('/settings', authenticateToken, useAuthenticatedLayout, (req, res) => {
+    // Get user info from database using parameterized query - secure against SQL injection
+    db.get('SELECT name, email FROM users WHERE id = ?', [req.user.id], (err, user) => {
+        if (err) {
+            console.error(err);
+            return res.redirect('/login');
+        }
+        res.render('settings', { 
+            user, 
+            currentPage: 'Settings',
+            pageTitle: 'Settings'
+        });
     });
 });
 
