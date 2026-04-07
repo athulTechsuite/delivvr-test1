@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-bs-theme="light">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -8,7 +8,7 @@
 </head>
 <body>
     <!-- Navigation -->
-    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary" data-bs-theme="dark">
         <div class="container">
             <a class="navbar-brand" href="/">Express Auth App</a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
@@ -24,6 +24,11 @@
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" href="/login">Login</a>
+                    </li>
+                    <li class="nav-item">
+                        <button id="theme-toggle" class="btn btn-outline-light btn-sm ms-2" type="button" title="Toggle theme">
+                            <i id="theme-icon" class="fas fa-moon"></i>
+                        </button>
                     </li>
                 </ul>
             </div>
@@ -98,5 +103,65 @@
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://kit.fontawesome.com/your-fontawesome-kit.js" crossorigin="anonymous"></script>
+    
+    <!-- Theme Manager Script -->
+    <script>
+        class ThemeManager {
+            constructor() {
+                this.theme = this.getStoredTheme() || 'light';
+                this.init();
+            }
+
+            init() {
+                this.applyTheme(this.theme);
+                this.setupToggleButton();
+            }
+
+            getStoredTheme() {
+                return localStorage.getItem('theme');
+            }
+
+            setStoredTheme(theme) {
+                localStorage.setItem('theme', theme);
+            }
+
+            applyTheme(theme) {
+                document.documentElement.setAttribute('data-bs-theme', theme);
+                this.updateToggleButton(theme);
+                this.theme = theme;
+            }
+
+            updateToggleButton(theme) {
+                const themeIcon = document.getElementById('theme-icon');
+                const themeToggle = document.getElementById('theme-toggle');
+                
+                if (theme === 'dark') {
+                    themeIcon.className = 'fas fa-sun';
+                    themeToggle.title = 'Switch to light mode';
+                } else {
+                    themeIcon.className = 'fas fa-moon';
+                    themeToggle.title = 'Switch to dark mode';
+                }
+            }
+
+            toggleTheme() {
+                const newTheme = this.theme === 'light' ? 'dark' : 'light';
+                this.setStoredTheme(newTheme);
+                this.applyTheme(newTheme);
+            }
+
+            setupToggleButton() {
+                const themeToggle = document.getElementById('theme-toggle');
+                if (themeToggle) {
+                    themeToggle.addEventListener('click', () => this.toggleTheme());
+                }
+            }
+        }
+
+        // Initialize theme manager when DOM is loaded
+        document.addEventListener('DOMContentLoaded', () => {
+            new ThemeManager();
+        });
+    </script>
 </body>
 </html>
