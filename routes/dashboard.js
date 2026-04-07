@@ -28,7 +28,7 @@ const authenticateToken = (req, res, next) => {
 // Dashboard route - protected
 router.get('/', authenticateToken, (req, res) => {
     // Get user details from database
-    db.get('SELECT id, name, email FROM users WHERE id = ?', [req.user.userId], (err, user) => {
+    db.get('SELECT id, name, email FROM users WHERE id = ?', [req.user.id], (err, user) => {
         if (err) {
             console.error('Database error:', err);
             return res.status(500).render('error', { 
@@ -54,7 +54,7 @@ router.get('/', authenticateToken, (req, res) => {
 // Profile route - protected
 router.get('/profile', authenticateToken, (req, res) => {
     // Get user details from database
-    db.get('SELECT id, name, email FROM users WHERE id = ?', [req.user.userId], (err, user) => {
+    db.get('SELECT id, name, email FROM users WHERE id = ?', [req.user.id], (err, user) => {
         if (err) {
             console.error('Database error:', err);
             return res.status(500).render('error', { 
@@ -79,7 +79,7 @@ router.get('/profile', authenticateToken, (req, res) => {
 // Settings route - protected
 router.get('/settings', authenticateToken, (req, res) => {
     // Get user details from database
-    db.get('SELECT id, name, email FROM users WHERE id = ?', [req.user.userId], (err, user) => {
+    db.get('SELECT id, name, email FROM users WHERE id = ?', [req.user.id], (err, user) => {
         if (err) {
             console.error('Database error:', err);
             return res.status(500).render('error', { 
