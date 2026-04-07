@@ -270,6 +270,43 @@
     --sidebar-hover-bg: #333333;
     --sidebar-border-color: #444444;
   }
+  
+  /* Fallback styles for browsers without CSS custom properties support */
+  .sidebar {
+    background-color: var(--sidebar-bg-color, #1a1a1a);
+    color: var(--sidebar-text-color, #f0f0f0);
+    border-right-color: var(--sidebar-border-color, #444444);
+  }
+  
+  .sidebar-header {
+    background-color: var(--sidebar-bg-color, #1a1a1a);
+    border-bottom-color: var(--sidebar-border-color, #444444);
+  }
+  
+  .sidebar-brand {
+    color: var(--sidebar-text-color, #f0f0f0);
+  }
+  
+  .sidebar-nav-link {
+    color: var(--sidebar-text-color, #f0f0f0);
+  }
+  
+  .sidebar-nav-link:hover {
+    background-color: var(--sidebar-hover-bg, #333333);
+    color: var(--sidebar-text-color, #f0f0f0);
+  }
+  
+  .hamburger-btn {
+    background-color: var(--sidebar-bg-color, #1a1a1a);
+  }
+  
+  .hamburger-btn:hover {
+    background-color: var(--sidebar-hover-bg, #333333);
+  }
+  
+  .hamburger-line {
+    background-color: var(--sidebar-text-color, #f0f0f0);
+  }
 }
 
 /* Print Styles */

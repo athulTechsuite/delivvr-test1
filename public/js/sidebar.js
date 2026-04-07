@@ -315,35 +315,55 @@ class SidebarController {
     }
 
     /**
-     * Handle keyboard navigation
+     * Handle keyboard navigation and shortcuts
      */
     handleKeydown(event) {
         try {
-            // ESC key closes sidebar
-            if (event.key === 'Escape' && this.isOpen) {
-                this.closeSidebar();
-                this.hamburgerBtn.focus();
+            // Validate event object
+            if (!event || !event.key) {
                 return;
             }
 
-            // Only handle navigation keys when sidebar is focused
-            if (!this.sidebar.contains(document.activeElement)) {
+            // ESC key closes sidebar
+            if (event.key === 'Escape' && this.isOpen) {
+                event.preventDefault();
+                this.closeSidebar();
+                if (this.hamburgerBtn) {
+                    this.hamburgerBtn.focus();
+                }
+                return;
+            }
+
+            // Toggle sidebar with keyboard shortcut (Ctrl/Cmd + B)
+            if ((event.ctrlKey || event.metaKey) && event.key === 'b') {
+                event.preventDefault();
+                this.toggleSidebar();
+                return;
+            }
+
+            // Only handle navigation keys when sidebar is focused or open
+            if (!this.isOpen || !this.sidebar || !this.sidebar.contains(document.activeElement)) {
                 return;
             }
 
             const navItems = Array.from(this.sidebar.querySelectorAll(`.${CSS_CLASSES.NAV_ITEM} a`));
+            if (navItems.length === 0) {
+                return;
+            }
+
             const currentIndex = navItems.indexOf(document.activeElement);
 
             switch (event.key) {
                 case 'ArrowDown':
                     event.preventDefault();
-                    const nextIndex = (currentIndex + 1) % navItems.length;
+                    const nextIndex = currentIndex === -1 ? 0 : (currentIndex + 1) % navItems.length;
                     navItems[nextIndex].focus();
                     break;
                     
                 case 'ArrowUp':
                     event.preventDefault();
-                    const prevIndex = currentIndex === 0 ? navItems.length - 1 : currentIndex - 1;
+                    const prevIndex = currentIndex === -1 ? navItems.length - 1 : 
+                                     currentIndex === 0 ? navItems.length - 1 : currentIndex - 1;
                     navItems[prevIndex].focus();
                     break;
                     
@@ -356,9 +376,56 @@ class SidebarController {
                     event.preventDefault();
                     navItems[navItems.length - 1].focus();
                     break;
+
+                case 'Enter':
+                case ' ':
+                    // Let the focused navigation item handle the activation
+                    if (document.activeElement && navItems.includes(document.activeElement)) {
+                        // The click event will be handled by handleNavigation
+                        return;
+                    }
+                    break;
+
+                case 'Tab':
+                    // Allow normal tab navigation within sidebar
+                    break;
+
+                default:
+                    // Handle alphanumeric keys for quick navigation
+                    if (event.key.length === 1 && /[a-zA-Z0-9]/.test(event.key)) {
+                        this.handleQuickNavigation(event.key.toLowerCase(), navItems);
+                    }
+                    break;
             }
         } catch (error) {
             console.error('Error handling keydown:', error);
+        }
+    }
+
+    /**
+     * Handle quick navigation using first letter of nav items
+     */
+    handleQuickNavigation(key, navItems) {
+        try {
+            const matchingItems = navItems.filter(item => {
+                const text = item.textContent || '';
+                return text.toLowerCase().startsWith(key);
+            });
+
+            if (matchingItems.length > 0) {
+                const currentFocused = document.activeElement;
+                let nextItem = matchingItems[0];
+
+                // If current focused item matches the key, cycle to next matching item
+                if (matchingItems.includes(currentFocused)) {
+                    const currentIndex = matchingItems.indexOf(currentFocused);
+                    nextItem = matchingItems[(currentIndex + 1) % matchingItems.length];
+                }
+
+                nextItem.focus();
+            }
+        } catch (error) {
+            console.error('Error in quick navigation:', error);
         }
     }
 
@@ -519,6 +586,40 @@ class SidebarController {
     }
 
     /**
+     * Get current sidebar state for external access
+     */
+    getState() {
+        return {
+            isOpen: this.isOpen,
+            isMobile: this.isMobile,
+            isInitialized: this.isInitialized
+        };
+    }
+
+    /**
+     * Refresh sidebar - useful after dynamic content changes
+     */
+    refresh() {
+        try {
+            this.setActiveNavItem();
+            this.checkMobileState();
+            
+            // Re-attach event listeners to any new nav items
+            const navItems = this.sidebar.querySelectorAll(`.${CSS_CLASSES.NAV_ITEM} a`);
+            navItems.forEach(item => {
+                // Remove existing listeners to avoid duplicates
+                item.removeEventListener('click', this.handleNavigation);
+                // Add fresh listeners
+                item.addEventListener('click', this.handleNavigation);
+            });
+            
+            console.log('SidebarController refreshed');
+        } catch (error) {
+            console.error('Error refreshing sidebar:', error);
+        }
+    }
+
+    /**
      * Destroy the sidebar controller and clean up
      */
     destroy() {
@@ -535,10 +636,22 @@ class SidebarController {
                 this.overlay.removeEventListener('click', this.handleOverlayClick);
             }
 
+            // Remove nav item listeners
+            const navItems = this.sidebar?.querySelectorAll(`.${CSS_CLASSES.NAV_ITEM} a`) || [];
+            navItems.forEach(item => {
+                item.removeEventListener('click', this.handleNavigation);
+            });
+
             // Reset state
             this.isInitialized = false;
             this.isOpen = false;
             document.body.style.overflow = '';
+            
+            // Clear references
+            this.sidebar = null;
+            this.hamburgerBtn = null;
+            this.mainContent = null;
+            this.overlay = null;
             
             console.log('SidebarController destroyed');
         } catch (error) {
