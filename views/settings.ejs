@@ -1,0 +1,580 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Settings - Dashboard</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background-color: #f5f5f5;
+            color: #333;
+        }
+
+        /* Top Navigation */
+        .top-nav {
+            background-color: #2c3e50;
+            color: white;
+            padding: 1rem 2rem;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1001;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .top-nav h1 {
+            font-size: 1.5rem;
+            font-weight: 600;
+        }
+
+        .top-nav-right {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        /* Hamburger Menu Button */
+        .hamburger {
+            display: none;
+            flex-direction: column;
+            cursor: pointer;
+            padding: 4px;
+            background: none;
+            border: none;
+            color: white;
+        }
+
+        .hamburger span {
+            width: 25px;
+            height: 3px;
+            background-color: white;
+            margin: 3px 0;
+            transition: all 0.3s ease;
+            transform-origin: center;
+        }
+
+        .hamburger.active span:nth-child(1) {
+            transform: rotate(45deg) translate(6px, 6px);
+        }
+
+        .hamburger.active span:nth-child(2) {
+            opacity: 0;
+        }
+
+        .hamburger.active span:nth-child(3) {
+            transform: rotate(-45deg) translate(7px, -6px);
+        }
+
+        /* Sidebar */
+        .sidebar {
+            position: fixed;
+            left: 0;
+            top: 60px;
+            width: 250px;
+            height: calc(100vh - 60px);
+            background-color: #34495e;
+            color: white;
+            padding: 2rem 0;
+            z-index: 1000;
+            transition: transform 0.3s ease;
+            overflow-y: auto;
+        }
+
+        .sidebar nav ul {
+            list-style: none;
+        }
+
+        .sidebar nav ul li {
+            margin: 0;
+        }
+
+        .sidebar nav ul li a {
+            display: block;
+            padding: 1rem 2rem;
+            color: #ecf0f1;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            border-left: 4px solid transparent;
+        }
+
+        .sidebar nav ul li a:hover {
+            background-color: #2c3e50;
+            border-left-color: #3498db;
+            padding-left: 2.5rem;
+        }
+
+        .sidebar nav ul li a.active {
+            background-color: #2c3e50;
+            border-left-color: #e74c3c;
+            font-weight: 600;
+        }
+
+        /* Main Content */
+        .main-content {
+            margin-left: 250px;
+            margin-top: 60px;
+            padding: 2rem;
+            min-height: calc(100vh - 60px);
+            transition: margin-left 0.3s ease;
+        }
+
+        .content-header {
+            background-color: white;
+            padding: 2rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 2rem;
+        }
+
+        .content-header h2 {
+            font-size: 2rem;
+            color: #2c3e50;
+            margin-bottom: 0.5rem;
+        }
+
+        .content-header p {
+            color: #7f8c8d;
+            font-size: 1.1rem;
+        }
+
+        .settings-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+        }
+
+        .settings-card {
+            background-color: white;
+            padding: 2rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            border-left: 4px solid #3498db;
+        }
+
+        .settings-card h3 {
+            font-size: 1.3rem;
+            color: #2c3e50;
+            margin-bottom: 1rem;
+        }
+
+        .settings-card p {
+            color: #7f8c8d;
+            margin-bottom: 1rem;
+        }
+
+        .form-group {
+            margin-bottom: 1rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: #2c3e50;
+            font-weight: 500;
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 1rem;
+            transition: border-color 0.3s ease;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #3498db;
+        }
+
+        .btn {
+            background-color: #3498db;
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: background-color 0.3s ease;
+        }
+
+        .btn:hover {
+            background-color: #2980b9;
+        }
+
+        .btn-secondary {
+            background-color: #95a5a6;
+        }
+
+        .btn-secondary:hover {
+            background-color: #7f8c8d;
+        }
+
+        .btn-danger {
+            background-color: #e74c3c;
+        }
+
+        .btn-danger:hover {
+            background-color: #c0392b;
+        }
+
+        /* Mobile Styles */
+        @media (max-width: 768px) {
+            .hamburger {
+                display: flex;
+            }
+
+            .sidebar {
+                transform: translateX(-100%);
+            }
+
+            .sidebar.active {
+                transform: translateX(0);
+            }
+
+            .main-content {
+                margin-left: 0;
+            }
+
+            .main-content.sidebar-active {
+                margin-left: 0;
+            }
+
+            .top-nav {
+                padding: 1rem;
+            }
+
+            .content-header {
+                padding: 1.5rem;
+            }
+
+            .settings-grid {
+                grid-template-columns: 1fr;
+                gap: 1rem;
+            }
+
+            .settings-card {
+                padding: 1.5rem;
+            }
+        }
+
+        /* Sidebar Overlay for Mobile */
+        .sidebar-overlay {
+            position: fixed;
+            top: 60px;
+            left: 0;
+            width: 100%;
+            height: calc(100vh - 60px);
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 999;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .sidebar-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        @media (min-width: 769px) {
+            .sidebar-overlay {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Top Navigation -->
+    <nav class="top-nav">
+        <button class="hamburger" id="hamburger" aria-label="Toggle menu">
+            <span></span>
+            <span></span>
+            <span></span>
+        </button>
+        <h1>Dashboard App</h1>
+        <div class="top-nav-right">
+            <span>Welcome, User</span>
+        </div>
+    </nav>
+
+    <!-- Sidebar Overlay for Mobile -->
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+    <!-- Sidebar -->
+    <aside class="sidebar" id="sidebar">
+        <nav>
+            <ul>
+                <li><a href="/dashboard">Dashboard</a></li>
+                <li><a href="/profile">Profile</a></li>
+                <li><a href="/settings" class="active">Settings</a></li>
+                <li><a href="/logout">Logout</a></li>
+            </ul>
+        </nav>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content" id="mainContent">
+        <div class="content-header">
+            <h2>Settings</h2>
+            <p>Manage your account preferences and application settings</p>
+        </div>
+
+        <div class="settings-grid">
+            <div class="settings-card">
+                <h3>Account Settings</h3>
+                <p>Update your account information and preferences</p>
+                <div class="form-group">
+                    <label for="email">Email Address</label>
+                    <input type="email" id="email" name="email" placeholder="user@example.com" readonly>
+                </div>
+                <div class="form-group">
+                    <label for="username">Username</label>
+                    <input type="text" id="username" name="username" placeholder="Your username">
+                </div>
+                <div class="form-group">
+                    <label for="timezone">Timezone</label>
+                    <select id="timezone" name="timezone">
+                        <option value="UTC">UTC</option>
+                        <option value="America/New_York">Eastern Time</option>
+                        <option value="America/Chicago">Central Time</option>
+                        <option value="America/Denver">Mountain Time</option>
+                        <option value="America/Los_Angeles">Pacific Time</option>
+                    </select>
+                </div>
+                <button type="button" class="btn">Save Changes</button>
+            </div>
+
+            <div class="settings-card">
+                <h3>Privacy & Security</h3>
+                <p>Control your privacy settings and security options</p>
+                <div class="form-group">
+                    <label for="privacy-level">Privacy Level</label>
+                    <select id="privacy-level" name="privacy-level">
+                        <option value="public">Public</option>
+                        <option value="friends">Friends Only</option>
+                        <option value="private">Private</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>
+                        <input type="checkbox" id="two-factor" name="two-factor">
+                        Enable Two-Factor Authentication
+                    </label>
+                </div>
+                <div class="form-group">
+                    <label>
+                        <input type="checkbox" id="email-notifications" name="email-notifications" checked>
+                        Email Notifications
+                    </label>
+                </div>
+                <button type="button" class="btn">Update Privacy</button>
+            </div>
+
+            <div class="settings-card">
+                <h3>Appearance</h3>
+                <p>Customize how the application looks and feels</p>
+                <div class="form-group">
+                    <label for="theme">Theme</label>
+                    <select id="theme" name="theme">
+                        <option value="light">Light</option>
+                        <option value="dark">Dark</option>
+                        <option value="auto">Auto</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="language">Language</label>
+                    <select id="language" name="language">
+                        <option value="en">English</option>
+                        <option value="es">Español</option>
+                        <option value="fr">Français</option>
+                        <option value="de">Deutsch</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="font-size">Font Size</label>
+                    <select id="font-size" name="font-size">
+                        <option value="small">Small</option>
+                        <option value="medium" selected>Medium</option>
+                        <option value="large">Large</option>
+                    </select>
+                </div>
+                <button type="button" class="btn">Apply Theme</button>
+            </div>
+
+            <div class="settings-card">
+                <h3>Notifications</h3>
+                <p>Manage your notification preferences</p>
+                <div class="form-group">
+                    <label>
+                        <input type="checkbox" id="push-notifications" name="push-notifications" checked>
+                        Push Notifications
+                    </label>
+                </div>
+                <div class="form-group">
+                    <label>
+                        <input type="checkbox" id="sms-notifications" name="sms-notifications">
+                        SMS Notifications
+                    </label>
+                </div>
+                <div class="form-group">
+                    <label>
+                        <input type="checkbox" id="weekly-digest" name="weekly-digest" checked>
+                        Weekly Digest Email
+                    </label>
+                </div>
+                <div class="form-group">
+                    <label for="notification-time">Quiet Hours</label>
+                    <select id="notification-time" name="notification-time">
+                        <option value="none">No Quiet Hours</option>
+                        <option value="night">10 PM - 8 AM</option>
+                        <option value="work">9 AM - 5 PM</option>
+                        <option value="custom">Custom</option>
+                    </select>
+                </div>
+                <button type="button" class="btn">Save Preferences</button>
+            </div>
+
+            <div class="settings-card">
+                <h3>Data & Storage</h3>
+                <p>Manage your data and storage preferences</p>
+                <div class="form-group">
+                    <label>Storage Usage: <strong>2.4 GB / 10 GB</strong></label>
+                    <div style="background-color: #ecf0f1; height: 20px; border-radius: 10px; overflow: hidden; margin-top: 0.5rem;">
+                        <div style="background-color: #3498db; height: 100%; width: 24%; transition: width 0.3s ease;"></div>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>
+                        <input type="checkbox" id="auto-backup" name="auto-backup" checked>
+                        Automatic Backup
+                    </label>
+                </div>
+                <div class="form-group">
+                    <label for="backup-frequency">Backup Frequency</label>
+                    <select id="backup-frequency" name="backup-frequency">
+                        <option value="daily">Daily</option>
+                        <option value="weekly" selected>Weekly</option>
+                        <option value="monthly">Monthly</option>
+                    </select>
+                </div>
+                <button type="button" class="btn">Export Data</button>
+                <button type="button" class="btn btn-secondary" style="margin-left: 0.5rem;">Clear Cache</button>
+            </div>
+
+            <div class="settings-card">
+                <h3>Danger Zone</h3>
+                <p>Irreversible and destructive actions</p>
+                <div class="form-group">
+                    <label for="delete-reason">Reason for Account Deletion</label>
+                    <textarea id="delete-reason" name="delete-reason" rows="3" placeholder="Please tell us why you're leaving..."></textarea>
+                </div>
+                <button type="button" class="btn btn-danger">Delete Account</button>
+                <p style="font-size: 0.9rem; color: #e74c3c; margin-top: 0.5rem;">
+                    <strong>Warning:</strong> This action cannot be undone. This will permanently delete your account and all associated data.
+                </p>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        // Mobile menu toggle functionality
+        const hamburger = document.getElementById('hamburger');
+        const sidebar = document.getElementById('sidebar');
+        const sidebarOverlay = document.getElementById('sidebarOverlay');
+        const mainContent = document.getElementById('mainContent');
+
+        function toggleSidebar() {
+            hamburger.classList.toggle('active');
+            sidebar.classList.toggle('active');
+            sidebarOverlay.classList.toggle('active');
+            mainContent.classList.toggle('sidebar-active');
+        }
+
+        function closeSidebar() {
+            hamburger.classList.remove('active');
+            sidebar.classList.remove('active');
+            sidebarOverlay.classList.remove('active');
+            mainContent.classList.remove('sidebar-active');
+        }
+
+        if (hamburger) {
+            hamburger.addEventListener('click', toggleSidebar);
+        }
+
+        if (sidebarOverlay) {
+            sidebarOverlay.addEventListener('click', closeSidebar);
+        }
+
+        // Close sidebar on window resize to desktop
+        window.addEventListener('resize', function() {
+            if (window.innerWidth > 768) {
+                closeSidebar();
+            }
+        });
+
+        // Form interaction handlers (placeholder functionality)
+        document.querySelectorAll('.btn').forEach(button => {
+            button.addEventListener('click', function() {
+                const cardTitle = this.closest('.settings-card').querySelector('h3').textContent;
+                alert(`${cardTitle} settings would be saved here. This is a placeholder interface.`);
+            });
+        });
+
+        // Handle checkbox changes
+        document.querySelectorAll('input[type="checkbox"]').forEach(checkbox => {
+            checkbox.addEventListener('change', function() {
+                console.log(`Setting "${this.name}" changed to: ${this.checked}`);
+            });
+        });
+
+        // Handle select changes
+        document.querySelectorAll('select').forEach(select => {
+            select.addEventListener('change', function() {
+                console.log(`Setting "${this.name}" changed to: ${this.value}`);
+            });
+        });
+
+        // Keyboard navigation support
+        document.addEventListener('keydown', function(e) {
+            // Close sidebar with Escape key on mobile
+            if (e.key === 'Escape' && window.innerWidth <= 768) {
+                closeSidebar();
+            }
+        });
+
+        // Initialize page
+        document.addEventListener('DOMContentLoaded', function() {
+            // Set initial form values (placeholder data)
+            const emailInput = document.getElementById('email');
+            const usernameInput = document.getElementById('username');
+            
+            if (emailInput) {
+                emailInput.value = 'user@example.com';
+            }
+            
+            if (usernameInput) {
+                usernameInput.value = 'demo_user';
+            }
+
+            // Log page load for analytics (placeholder)
+            console.log('Settings page loaded successfully');
+        });
+    </script>
+</body>
+</html>

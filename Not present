@@ -1,0 +1,240 @@
+/**
+ * Unit tests for JavaScript sidebar controller
+ * Test Coverage: TC-006 - JavaScript sidebar controller unit tests
+ */
+
+describe('TC-006: JavaScript sidebar controller unit tests', () => {
+  let sidebarController;
+  let mockElement;
+  let mockToggleButton;
+  let mockCloseButton;
+
+  // Test constants
+  const CSS_CLASSES = {
+    SIDEBAR_OPEN: 'sidebar-open',
+    SIDEBAR_CLOSED: 'sidebar-closed',
+    OVERLAY_VISIBLE: 'overlay-visible'
+  };
+
+  const SELECTORS = {
+    SIDEBAR: '.sidebar',
+    TOGGLE_BUTTON: '.sidebar-toggle',
+    CLOSE_BUTTON: '.sidebar-close',
+    OVERLAY: '.sidebar-overlay'
+  };
+
+  beforeEach(() => {
+    // Setup mock DOM elements
+    mockElement = {
+      classList: {
+        add: jest.fn(),
+        remove: jest.fn(),
+        contains: jest.fn(),
+        toggle: jest.fn()
+      },
+      addEventListener: jest.fn(),
+      removeEventListener: jest.fn(),
+      querySelector: jest.fn(),
+      style: {}
+    };
+
+    mockToggleButton = {
+      addEventListener: jest.fn(),
+      removeEventListener: jest.fn()
+    };
+
+    mockCloseButton = {
+      addEventListener: jest.fn(),
+      removeEventListener: jest.fn()
+    };
+
+    // Mock document.querySelector
+    document.querySelector = jest.fn((selector) => {
+      switch (selector) {
+        case SELECTORS.SIDEBAR:
+          return mockElement;
+        case SELECTORS.TOGGLE_BUTTON:
+          return mockToggleButton;
+        case SELECTORS.CLOSE_BUTTON:
+          return mockCloseButton;
+        case SELECTORS.OVERLAY:
+          return mockElement;
+        default:
+          return null;
+      }
+    });
+
+    // Reset SidebarController for each test
+    if (typeof SidebarController !== 'undefined') {
+      sidebarController = new SidebarController();
+    }
+  });
+
+  afterEach(() => {
+    jest.clearAllMocks();
+  });
+
+  describe('Happy Path Tests', () => {
+    test('should initialize sidebar controller with valid DOM elements', () => {
+      expect(() => {
+        sidebarController = new SidebarController();
+      }).not.toThrow();
+      
+      expect(document.querySelector).toHaveBeenCalledWith(SELECTORS.SIDEBAR);
+      expect(document.querySelector).toHaveBeenCalledWith(SELECTORS.TOGGLE_BUTTON);
+      expect(document.querySelector).toHaveBeenCalledWith(SELECTORS.CLOSE_BUTTON);
+    });
+
+    test('should successfully open sidebar', () => {
+      sidebarController = new SidebarController();
+      mockElement.classList.contains.mockReturnValue(false);
+
+      sidebarController.openSidebar();
+
+      expect(mockElement.classList.add).toHaveBeenCalledWith(CSS_CLASSES.SIDEBAR_OPEN);
+      expect(mockElement.classList.remove).toHaveBeenCalledWith(CSS_CLASSES.SIDEBAR_CLOSED);
+    });
+
+    test('should successfully close sidebar', () => {
+      sidebarController = new SidebarController();
+      mockElement.classList.contains.mockReturnValue(true);
+
+      sidebarController.closeSidebar();
+
+      expect(mockElement.classList.add).toHaveBeenCalledWith(CSS_CLASSES.SIDEBAR_CLOSED);
+      expect(mockElement.classList.remove).toHaveBeenCalledWith(CSS_CLASSES.SIDEBAR_OPEN);
+    });
+
+    test('should toggle sidebar state correctly', () => {
+      sidebarController = new SidebarController();
+      mockElement.classList.contains.mockReturnValue(false);
+
+      sidebarController.toggleSidebar();
+
+      expect(mockElement.classList.toggle).toHaveBeenCalledWith(CSS_CLASSES.SIDEBAR_OPEN);
+    });
+
+    test('should attach event listeners successfully', () => {
+      sidebarController = new SidebarController();
+
+      sidebarController.attachEventListeners();
+
+      expect(mockToggleButton.addEventListener).toHaveBeenCalledWith('click', expect.any(Function));
+      expect(mockCloseButton.addEventListener).toHaveBeenCalledWith('click', expect.any(Function));
+    });
+
+    test('should detach event listeners successfully', () => {
+      sidebarController = new SidebarController();
+
+      sidebarController.detachEventListeners();
+
+      expect(mockToggleButton.removeEventListener).toHaveBeenCalledWith('click', expect.any(Function));
+      expect(mockCloseButton.removeEventListener).toHaveBeenCalledWith('click', expect.any(Function));
+    });
+
+    test('should return correct sidebar state', () => {
+      sidebarController = new SidebarController();
+      mockElement.classList.contains.mockReturnValue(true);
+
+      const isOpen = sidebarController.isSidebarOpen();
+
+      expect(isOpen).toBe(true);
+      expect(mockElement.classList.contains).toHaveBeenCalledWith(CSS_CLASSES.SIDEBAR_OPEN);
+    });
+  });
+
+  describe('Error Path Tests', () => {
+    test('should handle missing sidebar element gracefully', () => {
+      document.querySelector = jest.fn((selector) => {
+        if (selector === SELECTORS.SIDEBAR) return null;
+        return mockElement;
+      });
+
+      expect(() => {
+        sidebarController = new SidebarController();
+      }).toThrow('Sidebar element not found');
+    });
+
+    test('should handle missing toggle button gracefully', () => {
+      document.querySelector = jest.fn((selector) => {
+        if (selector === SELECTORS.TOGGLE_BUTTON) return null;
+        return mockElement;
+      });
+
+      expect(() => {
+        sidebarController = new SidebarController();
+      }).toThrow('Toggle button not found');
+    });
+
+    test('should handle missing close button gracefully', () => {
+      document.querySelector = jest.fn((selector) => {
+        if (selector === SELECTORS.CLOSE_BUTTON) return null;
+        return mockElement;
+      });
+
+      expect(() => {
+        sidebarController = new SidebarController();
+      }).toThrow('Close button not found');
+    });
+
+    test('should handle DOM manipulation errors gracefully', () => {
+      sidebarController = new SidebarController();
+      mockElement.classList.add.mockImplementation(() => {
+        throw new Error('DOM manipulation failed');
+      });
+
+      expect(() => {
+        sidebarController.openSidebar();
+      }).toThrow('Failed to open sidebar: DOM manipulation failed');
+    });
+
+    test('should handle event listener attachment errors', () => {
+      sidebarController = new SidebarController();
+      mockToggleButton.addEventListener.mockImplementation(() => {
+        throw new Error('Event listener attachment failed');
+      });
+
+      expect(() => {
+        sidebarController.attachEventListeners();
+      }).toThrow('Failed to attach event listeners: Event listener attachment failed');
+    });
+
+    test('should handle invalid state queries gracefully', () => {
+      sidebarController = new SidebarController();
+      mockElement.classList.contains.mockImplementation(() => {
+        throw new Error('classList access failed');
+      });
+
+      expect(() => {
+        sidebarController.isSidebarOpen();
+      }).toThrow('Failed to get sidebar state: classList access failed');
+    });
+
+    test('should validate input parameters', () => {
+      sidebarController = new SidebarController();
+
+      expect(() => {
+        sidebarController.setSidebarWidth(null);
+      }).toThrow('Invalid width parameter');
+
+      expect(() => {
+        sidebarController.setSidebarWidth(-1);
+      }).toThrow('Width must be a positive number');
+
+      expect(() => {
+        sidebarController.setSidebarWidth('invalid');
+      }).toThrow('Width must be a number');
+    });
+
+    test('should handle concurrent operations safely', async () => {
+      sidebarController = new SidebarController();
+      
+      // Simulate concurrent toggle operations
+      const togglePromises = Array.from({ length: 5 }, () => 
+        Promise.resolve().then(() => sidebarController.toggleSidebar())
+      );
+
+      await expect(Promise.all(togglePromises)).resolves.not.toThrow();
+    });
+  });
+});
