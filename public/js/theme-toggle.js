@@ -34,17 +34,26 @@ class ThemeManager {
      * Get saved theme from localStorage or return default
      */
     getSavedTheme() {
-        const saved = localStorage.getItem(this.storageKey);
-        return saved && Object.values(this.themes).includes(saved) 
-            ? saved 
-            : this.themes.LIGHT;
+        try {
+            const saved = localStorage.getItem(this.storageKey);
+            return saved && Object.values(this.themes).includes(saved) 
+                ? saved 
+                : this.themes.LIGHT;
+        } catch (error) {
+            console.warn('localStorage not available, using default theme:', error);
+            return this.themes.LIGHT;
+        }
     }
 
     /**
      * Save theme preference to localStorage
      */
     saveTheme(theme) {
-        localStorage.setItem(this.storageKey, theme);
+        try {
+            localStorage.setItem(this.storageKey, theme);
+        } catch (error) {
+            console.warn('Could not save theme preference:', error);
+        }
     }
 
     /**
@@ -83,7 +92,7 @@ class ThemeManager {
      * Set up theme toggle button event listener
      */
     setupToggleButton() {
-        const toggleButton = document.getElementById('theme-toggle');
+        const toggleButton = document.getElementById('themeToggle');
         if (!toggleButton) {
             console.warn('Theme toggle button not found');
             return;
@@ -98,7 +107,7 @@ class ThemeManager {
      * Update toggle button appearance and accessibility attributes
      */
     updateToggleButton(theme) {
-        const toggleButton = document.getElementById('theme-toggle');
+        const toggleButton = document.getElementById('themeToggle');
         const toggleIcon = document.getElementById('theme-toggle-icon');
         
         if (!toggleButton || !toggleIcon) return;
@@ -134,5 +143,8 @@ function initializeThemeManager() {
 if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', initializeThemeManager);
 } else {
-    initializeThemeManager();
+    // Check if already initialized to prevent race conditions
+    if (!window.themeManager) {
+        initializeThemeManager();
+    }
 }
