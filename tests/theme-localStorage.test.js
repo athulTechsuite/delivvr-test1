@@ -38,7 +38,7 @@ describe('Theme LocalStorage Persistence', () => {
         };
         
         document.getElementById = jest.fn((id) => {
-            if (id === 'themeToggle') {
+            if (id === 'theme-toggle') {
                 return {
                     addEventListener: jest.fn(),
                     click: jest.fn()

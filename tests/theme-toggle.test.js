@@ -24,7 +24,7 @@ describe('Theme Toggle Feature', () => {
                     <div class="container">
                         <ul class="navbar-nav">
                             <li class="nav-item">
-                                <button class="btn btn-outline-light btn-sm" id="themeToggle" type="button">
+                                <button class="btn btn-outline-light btn-sm" id="themeToggle" type="button" title="Toggle theme">
                                     <i class="bi bi-sun-fill" id="themeIcon"></i>
                                     <span id="themeText" class="d-none d-md-inline ms-1">Light</span>
                                 </button>
@@ -32,10 +32,30 @@ describe('Theme Toggle Feature', () => {
                         </ul>
                     </div>
                 </nav>
-                <div class="container">
-                    <div class="card"><div class="card-body">Test content</div></div>
-                    <div class="alert alert-info">Test alert</div>
-                </div>
+                <main class="container mt-4">
+                    <div class="row">
+                        <div class="col-12">
+                            <div class="card">
+                                <div class="card-body">
+                                    <h5 class="card-title">Test Content</h5>
+                                    <p class="card-text">This is test content for theme toggle testing.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row mt-3">
+                        <div class="col-12">
+                            <div class="alert alert-info">
+                                <strong>Info:</strong> Test alert for theme validation.
+                            </div>
+                        </div>
+                    </div>
+                </main>
+                <footer class="mt-5 py-3 bg-secondary text-light">
+                    <div class="container text-center">
+                        <small>&copy; 2024 Test Application</small>
+                    </div>
+                </footer>
             </body>
             </html>
         `, {

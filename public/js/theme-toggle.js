@@ -84,11 +84,14 @@ class ThemeManager {
      */
     setupToggleButton() {
         const toggleButton = document.getElementById('theme-toggle');
-        if (toggleButton) {
-            toggleButton.addEventListener('click', () => {
-                this.toggleTheme();
-            });
+        if (!toggleButton) {
+            console.warn('Theme toggle button not found');
+            return;
         }
+        
+        toggleButton.addEventListener('click', () => {
+            this.toggleTheme();
+        });
     }
 
     /**
@@ -120,18 +123,16 @@ class ThemeManager {
     }
 }
 
-// Initialize theme manager when DOM is loaded
-document.addEventListener('DOMContentLoaded', () => {
-    window.themeManager = new ThemeManager();
-});
+// Initialize theme manager safely to avoid duplicate initialization
+function initializeThemeManager() {
+    if (!window.themeManager) {
+        window.themeManager = new ThemeManager();
+    }
+}
 
-// Also initialize immediately if DOM is already loaded
+// Initialize theme manager when DOM is loaded
 if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', () => {
-        if (!window.themeManager) {
-            window.themeManager = new ThemeManager();
-        }
-    });
+    document.addEventListener('DOMContentLoaded', initializeThemeManager);
 } else {
-    window.themeManager = new ThemeManager();
+    initializeThemeManager();
 }
