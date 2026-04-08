@@ -18,7 +18,7 @@ if (!process.env.JWT_SECRET) {
 const JWT_SECRET = process.env.JWT_SECRET;
 
 // Database setup - use environment variable or fallback to default
-const DB_PATH = process.env.DB_PATH || path.join(__dirname, 'database.sqlite');
+const DB_PATH = process.env.DB_PATH || path.join(__dirname, 'config', 'database.sqlite');
 const db = new sqlite3.Database(DB_PATH);
 
 // Create users table if it doesn't exist
