@@ -1,0 +1,389 @@
+<!-- Profile Header -->
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="h3 mb-0">
+        <i class="bi bi-person-circle me-2"></i>Profile
+    </h1>
+</div>
+
+<!-- User Avatar and Basic Info Card -->
+<div class="card shadow mb-4">
+    <div class="card-body">
+        <div class="row align-items-center">
+            <div class="col-auto">
+                <div class="avatar-placeholder bg-primary text-white d-flex align-items-center justify-content-center rounded-circle" style="width: 80px; height: 80px; font-size: 2rem;">
+                    <%= user.name.charAt(0).toUpperCase() %>
+                </div>
+            </div>
+            <div class="col">
+                <h3 class="mb-1"><%= user.name %></h3>
+                <p class="text-muted mb-0"><%= user.email %></p>
+                <small class="text-muted">Member since <%= new Date(user.created_at).toLocaleDateString() %></small>
+            </div>
+            <div class="col-auto">
+                <button class="btn btn-outline-primary" type="button" data-bs-toggle="modal" data-bs-target="#editAvatarModal">
+                    <i class="bi bi-camera me-1"></i>Change Photo
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Profile Information Card -->
+<div class="card shadow mb-4">
+    <div class="card-header bg-primary text-white">
+        <h5 class="mb-0">
+            <i class="bi bi-info-circle me-2"></i>Profile Information
+        </h5>
+    </div>
+    <div class="card-body">
+        <div class="row">
+            <div class="col-md-6">
+                <div class="mb-3">
+                    <label class="fw-bold text-muted">Full Name</label>
+                    <p class="mb-0"><%= user.name %></p>
+                </div>
+                <div class="mb-3">
+                    <label class="fw-bold text-muted">Email Address</label>
+                    <p class="mb-0"><%= user.email %></p>
+                </div>
+                <div class="mb-3">
+                    <label class="fw-bold text-muted">User ID</label>
+                    <p class="mb-0">#<%= user.id %></p>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="mb-3">
+                    <label class="fw-bold text-muted">Bio</label>
+                    <p class="mb-0 text-muted">
+                        <em>No bio available. Add a bio to tell others about yourself.</em>
+                    </p>
+                </div>
+                <div class="mb-3">
+                    <label class="fw-bold text-muted">Phone Number</label>
+                    <p class="mb-0 text-muted">
+                        <em>Not provided</em>
+                    </p>
+                </div>
+                <div class="mb-3">
+                    <label class="fw-bold text-muted">Location</label>
+                    <p class="mb-0 text-muted">
+                        <em>Not specified</em>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Edit Profile Form -->
+<div class="card shadow mb-4">
+    <div class="card-header bg-success text-white">
+        <h5 class="mb-0">
+            <i class="bi bi-pencil me-2"></i>Edit Profile
+        </h5>
+    </div>
+    <div class="card-body">
+        <form id="editProfileForm">
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label for="firstName" class="form-label">First Name</label>
+                        <input type="text" class="form-control" id="firstName" value="<%= user.name.split(' ')[0] || '' %>" placeholder="Enter your first name">
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label for="lastName" class="form-label">Last Name</label>
+                        <input type="text" class="form-control" id="lastName" value="<%= user.name.split(' ').slice(1).join(' ') || '' %>" placeholder="Enter your last name">
+                    </div>
+                </div>
+            </div>
+            
+            <div class="mb-3">
+                <label for="email" class="form-label">Email Address</label>
+                <input type="email" class="form-control" id="email" value="<%= user.email %>" placeholder="Enter your email address">
+            </div>
+            
+            <div class="mb-3">
+                <label for="bio" class="form-label">Bio</label>
+                <textarea class="form-control" id="bio" rows="4" placeholder="Tell us about yourself..."></textarea>
+                <div class="form-text">Brief description for your profile. Maximum 500 characters.</div>
+            </div>
+            
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label for="phone" class="form-label">Phone Number</label>
+                        <input type="tel" class="form-control" id="phone" placeholder="Enter your phone number">
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label for="location" class="form-label">Location</label>
+                        <input type="text" class="form-control" id="location" placeholder="Enter your location">
+                    </div>
+                </div>
+            </div>
+            
+            <div class="mb-3">
+                <label for="website" class="form-label">Website</label>
+                <input type="url" class="form-control" id="website" placeholder="https://your-website.com">
+            </div>
+            
+            <div class="mb-4">
+                <label for="timezone" class="form-label">Timezone</label>
+                <select class="form-select" id="timezone">
+                    <option value="">Select your timezone</option>
+                    <option value="UTC-12:00">(UTC-12:00) International Date Line West</option>
+                    <option value="UTC-11:00">(UTC-11:00) Coordinated Universal Time-11</option>
+                    <option value="UTC-10:00">(UTC-10:00) Hawaii</option>
+                    <option value="UTC-09:00">(UTC-09:00) Alaska</option>
+                    <option value="UTC-08:00">(UTC-08:00) Pacific Time (US & Canada)</option>
+                    <option value="UTC-07:00">(UTC-07:00) Mountain Time (US & Canada)</option>
+                    <option value="UTC-06:00">(UTC-06:00) Central Time (US & Canada)</option>
+                    <option value="UTC-05:00" selected>(UTC-05:00) Eastern Time (US & Canada)</option>
+                    <option value="UTC-04:00">(UTC-04:00) Atlantic Time (Canada)</option>
+                    <option value="UTC-03:00">(UTC-03:00) Brasilia</option>
+                    <option value="UTC-02:00">(UTC-02:00) Coordinated Universal Time-02</option>
+                    <option value="UTC-01:00">(UTC-01:00) Azores</option>
+                    <option value="UTC+00:00">(UTC+00:00) Dublin, Edinburgh, Lisbon, London</option>
+                    <option value="UTC+01:00">(UTC+01:00) Amsterdam, Berlin, Bern, Rome</option>
+                    <option value="UTC+02:00">(UTC+02:00) Athens, Bucharest, Istanbul</option>
+                </select>
+            </div>
+            
+            <div class="d-flex gap-2">
+                <button type="submit" class="btn btn-primary">
+                    <i class="bi bi-check-lg me-1"></i>Save Changes
+                </button>
+                <button type="reset" class="btn btn-outline-secondary">
+                    <i class="bi bi-arrow-clockwise me-1"></i>Reset
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Contact Information Card -->
+<div class="card shadow mb-4">
+    <div class="card-header bg-info text-white">
+        <h5 class="mb-0">
+            <i class="bi bi-envelope me-2"></i>Contact Information
+        </h5>
+    </div>
+    <div class="card-body">
+        <div class="row">
+            <div class="col-md-6">
+                <div class="mb-3">
+                    <label class="fw-bold text-muted">Primary Email</label>
+                    <p class="mb-0">
+                        <%= user.email %>
+                        <span class="badge bg-success ms-2">Verified</span>
+                    </p>
+                </div>
+                <div class="mb-3">
+                    <label class="fw-bold text-muted">Backup Email</label>
+                    <p class="mb-0 text-muted">
+                        <em>Not configured</em>
+                        <a href="#" class="ms-2 text-decoration-none">Add backup email</a>
+                    </p>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="mb-3">
+                    <label class="fw-bold text-muted">Phone Number</label>
+                    <p class="mb-0 text-muted">
+                        <em>Not provided</em>
+                        <a href="#" class="ms-2 text-decoration-none">Add phone number</a>
+                    </p>
+                </div>
+                <div class="mb-3">
+                    <label class="fw-bold text-muted">SMS Notifications</label>
+                    <p class="mb-0">
+                        <span class="badge bg-secondary">Disabled</span>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Account Security Card -->
+<div class="card shadow">
+    <div class="card-header bg-warning text-dark">
+        <h5 class="mb-0">
+            <i class="bi bi-shield-check me-2"></i>Account Security
+        </h5>
+    </div>
+    <div class="card-body">
+        <div class="row">
+            <div class="col-md-6">
+                <div class="mb-3">
+                    <label class="fw-bold text-muted">Password</label>
+                    <p class="mb-0">
+                        ••••••••••••
+                        <button class="btn btn-sm btn-outline-primary ms-2" type="button">
+                            <i class="bi bi-key me-1"></i>Change Password
+                        </button>
+                    </p>
+                </div>
+                <div class="mb-3">
+                    <label class="fw-bold text-muted">Two-Factor Authentication</label>
+                    <p class="mb-0">
+                        <span class="badge bg-danger">Disabled</span>
+                        <button class="btn btn-sm btn-outline-success ms-2" type="button">
+                            <i class="bi bi-shield-plus me-1"></i>Enable 2FA
+                        </button>
+                    </p>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="mb-3">
+                    <label class="fw-bold text-muted">Last Login</label>
+                    <p class="mb-0"><%= new Date().toLocaleDateString() %> at <%= new Date().toLocaleTimeString() %></p>
+                </div>
+                <div class="mb-3">
+                    <label class="fw-bold text-muted">Login Sessions</label>
+                    <p class="mb-0">
+                        <span class="badge bg-success">1 Active Session</span>
+                        <button class="btn btn-sm btn-outline-secondary ms-2" type="button">
+                            <i class="bi bi-list-ul me-1"></i>View All Sessions
+                        </button>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Avatar Change Modal -->
+<div class="modal fade" id="editAvatarModal" tabindex="-1" aria-labelledby="editAvatarModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="editAvatarModalLabel">Change Profile Photo</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="text-center mb-3">
+                    <div class="avatar-placeholder bg-primary text-white d-flex align-items-center justify-content-center rounded-circle mx-auto" style="width: 120px; height: 120px; font-size: 3rem;">
+                        <%= user.name.charAt(0).toUpperCase() %>
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <label for="avatarFile" class="form-label">Choose a new photo</label>
+                    <input class="form-control" type="file" id="avatarFile" accept="image/*">
+                    <div class="form-text">Supported formats: JPG, PNG, GIF. Maximum size: 2MB.</div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary">
+                    <i class="bi bi-upload me-1"></i>Upload Photo
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Handle form submission
+    const editProfileForm = document.getElementById('editProfileForm');
+    if (editProfileForm) {
+        editProfileForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            // Show success message (dummy implementation)
+            const alertDiv = document.createElement('div');
+            alertDiv.className = 'alert alert-success alert-dismissible fade show';
+            alertDiv.innerHTML = `
+                <i class="bi bi-check-circle me-2"></i>Profile updated successfully! 
+                <small class="text-muted">(This is a demo - changes are not actually saved)</small>
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            `;
+            
+            // Insert alert at the top of the page
+            const firstCard = document.querySelector('.card');
+            if (firstCard) {
+                firstCard.parentNode.insertBefore(alertDiv, firstCard);
+            }
+            
+            // Scroll to top to show the alert
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        });
+    }
+    
+    // Handle avatar file selection
+    const avatarFile = document.getElementById('avatarFile');
+    if (avatarFile) {
+        avatarFile.addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                // Validate file size (2MB limit)
+                if (file.size > 2 * 1024 * 1024) {
+                    alert('File size must be less than 2MB');
+                    this.value = '';
+                    return;
+                }
+                
+                // Validate file type
+                const allowedTypes = ['image/jpeg', 'image/png', 'image/gif'];
+                if (!allowedTypes.includes(file.type)) {
+                    alert('Please select a valid image file (JPG, PNG, or GIF)');
+                    this.value = '';
+                    return;
+                }
+            }
+        });
+    }
+    
+    // Mobile sidebar toggle functionality
+    const sidebarToggle = document.getElementById('sidebarToggle');
+    const sidebar = document.querySelector('.sidebar');
+    const overlay = document.querySelector('.sidebar-overlay');
+    
+    if (sidebarToggle && sidebar) {
+        sidebarToggle.addEventListener('click', function() {
+            sidebar.classList.toggle('show');
+            if (overlay) {
+                overlay.classList.toggle('show');
+            }
+        });
+    }
+    
+    // Close sidebar when clicking overlay on mobile
+    if (overlay) {
+        overlay.addEventListener('click', function() {
+            sidebar.classList.remove('show');
+            overlay.classList.remove('show');
+        });
+    }
+    
+    // Handle responsive behavior
+    function handleResize() {
+        const sidebar = document.querySelector('.sidebar');
+        const overlay = document.querySelector('.sidebar-overlay');
+        
+        if (window.innerWidth >= 992) {
+            // Desktop view - remove mobile classes
+            if (sidebar) sidebar.classList.remove('show');
+            if (overlay) overlay.classList.remove('show');
+        }
+    }
+    
+    // Listen for window resize
+    window.addEventListener('resize', handleResize);
+    
+    // Highlight active menu item based on current page
+    const currentPage = '<%= typeof currentPage !== "undefined" ? currentPage : "profile" %>';
+    const navLinks = document.querySelectorAll('.sidebar-nav .nav-link');
+    
+    navLinks.forEach(link => {
+        if (link.getAttribute('href') === '/dashboard/' + currentPage || 
+            (currentPage === 'profile' && link.getAttribute('href') === '/dashboard/profile')) {
+            link.classList.add('active');
+        }
+    });
+});
+</script>

@@ -1,0 +1,604 @@
+<!-- Settings Header -->
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="h3 mb-0">
+        <i class="bi bi-gear me-2"></i>Settings
+    </h1>
+</div>
+
+<!-- Account Settings Card -->
+<div class="card shadow mb-4">
+    <div class="card-header bg-primary text-white">
+        <h5 class="mb-0">
+            <i class="bi bi-person-gear me-2"></i>Account Settings
+        </h5>
+    </div>
+    <div class="card-body">
+        <form id="accountSettingsForm">
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label for="displayName" class="form-label">Display Name</label>
+                        <input type="text" class="form-control" id="displayName" value="<%= user.name %>" placeholder="Enter your display name">
+                    </div>
+                    <div class="mb-3">
+                        <label for="email" class="form-label">Email Address</label>
+                        <input type="email" class="form-control" id="email" value="<%= user.email %>" placeholder="Enter your email">
+                    </div>
+                    <div class="mb-3">
+                        <label for="timezone" class="form-label">Timezone</label>
+                        <select class="form-select" id="timezone">
+                            <option value="UTC-8" selected>Pacific Time (UTC-8)</option>
+                            <option value="UTC-7">Mountain Time (UTC-7)</option>
+                            <option value="UTC-6">Central Time (UTC-6)</option>
+                            <option value="UTC-5">Eastern Time (UTC-5)</option>
+                            <option value="UTC">UTC</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label for="language" class="form-label">Language</label>
+                        <select class="form-select" id="language">
+                            <option value="en" selected>English</option>
+                            <option value="es">Spanish</option>
+                            <option value="fr">French</option>
+                            <option value="de">German</option>
+                            <option value="ja">Japanese</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Account Status</label>
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" id="accountActive" checked>
+                            <label class="form-check-label" for="accountActive">
+                                Account Active
+                            </label>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Profile Visibility</label>
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" id="profilePublic">
+                            <label class="form-check-label" for="profilePublic">
+                                Make profile public
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Security Settings Card -->
+<div class="card shadow mb-4">
+    <div class="card-header bg-danger text-white">
+        <h5 class="mb-0">
+            <i class="bi bi-shield-lock me-2"></i>Security Settings
+        </h5>
+    </div>
+    <div class="card-body">
+        <form id="securitySettingsForm">
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label class="form-label">Two-Factor Authentication</label>
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" id="twoFactorAuth">
+                            <label class="form-check-label" for="twoFactorAuth">
+                                Enable 2FA
+                            </label>
+                        </div>
+                        <small class="form-text text-muted">Add an extra layer of security to your account</small>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Login Alerts</label>
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" id="loginAlerts" checked>
+                            <label class="form-check-label" for="loginAlerts">
+                                Email me about suspicious login attempts
+                            </label>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <button type="button" class="btn btn-outline-warning">
+                            <i class="bi bi-key me-1"></i>Change Password
+                        </button>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label class="form-label">Session Management</label>
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" id="autoLogout" checked>
+                            <label class="form-check-label" for="autoLogout">
+                                Auto-logout after 30 minutes of inactivity
+                            </label>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Remember Me</label>
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" id="rememberMe" checked>
+                            <label class="form-check-label" for="rememberMe">
+                                Keep me logged in on this device
+                            </label>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <button type="button" class="btn btn-outline-danger" id="logoutAllSessions">
+                            <i class="bi bi-door-closed me-1"></i>Logout All Sessions
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <hr>
+            <div class="row">
+                <div class="col-12">
+                    <h6 class="text-muted mb-3">Connected Devices</h6>
+                    <div class="list-group">
+                        <div class="list-group-item d-flex justify-content-between align-items-center">
+                            <div>
+                                <strong>Current Browser</strong>
+                                <br><small class="text-muted">Chrome on Windows • <%= new Date().toLocaleDateString() %></small>
+                            </div>
+                            <span class="badge bg-success rounded-pill">Active</span>
+                        </div>
+                        <div class="list-group-item d-flex justify-content-between align-items-center">
+                            <div>
+                                <strong>Mobile Device</strong>
+                                <br><small class="text-muted">Safari on iOS • 2 days ago</small>
+                            </div>
+                            <button class="btn btn-sm btn-outline-danger">Revoke</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Notification Preferences Card -->
+<div class="card shadow mb-4">
+    <div class="card-header bg-info text-white">
+        <h5 class="mb-0">
+            <i class="bi bi-bell me-2"></i>Notification Preferences
+        </h5>
+    </div>
+    <div class="card-body">
+        <form id="notificationSettingsForm">
+            <div class="row">
+                <div class="col-md-6">
+                    <h6 class="text-muted mb-3">Email Notifications</h6>
+                    <div class="mb-2">
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" id="emailUpdates" checked>
+                            <label class="form-check-label" for="emailUpdates">
+                                Product updates and announcements
+                            </label>
+                        </div>
+                    </div>
+                    <div class="mb-2">
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" id="emailSecurity" checked>
+                            <label class="form-check-label" for="emailSecurity">
+                                Security alerts and warnings
+                            </label>
+                        </div>
+                    </div>
+                    <div class="mb-2">
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" id="emailNewsletter">
+                            <label class="form-check-label" for="emailNewsletter">
+                                Weekly newsletter
+                            </label>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" id="emailPromotions">
+                            <label class="form-check-label" for="emailPromotions">
+                                Promotional offers
+                            </label>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <h6 class="text-muted mb-3">Push Notifications</h6>
+                    <div class="mb-2">
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" id="pushMessages" checked>
+                            <label class="form-check-label" for="pushMessages">
+                                New messages and updates
+                            </label>
+                        </div>
+                    </div>
+                    <div class="mb-2">
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" id="pushReminders" checked>
+                            <label class="form-check-label" for="pushReminders">
+                                Task reminders
+                            </label>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" id="pushMarketing">
+                            <label class="form-check-label" for="pushMarketing">
+                                Marketing notifications
+                            </label>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="notificationFrequency" class="form-label">Notification Frequency</label>
+                        <select class="form-select" id="notificationFrequency">
+                            <option value="instant" selected>Instant</option>
+                            <option value="hourly">Hourly digest</option>
+                            <option value="daily">Daily digest</option>
+                            <option value="weekly">Weekly digest</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Privacy Settings Card -->
+<div class="card shadow mb-4">
+    <div class="card-header bg-warning text-dark">
+        <h5 class="mb-0">
+            <i class="bi bi-eye-slash me-2"></i>Privacy Settings
+        </h5>
+    </div>
+    <div class="card-body">
+        <form id="privacySettingsForm">
+            <div class="row">
+                <div class="col-md-6">
+                    <h6 class="text-muted mb-3">Data & Analytics</h6>
+                    <div class="mb-2">
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" id="analyticsTracking" checked>
+                            <label class="form-check-label" for="analyticsTracking">
+                                Allow analytics tracking
+                            </label>
+                        </div>
+                        <small class="form-text text-muted">Help us improve by sharing anonymous usage data</small>
+                    </div>
+                    <div class="mb-2">
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" id="personalizedAds">
+                            <label class="form-check-label" for="personalizedAds">
+                                Show personalized advertisements
+                            </label>
+                        </div>
+                        <small class="form-text text-muted">Ads based on your interests and activity</small>
+                    </div>
+                    <div class="mb-3">
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" id="dataSharing">
+                            <label class="form-check-label" for="dataSharing">
+                                Share data with trusted partners
+                            </label>
+                        </div>
+                        <small class="form-text text-muted">Allow approved third parties to access anonymized data</small>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <h6 class="text-muted mb-3">Profile Privacy</h6>
+                    <div class="mb-3">
+                        <label for="profileVisibility" class="form-label">Profile Visibility</label>
+                        <select class="form-select" id="profileVisibility">
+                            <option value="public">Public - Anyone can see</option>
+                            <option value="friends" selected>Friends only</option>
+                            <option value="private">Private - Only me</option>
+                        </select>
+                    </div>
+                    <div class="mb-2">
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" id="showEmail">
+                            <label class="form-check-label" for="showEmail">
+                                Show email address on profile
+                            </label>
+                        </div>
+                    </div>
+                    <div class="mb-2">
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" id="showActivity" checked>
+                            <label class="form-check-label" for="showActivity">
+                                Show recent activity
+                            </label>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" id="allowMessages" checked>
+                            <label class="form-check-label" for="allowMessages">
+                                Allow others to send me messages
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <hr>
+            <div class="row">
+                <div class="col-12">
+                    <h6 class="text-muted mb-3">Data Management</h6>
+                    <div class="d-flex gap-2 flex-wrap">
+                        <button type="button" class="btn btn-outline-info">
+                            <i class="bi bi-download me-1"></i>Download My Data
+                        </button>
+                        <button type="button" class="btn btn-outline-warning">
+                            <i class="bi bi-trash me-1"></i>Delete Account
+                        </button>
+                        <button type="button" class="btn btn-outline-secondary">
+                            <i class="bi bi-file-text me-1"></i>Privacy Policy
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Action Buttons -->
+<div class="card shadow">
+    <div class="card-body">
+        <div class="d-flex justify-content-between align-items-center">
+            <div>
+                <small class="text-muted">
+                    <i class="bi bi-info-circle me-1"></i>
+                    Settings are automatically saved. Changes may take a few minutes to take effect.
+                </small>
+            </div>
+            <div class="d-flex gap-2">
+                <button type="button" class="btn btn-outline-secondary" id="resetToDefaults">
+                    <i class="bi bi-arrow-clockwise me-1"></i>Reset to Defaults
+                </button>
+                <button type="button" class="btn btn-success" id="saveChanges">
+                    <i class="bi bi-check-lg me-1"></i>Save Changes
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Mobile Sidebar Overlay -->
+<div class="sidebar-overlay d-lg-none" id="sidebarOverlay"></div>
+
+<!-- JavaScript for Settings Functionality -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Mobile responsive sidebar functionality
+    const sidebarToggle = document.getElementById('sidebarToggle');
+    const sidebar = document.querySelector('.sidebar');
+    const sidebarOverlay = document.getElementById('sidebarOverlay');
+    const mainContent = document.querySelector('.main-content');
+
+    // Toggle sidebar on mobile
+    if (sidebarToggle) {
+        sidebarToggle.addEventListener('click', function() {
+            sidebar.classList.toggle('show');
+            sidebarOverlay.classList.toggle('show');
+            document.body.classList.toggle('sidebar-open');
+        });
+    }
+
+    // Close sidebar when clicking overlay
+    if (sidebarOverlay) {
+        sidebarOverlay.addEventListener('click', function() {
+            sidebar.classList.remove('show');
+            sidebarOverlay.classList.remove('show');
+            document.body.classList.remove('sidebar-open');
+        });
+    }
+
+    // Active menu item highlighting
+    const currentPath = window.location.pathname;
+    const navLinks = document.querySelectorAll('.sidebar-nav .nav-link');
+    
+    navLinks.forEach(link => {
+        if (link.getAttribute('href') === currentPath) {
+            link.classList.add('active');
+        } else {
+            link.classList.remove('active');
+        }
+    });
+
+    // Settings form handlers
+    const saveChangesBtn = document.getElementById('saveChanges');
+    const resetToDefaultsBtn = document.getElementById('resetToDefaults');
+    const logoutAllSessionsBtn = document.getElementById('logoutAllSessions');
+
+    // Save changes functionality
+    if (saveChangesBtn) {
+        saveChangesBtn.addEventListener('click', function() {
+            // Show loading state
+            this.innerHTML = '<i class="bi bi-arrow-repeat me-1 spin"></i>Saving...';
+            this.disabled = true;
+
+            // Simulate save operation
+            setTimeout(() => {
+                this.innerHTML = '<i class="bi bi-check-lg me-1"></i>Saved!';
+                this.classList.remove('btn-success');
+                this.classList.add('btn-outline-success');
+                
+                setTimeout(() => {
+                    this.innerHTML = '<i class="bi bi-check-lg me-1"></i>Save Changes';
+                    this.classList.remove('btn-outline-success');
+                    this.classList.add('btn-success');
+                    this.disabled = false;
+                }, 2000);
+            }, 1500);
+        });
+    }
+
+    // Reset to defaults functionality
+    if (resetToDefaultsBtn) {
+        resetToDefaultsBtn.addEventListener('click', function() {
+            if (confirm('Are you sure you want to reset all settings to their default values? This action cannot be undone.')) {
+                // Reset all form inputs to their default states
+                const checkboxes = document.querySelectorAll('input[type="checkbox"]');
+                const selects = document.querySelectorAll('select');
+                const textInputs = document.querySelectorAll('input[type="text"], input[type="email"]');
+
+                checkboxes.forEach(checkbox => {
+                    // Reset to default checked state based on element ID
+                    const defaultChecked = ['accountActive', 'loginAlerts', 'autoLogout', 'rememberMe', 'emailUpdates', 'emailSecurity', 'pushMessages', 'pushReminders', 'showActivity', 'allowMessages', 'analyticsTracking'];
+                    checkbox.checked = defaultChecked.includes(checkbox.id);
+                });
+
+                selects.forEach(select => {
+                    select.selectedIndex = 0;
+                });
+
+                textInputs.forEach(input => {
+                    if (input.id !== 'displayName' && input.id !== 'email') {
+                        input.value = '';
+                    }
+                });
+
+                // Show confirmation
+                alert('Settings have been reset to default values.');
+            }
+        });
+    }
+
+    // Logout all sessions functionality
+    if (logoutAllSessionsBtn) {
+        logoutAllSessionsBtn.addEventListener('click', function() {
+            if (confirm('Are you sure you want to logout from all devices? You will need to login again on all your devices.')) {
+                // Show loading state
+                this.innerHTML = '<i class="bi bi-arrow-repeat me-1 spin"></i>Logging out...';
+                this.disabled = true;
+
+                // Simulate logout process
+                setTimeout(() => {
+                    // Redirect to logout route
+                    window.location.href = '/logout';
+                }, 1500);
+            }
+        });
+    }
+
+    // Complete logout functionality
+    const logoutLinks = document.querySelectorAll('a[href="/logout"], button[onclick*="logout"]');
+    logoutLinks.forEach(link => {
+        link.addEventListener('click', function(e) {
+            e.preventDefault();
+            
+            // Clear any client-side data
+            localStorage.clear();
+            sessionStorage.clear();
+            
+            // Make logout request
+            fetch('/logout', {
+                method: 'POST',
+                credentials: 'same-origin',
+                headers: {
+                    'Content-Type': 'application/json',
+                }
+            })
+            .then(response => {
+                // Redirect to home page regardless of response
+                window.location.href = '/';
+            })
+            .catch(() => {
+                // Even if request fails, redirect to home
+                window.location.href = '/';
+            });
+        });
+    });
+
+    // Auto-save functionality for form changes
+    const settingsForms = document.querySelectorAll('#accountSettingsForm, #securitySettingsForm, #notificationSettingsForm, #privacySettingsForm');
+    
+    settingsForms.forEach(form => {
+        form.addEventListener('change', function(e) {
+            // Show auto-save indicator
+            const indicator = document.createElement('small');
+            indicator.className = 'text-success ms-2';
+            indicator.innerHTML = '<i class="bi bi-check-circle-fill me-1"></i>Auto-saved';
+            
+            // Remove existing indicators
+            form.querySelectorAll('.text-success').forEach(el => el.remove());
+            
+            // Add indicator near the changed element
+            e.target.parentNode.appendChild(indicator);
+            
+            // Remove indicator after 3 seconds
+            setTimeout(() => {
+                if (indicator.parentNode) {
+                    indicator.remove();
+                }
+            }, 3000);
+        });
+    });
+});
+
+// CSS for mobile responsiveness and animations
+const style = document.createElement('style');
+style.textContent = `
+    .spin {
+        animation: spin 1s linear infinite;
+    }
+    
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+
+    @media (max-width: 991.98px) {
+        .sidebar {
+            transform: translateX(-100%);
+            transition: transform 0.3s ease-in-out;
+        }
+        
+        .sidebar.show {
+            transform: translateX(0);
+        }
+        
+        .sidebar-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 999;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease-in-out;
+        }
+        
+        .sidebar-overlay.show {
+            opacity: 1;
+            visibility: visible;
+        }
+        
+        .main-content {
+            margin-left: 0;
+        }
+        
+        body.sidebar-open {
+            overflow: hidden;
+        }
+    }
+
+    /* Responsive card layouts */
+    @media (max-width: 767.98px) {
+        .card-body .row > .col-md-6 {
+            margin-bottom: 2rem;
+        }
+        
+        .d-flex.gap-2.flex-wrap {
+            flex-direction: column;
+        }
+        
+        .d-flex.gap-2.flex-wrap > * {
+            margin-bottom: 0.5rem;
+        }
+    }
+`;
+document.head.appendChild(style);
+</script>
