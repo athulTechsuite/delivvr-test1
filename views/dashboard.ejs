@@ -1,138 +1,116 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard - Express Auth App</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
-</head>
-<body>
-    <!-- Navigation -->
-    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
-        <div class="container">
-            <a class="navbar-brand" href="/">Express Auth</a>
-            <div class="navbar-nav ms-auto">
-                <span class="navbar-text me-3">Welcome, <%= user.name %>!</span>
-                <a class="nav-link" href="/logout">Logout</a>
+<!-- Welcome Message -->
+<div class="alert alert-success mb-4" role="alert">
+    <h4 class="alert-heading">
+        <i class="bi bi-house-heart me-2"></i>Welcome back, <%= user.name %>!
+    </h4>
+    <p class="mb-0">You have successfully accessed your dashboard. Manage your account and explore your options below.</p>
+</div>
+
+<!-- User Profile Information Card -->
+<div class="card shadow mb-4">
+    <div class="card-header bg-primary text-white">
+        <h5 class="mb-0">
+            <i class="bi bi-person-circle me-2"></i>Profile Information
+        </h5>
+    </div>
+    <div class="card-body">
+        <div class="row">
+            <div class="col-md-6">
+                <table class="table table-borderless">
+                    <tr>
+                        <td class="fw-bold text-muted">Name:</td>
+                        <td><%= user.name %></td>
+                    </tr>
+                    <tr>
+                        <td class="fw-bold text-muted">Email:</td>
+                        <td><%= user.email %></td>
+                    </tr>
+                </table>
+            </div>
+            <div class="col-md-6">
+                <table class="table table-borderless">
+                    <tr>
+                        <td class="fw-bold text-muted">User ID:</td>
+                        <td><%= user.id %></td>
+                    </tr>
+                    <tr>
+                        <td class="fw-bold text-muted">Member Since:</td>
+                        <td><%= new Date(user.created_at).toLocaleDateString() %></td>
+                    </tr>
+                </table>
             </div>
         </div>
-    </nav>
+    </div>
+</div>
 
-    <!-- Main Content -->
-    <div class="container mt-5">
-        <div class="row justify-content-center">
-            <div class="col-md-8">
-                <div class="card shadow">
-                    <div class="card-header bg-success text-white">
-                        <h3 class="mb-0">
-                            <i class="fas fa-tachometer-alt me-2"></i>Dashboard
-                        </h3>
-                    </div>
-                    <div class="card-body">
-                        <!-- Welcome Message -->
-                        <div class="alert alert-success" role="alert">
-                            <h4 class="alert-heading">Welcome to your dashboard!</h4>
-                            <p>You have successfully logged in to the Express Auth application.</p>
-                        </div>
-
-                        <!-- User Profile Information -->
-                        <div class="row">
-                            <div class="col-md-6">
-                                <div class="card mb-3">
-                                    <div class="card-header">
-                                        <h5 class="mb-0">Profile Information</h5>
-                                    </div>
-                                    <div class="card-body">
-                                        <table class="table table-borderless">
-                                            <tr>
-                                                <td><strong>Name:</strong></td>
-                                                <td><%= user.name %></td>
-                                            </tr>
-                                            <tr>
-                                                <td><strong>Email:</strong></td>
-                                                <td><%= user.email %></td>
-                                            </tr>
-                                            <tr>
-                                                <td><strong>User ID:</strong></td>
-                                                <td><%= user.id %></td>
-                                            </tr>
-                                            <tr>
-                                                <td><strong>Member Since:</strong></td>
-                                                <td><%= new Date(user.created_at).toLocaleDateString() %></td>
-                                            </tr>
-                                        </table>
-                                    </div>
-                                </div>
-                            </div>
-                            
-                            <div class="col-md-6">
-                                <div class="card mb-3">
-                                    <div class="card-header">
-                                        <h5 class="mb-0">Quick Actions</h5>
-                                    </div>
-                                    <div class="card-body">
-                                        <div class="d-grid gap-2">
-                                            <button class="btn btn-outline-primary" type="button">
-                                                Edit Profile
-                                            </button>
-                                            <button class="btn btn-outline-secondary" type="button">
-                                                Change Password
-                                            </button>
-                                            <button class="btn btn-outline-info" type="button">
-                                                Account Settings
-                                            </button>
-                                            <a href="/logout" class="btn btn-outline-danger">
-                                                Logout
-                                            </a>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Session Info -->
-                        <div class="card mt-3">
-                            <div class="card-header">
-                                <h5 class="mb-0">Session Information</h5>
-                            </div>
-                            <div class="card-body">
-                                <div class="row">
-                                    <div class="col-md-6">
-                                        <small class="text-muted">
-                                            <strong>Login Time:</strong> <%= new Date().toLocaleString() %>
-                                        </small>
-                                    </div>
-                                    <div class="col-md-6">
-                                        <small class="text-muted">
-                                            <strong>Session Status:</strong> <span class="text-success">Active</span>
-                                        </small>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Navigation Back -->
-                        <div class="mt-4 text-center">
-                            <a href="/" class="btn btn-secondary">
-                                <i class="fas fa-home me-2"></i>Back to Home
-                            </a>
-                        </div>
-                    </div>
+<!-- Quick Actions Section -->
+<div class="card shadow mb-4">
+    <div class="card-header bg-success text-white">
+        <h5 class="mb-0">
+            <i class="bi bi-lightning me-2"></i>Quick Actions
+        </h5>
+    </div>
+    <div class="card-body">
+        <div class="row g-3">
+            <div class="col-md-6">
+                <div class="d-grid gap-2">
+                    <button class="btn btn-outline-primary" type="button">
+                        <i class="bi bi-pencil me-2"></i>Edit Profile
+                    </button>
+                    <button class="btn btn-outline-secondary" type="button">
+                        <i class="bi bi-shield-lock me-2"></i>Change Password
+                    </button>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="d-grid gap-2">
+                    <button class="btn btn-outline-info" type="button">
+                        <i class="bi bi-gear me-2"></i>Account Settings
+                    </button>
+                    <button class="btn btn-outline-warning" type="button">
+                        <i class="bi bi-bell me-2"></i>Notifications
+                    </button>
                 </div>
             </div>
         </div>
     </div>
+</div>
 
-    <!-- Footer -->
-    <footer class="mt-5 py-4 bg-light text-center">
-        <div class="container">
-            <small class="text-muted">
-                &copy; 2024 Express Auth App. Built with Express.js, EJS, and Bootstrap.
-            </small>
+<!-- Session Information -->
+<div class="card shadow">
+    <div class="card-header bg-info text-white">
+        <h5 class="mb-0">
+            <i class="bi bi-clock-history me-2"></i>Session Information
+        </h5>
+    </div>
+    <div class="card-body">
+        <div class="row">
+            <div class="col-md-6">
+                <p class="mb-2">
+                    <span class="fw-bold text-muted">Login Time:</span><br>
+                    <small class="text-muted"><%= new Date().toLocaleString() %></small>
+                </p>
+            </div>
+            <div class="col-md-6">
+                <p class="mb-2">
+                    <span class="fw-bold text-muted">Session Status:</span><br>
+                    <small><span class="badge bg-success">Active</span></small>
+                </p>
+            </div>
         </div>
-    </footer>
-
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="https://kit.fontawesome.com/your-font-awesome-kit.js" crossorigin="anonymous"></script>
-</body>
-</html>
+        <div class="row mt-3">
+            <div class="col-md-6">
+                <p class="mb-0">
+                    <span class="fw-bold text-muted">Account Type:</span><br>
+                    <small class="text-muted">Standard User</small>
+                </p>
+            </div>
+            <div class="col-md-6">
+                <p class="mb-0">
+                    <span class="fw-bold text-muted">Last Activity:</span><br>
+                    <small class="text-muted">Just now</small>
+                </p>
+            </div>
+        </div>
+    </div>
+</div>

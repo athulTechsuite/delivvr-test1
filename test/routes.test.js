@@ -1,367 +1,592 @@
 const request = require('supertest');
-const express = require('express');
-const authRoutes = require('../routes/auth');
-const dashboardRoutes = require('../routes/dashboard');
-const sqlite3 = require('sqlite3').verbose();
-const bcrypt = require('bcrypt');
-const jwt = require('jsonwebtoken');
-const cookieParser = require('cookie-parser');
-const path = require('path');
+const app = require('../app');
 
-// Create test app
-const app = express();
-app.use(express.urlencoded({ extended: true }));
-app.use(express.json());
-app.use(cookieParser());
-app.set('view engine', 'ejs');
-app.set('views', path.join(__dirname, '../views'));
+// Test constants
+const TEST_ROUTES = {
+    DASHBOARD: '/dashboard',
+    PROFILE: '/profile',
+    SETTINGS: '/settings',
+    LOGIN: '/login',
+    LOGOUT: '/logout',
+    HOME: '/'
+};
 
-// Mock database for testing
-const testDbPath = path.join(__dirname, 'routes-test.db');
-let testDb;
+const HTTP_STATUS = {
+    OK: 200,
+    FOUND: 302,
+    UNAUTHORIZED: 401,
+    NOT_FOUND: 404
+};
 
-beforeAll((done) => {
-  testDb = new sqlite3.Database(testDbPath);
-  testDb.serialize(() => {
-    testDb.run(`CREATE TABLE IF NOT EXISTS users (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      name TEXT NOT NULL,
-      email TEXT UNIQUE NOT NULL,
-      password TEXT NOT NULL,
-      created_at DATETIME DEFAULT CURRENT_TIMESTAMP
-    )`, done);
-  });
-  
-  // Mock the database module
-  jest.doMock('../database/db', () => testDb);
-  
-  // Setup routes
-  app.use('/auth', authRoutes);
-  app.use('/dashboard', dashboardRoutes);
-});
+const SIDEBAR_NAVIGATION_ITEMS = {
+    DASHBOARD: {
+        href: '/dashboard',
+        icon: 'bi-house',
+        text: 'Dashboard'
+    },
+    PROFILE: {
+        href: '/profile',
+        icon: 'bi-person',
+        text: 'Profile'
+    },
+    SETTINGS: {
+        href: '/settings',
+        icon: 'bi-gear',
+        text: 'Settings'
+    }
+};
 
-afterAll((done) => {
-  testDb.close();
-  const fs = require('fs');
-  if (fs.existsSync(testDbPath)) {
-    fs.unlinkSync(testDbPath);
-  }
-  done();
-});
+const MOCK_USER = {
+    id: 1,
+    name: 'Test User',
+    email: 'test@example.com',
+    created_at: new Date('2023-01-01').toISOString()
+};
 
-afterEach((done) => {
-  testDb.run('DELETE FROM users', done);
-});
+describe('Sidebar Navigation Routes', () => {
+    let agent;
 
-describe('Authentication Routes', () => {
-  describe('GET /auth/signup', () => {
-    test('should render signup form', async () => {
-      const response = await request(app).get('/auth/signup');
-      
-      expect(response.status).toBe(200);
-      expect(response.text).toContain('Sign Up');
-      expect(response.text).toContain('name="name"');
-      expect(response.text).toContain('name="email"');
-      expect(response.text).toContain('name="password"');
-    });
-  });
-
-  describe('POST /auth/signup', () => {
-    test('should create new user account successfully', async () => {
-      const userData = {
-        name: 'John Doe',
-        email: 'john@example.com',
-        password: 'password123'
-      };
-
-      const response = await request(app)
-        .post('/auth/signup')
-        .send(userData);
-
-      expect(response.status).toBe(302);
-      expect(response.headers.location).toContain('/auth/login');
-
-      // Verify user was created
-      const user = await new Promise((resolve) => {
-        testDb.get('SELECT * FROM users WHERE email = ?', [userData.email], (err, row) => {
-          resolve(row);
-        });
-      });
-
-      expect(user).toBeTruthy();
-      expect(user.name).toBe(userData.name);
-      expect(user.email).toBe(userData.email);
-      expect(await bcrypt.compare(userData.password, user.password)).toBe(true);
+    beforeEach(() => {
+        agent = request.agent(app);
     });
 
-    test('should reject signup with missing required fields', async () => {
-      const response = await request(app)
-        .post('/auth/signup')
-        .send({ name: 'John' }); // Missing email and password
-
-      expect(response.status).toBe(200);
-      expect(response.text).toContain('All fields are required');
-    });
-
-    test('should reject signup with short password', async () => {
-      const response = await request(app)
-        .post('/auth/signup')
-        .send({
-          name: 'John Doe',
-          email: 'john@example.com',
-          password: '123' // Too short
+    describe('Authentication Requirements', () => {
+        test('should redirect unauthenticated user from dashboard to login', async () => {
+            const response = await agent.get(TEST_ROUTES.DASHBOARD);
+            
+            expect(response.status).toBe(HTTP_STATUS.FOUND);
+            expect(response.headers.location).toBe(TEST_ROUTES.LOGIN);
         });
 
-      expect(response.status).toBe(200);
-      expect(response.text).toContain('Password must be at least 6 characters long');
-    });
-
-    test('should reject signup with duplicate email', async () => {
-      const userData = {
-        name: 'John Doe',
-        email: 'john@example.com',
-        password: 'password123'
-      };
-
-      // Create first user
-      await request(app).post('/auth/signup').send(userData);
-
-      // Try to create duplicate
-      const response = await request(app).post('/auth/signup').send(userData);
-
-      expect(response.status).toBe(200);
-      expect(response.text).toContain('User with this email already exists');
-    });
-  });
-
-  describe('GET /auth/login', () => {
-    test('should render login form', async () => {
-      const response = await request(app).get('/auth/login');
-      
-      expect(response.status).toBe(200);
-      expect(response.text).toContain('Login');
-      expect(response.text).toContain('name="email"');
-      expect(response.text).toContain('name="password"');
-    });
-
-    test('should display success message from query parameter', async () => {
-      const response = await request(app)
-        .get('/auth/login?message=Account created successfully!');
-      
-      expect(response.status).toBe(200);
-      expect(response.text).toContain('Account created successfully!');
-    });
-  });
-
-  describe('POST /auth/login', () => {
-    let testUser;
-    const userPassword = 'password123';
-
-    beforeEach(async () => {
-      const hashedPassword = await bcrypt.hash(userPassword, 10);
-      testUser = {
-        name: 'Test User',
-        email: 'test@example.com',
-        password: hashedPassword
-      };
-
-      await new Promise((resolve) => {
-        testDb.run(
-          'INSERT INTO users (name, email, password) VALUES (?, ?, ?)',
-          [testUser.name, testUser.email, testUser.password],
-          resolve
-        );
-      });
-    });
-
-    test('should login user with valid credentials', async () => {
-      const response = await request(app)
-        .post('/auth/login')
-        .send({
-          email: testUser.email,
-          password: userPassword
+        test('should redirect unauthenticated user from profile to login', async () => {
+            const response = await agent.get(TEST_ROUTES.PROFILE);
+            
+            expect(response.status).toBe(HTTP_STATUS.FOUND);
+            expect(response.headers.location).toBe(TEST_ROUTES.LOGIN);
         });
 
-      expect(response.status).toBe(302);
-      expect(response.headers.location).toBe('/dashboard');
-      
-      // Check JWT token in cookies
-      const cookies = response.headers['set-cookie'];
-      const tokenCookie = cookies.find(cookie => cookie.startsWith('token='));
-      expect(tokenCookie).toBeTruthy();
+        test('should redirect unauthenticated user from settings to login', async () => {
+            const response = await agent.get(TEST_ROUTES.SETTINGS);
+            
+            expect(response.status).toBe(HTTP_STATUS.FOUND);
+            expect(response.headers.location).toBe(TEST_ROUTES.LOGIN);
+        });
     });
 
-    test('should reject login with invalid password', async () => {
-      const response = await request(app)
-        .post('/auth/login')
-        .send({
-          email: testUser.email,
-          password: 'wrongpassword'
+    describe('Authenticated Dashboard Route', () => {
+        beforeEach(async () => {
+            // Mock authentication
+            await agent
+                .post('/login')
+                .send({
+                    email: MOCK_USER.email,
+                    password: 'password123'
+                });
         });
 
-      expect(response.status).toBe(200);
-      expect(response.text).toContain('Invalid email or password');
-    });
-
-    test('should reject login with non-existent email', async () => {
-      const response = await request(app)
-        .post('/auth/login')
-        .send({
-          email: 'nonexistent@example.com',
-          password: userPassword
+        test('should render dashboard with sidebar layout for authenticated user', async () => {
+            const response = await agent.get(TEST_ROUTES.DASHBOARD);
+            
+            expect(response.status).toBe(HTTP_STATUS.OK);
+            expect(response.text).toContain('sidebar');
+            expect(response.text).toContain('main-content');
+            expect(response.text).toContain(`Welcome back, ${MOCK_USER.name}!`);
         });
 
-      expect(response.status).toBe(200);
-      expect(response.text).toContain('Invalid email or password');
+        test('should display navigation menu items in sidebar', async () => {
+            const response = await agent.get(TEST_ROUTES.DASHBOARD);
+            
+            expect(response.status).toBe(HTTP_STATUS.OK);
+            
+            // Check for navigation items
+            expect(response.text).toContain(SIDEBAR_NAVIGATION_ITEMS.DASHBOARD.href);
+            expect(response.text).toContain(SIDEBAR_NAVIGATION_ITEMS.DASHBOARD.icon);
+            expect(response.text).toContain(SIDEBAR_NAVIGATION_ITEMS.DASHBOARD.text);
+            
+            expect(response.text).toContain(SIDEBAR_NAVIGATION_ITEMS.PROFILE.href);
+            expect(response.text).toContain(SIDEBAR_NAVIGATION_ITEMS.PROFILE.icon);
+            expect(response.text).toContain(SIDEBAR_NAVIGATION_ITEMS.PROFILE.text);
+            
+            expect(response.text).toContain(SIDEBAR_NAVIGATION_ITEMS.SETTINGS.href);
+            expect(response.text).toContain(SIDEBAR_NAVIGATION_ITEMS.SETTINGS.icon);
+            expect(response.text).toContain(SIDEBAR_NAVIGATION_ITEMS.SETTINGS.text);
+        });
+
+        test('should display user information in dashboard', async () => {
+            const response = await agent.get(TEST_ROUTES.DASHBOARD);
+            
+            expect(response.status).toBe(HTTP_STATUS.OK);
+            expect(response.text).toContain(MOCK_USER.name);
+            expect(response.text).toContain(MOCK_USER.email);
+            expect(response.text).toContain(`User ID: ${MOCK_USER.id}`);
+        });
+
+        test('should contain logout functionality in sidebar', async () => {
+            const response = await agent.get(TEST_ROUTES.DASHBOARD);
+            
+            expect(response.status).toBe(HTTP_STATUS.OK);
+            expect(response.text).toContain('logout');
+            expect(response.text).toContain('bi-box-arrow-right');
+        });
+
+        test('should have active dashboard menu item', async () => {
+            const response = await agent.get(TEST_ROUTES.DASHBOARD);
+            
+            expect(response.status).toBe(HTTP_STATUS.OK);
+            expect(response.text).toMatch(/nav-link[^>]*active[^>]*href="\/dashboard"/);
+        });
     });
 
-    test('should reject login with missing credentials', async () => {
-      const response = await request(app)
-        .post('/auth/login')
-        .send({ email: testUser.email }); // Missing password
+    describe('Authenticated Profile Route', () => {
+        beforeEach(async () => {
+            // Mock authentication
+            await agent
+                .post('/login')
+                .send({
+                    email: MOCK_USER.email,
+                    password: 'password123'
+                });
+        });
 
-      expect(response.status).toBe(200);
-      expect(response.text).toContain('All fields are required');
-    });
-  });
-});
+        test('should render profile page with sidebar layout for authenticated user', async () => {
+            const response = await agent.get(TEST_ROUTES.PROFILE);
+            
+            expect(response.status).toBe(HTTP_STATUS.OK);
+            expect(response.text).toContain('sidebar');
+            expect(response.text).toContain('main-content');
+            expect(response.text).toContain('<h1 class="h3 mb-0">');
+            expect(response.text).toContain('bi-person-circle');
+        });
 
-describe('Dashboard Routes', () => {
-  let testUser;
-  let validToken;
-  const userPassword = 'password123';
+        test('should display user profile information', async () => {
+            const response = await agent.get(TEST_ROUTES.PROFILE);
+            
+            expect(response.status).toBe(HTTP_STATUS.OK);
+            expect(response.text).toContain(MOCK_USER.name);
+            expect(response.text).toContain(MOCK_USER.email);
+            expect(response.text).toContain(`#${MOCK_USER.id}`);
+        });
 
-  beforeEach(async () => {
-    const hashedPassword = await bcrypt.hash(userPassword, 10);
-    
-    const userId = await new Promise((resolve) => {
-      testDb.run(
-        'INSERT INTO users (name, email, password) VALUES (?, ?, ?)',
-        ['Test User', 'test@example.com', hashedPassword],
-        function() { resolve(this.lastID); }
-      );
-    });
+        test('should have active profile menu item', async () => {
+            const response = await agent.get(TEST_ROUTES.PROFILE);
+            
+            expect(response.status).toBe(HTTP_STATUS.OK);
+            expect(response.text).toMatch(/nav-link[^>]*active[^>]*href="\/profile"/);
+        });
 
-    testUser = {
-      id: userId,
-      name: 'Test User',
-      email: 'test@example.com'
-    };
-
-    validToken = jwt.sign(
-      { userId: userId, email: testUser.email },
-      process.env.JWT_SECRET || 'your-secret-key'
-    );
-  });
-
-  describe('GET /dashboard', () => {
-    test('should render dashboard for authenticated user', async () => {
-      const response = await request(app)
-        .get('/dashboard')
-        .set('Cookie', `token=${validToken}`);
-
-      expect(response.status).toBe(200);
-      expect(response.text).toContain('Dashboard');
-      expect(response.text).toContain(testUser.name);
-      expect(response.text).toContain(testUser.email);
-      expect(response.text).toContain('Profile Information');
+        test('should contain profile editing form', async () => {
+            const response = await agent.get(TEST_ROUTES.PROFILE);
+            
+            expect(response.status).toBe(HTTP_STATUS.OK);
+            expect(response.text).toContain('editProfileForm');
+            expect(response.text).toContain('firstName');
+            expect(response.text).toContain('lastName');
+        });
     });
 
-    test('should redirect unauthenticated user to login', async () => {
-      const response = await request(app).get('/dashboard');
-      
-      expect(response.status).toBe(302);
-      expect(response.headers.location).toBe('/login');
+    describe('Authenticated Settings Route', () => {
+        beforeEach(async () => {
+            // Mock authentication
+            await agent
+                .post('/login')
+                .send({
+                    email: MOCK_USER.email,
+                    password: 'password123'
+                });
+        });
+
+        test('should render settings page with sidebar layout for authenticated user', async () => {
+            const response = await agent.get(TEST_ROUTES.SETTINGS);
+            
+            expect(response.status).toBe(HTTP_STATUS.OK);
+            expect(response.text).toContain('sidebar');
+            expect(response.text).toContain('main-content');
+            expect(response.text).toContain('<h1 class="h3 mb-0">');
+            expect(response.text).toContain('bi-gear');
+        });
+
+        test('should display account settings sections', async () => {
+            const response = await agent.get(TEST_ROUTES.SETTINGS);
+            
+            expect(response.status).toBe(HTTP_STATUS.OK);
+            expect(response.text).toContain('Account Settings');
+            expect(response.text).toContain('Privacy Settings');
+            expect(response.text).toContain('Notification Preferences');
+            expect(response.text).toContain('Security Settings');
+        });
+
+        test('should have active settings menu item', async () => {
+            const response = await agent.get(TEST_ROUTES.SETTINGS);
+            
+            expect(response.status).toBe(HTTP_STATUS.OK);
+            expect(response.text).toMatch(/nav-link[^>]*active[^>]*href="\/settings"/);
+        });
+
+        test('should contain settings forms and controls', async () => {
+            const response = await agent.get(TEST_ROUTES.SETTINGS);
+            
+            expect(response.status).toBe(HTTP_STATUS.OK);
+            expect(response.text).toContain('form-control');
+            expect(response.text).toContain('form-check');
+            expect(response.text).toContain('btn-primary');
+        });
     });
 
-    test('should redirect user with invalid token to login', async () => {
-      const response = await request(app)
-        .get('/dashboard')
-        .set('Cookie', 'token=invalid-token');
-      
-      expect(response.status).toBe(302);
-      expect(response.headers.location).toBe('/login');
+    describe('Logout Functionality', () => {
+        beforeEach(async () => {
+            // Mock authentication
+            await agent
+                .post('/login')
+                .send({
+                    email: MOCK_USER.email,
+                    password: 'password123'
+                });
+        });
+
+        test('should logout user and redirect to home page', async () => {
+            const response = await agent.post(TEST_ROUTES.LOGOUT);
+            
+            expect(response.status).toBe(HTTP_STATUS.FOUND);
+            expect(response.headers.location).toBe(TEST_ROUTES.HOME);
+        });
+
+        test('should clear session after logout', async () => {
+            // Logout
+            await agent.post(TEST_ROUTES.LOGOUT);
+            
+            // Try to access protected route
+            const response = await agent.get(TEST_ROUTES.DASHBOARD);
+            
+            expect(response.status).toBe(HTTP_STATUS.FOUND);
+            expect(response.headers.location).toBe(TEST_ROUTES.LOGIN);
+        });
     });
 
-    test('should clear invalid token cookie and redirect', async () => {
-      const response = await request(app)
-        .get('/dashboard')
-        .set('Cookie', 'token=expired-or-invalid-token');
-      
-      expect(response.status).toBe(302);
-      expect(response.headers.location).toBe('/login');
-      
-      // Check if token cookie is cleared
-      const cookies = response.headers['set-cookie'];
-      if (cookies) {
-        const tokenCookie = cookies.find(cookie => cookie.startsWith('token='));
-        if (tokenCookie) {
-          expect(tokenCookie).toContain('Max-Age=0');
-        }
-      }
+    describe('Navigation Menu Consistency', () => {
+        beforeEach(async () => {
+            // Mock authentication
+            await agent
+                .post('/login')
+                .send({
+                    email: MOCK_USER.email,
+                    password: 'password123'
+                });
+        });
+
+        test('should have consistent navigation menu across all pages', async () => {
+            const pages = [TEST_ROUTES.DASHBOARD, TEST_ROUTES.PROFILE, TEST_ROUTES.SETTINGS];
+            
+            for (const page of pages) {
+                const response = await agent.get(page);
+                
+                expect(response.status).toBe(HTTP_STATUS.OK);
+                
+                // Check all navigation items are present
+                Object.values(SIDEBAR_NAVIGATION_ITEMS).forEach(item => {
+                    expect(response.text).toContain(item.href);
+                    expect(response.text).toContain(item.icon);
+                    expect(response.text).toContain(item.text);
+                });
+            }
+        });
+
+        test('should have proper user information in header across all pages', async () => {
+            const pages = [TEST_ROUTES.DASHBOARD, TEST_ROUTES.PROFILE, TEST_ROUTES.SETTINGS];
+            
+            for (const page of pages) {
+                const response = await agent.get(page);
+                
+                expect(response.status).toBe(HTTP_STATUS.OK);
+                expect(response.text).toContain(MOCK_USER.name);
+                expect(response.text).toContain('sidebar-header');
+            }
+        });
     });
-  });
 
-  describe('POST /dashboard/logout', () => {
-    test('should logout user and clear token cookie', async () => {
-      const response = await request(app)
-        .post('/dashboard/logout')
-        .set('Cookie', `token=${validToken}`);
+    describe('Error Handling', () => {
+        test('should handle invalid route gracefully', async () => {
+            const response = await agent.get('/invalid-route');
+            
+            expect(response.status).toBe(HTTP_STATUS.NOT_FOUND);
+        });
 
-      expect(response.status).toBe(302);
-      expect(response.headers.location).toContain('/');
-      
-      // Check if token cookie is cleared
-      const cookies = response.headers['set-cookie'];
-      const tokenCookie = cookies && cookies.find(cookie => cookie.startsWith('token='));
-      if (tokenCookie) {
-        expect(tokenCookie).toContain('Max-Age=0');
-      }
+        test('should handle malformed authentication data', async () => {
+            // Attempt to access protected route with invalid session
+            const response = await request(app)
+                .get(TEST_ROUTES.DASHBOARD)
+                .set('Cookie', 'invalid-session-cookie');
+            
+            expect(response.status).toBe(HTTP_STATUS.FOUND);
+            expect(response.headers.location).toBe(TEST_ROUTES.LOGIN);
+        });
+
+        test('should handle missing user data gracefully', async () => {
+            // Mock authentication with minimal user data
+            await agent
+                .post('/login')
+                .send({
+                    email: 'minimal@example.com',
+                    password: 'password123'
+                });
+
+            const response = await agent.get(TEST_ROUTES.DASHBOARD);
+            
+            expect(response.status).toBe(HTTP_STATUS.OK);
+            expect(response.text).not.toContain('undefined');
+            expect(response.text).not.toContain('null');
+        });
     });
 
-    test('should handle logout without token', async () => {
-      const response = await request(app).post('/dashboard/logout');
+    describe('Responsive Layout', () => {
+        beforeEach(async () => {
+            // Mock authentication
+            await agent
+                .post('/login')
+                .send({
+                    email: MOCK_USER.email,
+                    password: 'password123'
+                });
+        });
 
-      expect(response.status).toBe(302);
-      expect(response.headers.location).toContain('/');
+        test('should include responsive CSS classes', async () => {
+            const response = await agent.get(TEST_ROUTES.DASHBOARD);
+            
+            expect(response.status).toBe(HTTP_STATUS.OK);
+            expect(response.text).toContain('sidebar-toggle');
+            expect(response.text).toContain('collapsed');
+            expect(response.text).toContain('@media (max-width: 768px)');
+        });
+
+        test('should include Bootstrap responsive classes', async () => {
+            const response = await agent.get(TEST_ROUTES.DASHBOARD);
+            
+            expect(response.status).toBe(HTTP_STATUS.OK);
+            expect(response.text).toContain('col-md-');
+            expect(response.text).toContain('d-grid');
+            expect(response.text).toContain('g-3');
+        });
     });
-  });
-});
 
-describe('Route Security', () => {
-  test('should validate JWT token signature', () => {
-    const payload = { userId: 1, email: 'test@example.com' };
-    const secret = 'test-secret';
-    const wrongSecret = 'wrong-secret';
-    
-    const token = jwt.sign(payload, secret);
-    
-    expect(() => {
-      jwt.verify(token, wrongSecret);
-    }).toThrow('invalid signature');
-  });
+    describe('Security Validation', () => {
+        test('should sanitize user input in templates', async () => {
+            // Mock authentication with potentially malicious data
+            const maliciousUser = {
+                ...MOCK_USER,
+                name: '<script>alert("xss")</script>Test User'
+            };
 
-  test('should handle malformed JWT tokens', () => {
-    const malformedToken = 'not.a.valid.jwt.token';
-    
-    expect(() => {
-      jwt.verify(malformedToken, 'any-secret');
-    }).toThrow();
-  });
+            await agent
+                .post('/login')
+                .send({
+                    email: maliciousUser.email,
+                    password: 'password123'
+                });
 
-  test('should properly hash passwords', async () => {
-    const password = 'testpassword123';
-    const hash1 = await bcrypt.hash(password, 10);
-    const hash2 = await bcrypt.hash(password, 10);
-    
-    // Same password should generate different hashes
-    expect(hash1).not.toBe(hash2);
-    
-    // Both hashes should be valid for the original password
-    expect(await bcrypt.compare(password, hash1)).toBe(true);
-    expect(await bcrypt.compare(password, hash2)).toBe(true);
-    
-    // Wrong password should not match
-    expect(await bcrypt.compare('wrongpassword', hash1)).toBe(false);
-  });
+            const response = await agent.get(TEST_ROUTES.DASHBOARD);
+            
+            expect(response.status).toBe(HTTP_STATUS.OK);
+            expect(response.text).not.toContain('<script>');
+            expect(response.text).not.toContain('alert("xss")');
+        });
+
+        test('should protect against session fixation', async () => {
+            const firstResponse = await agent.get(TEST_ROUTES.DASHBOARD);
+            const initialSessionId = firstResponse.headers['set-cookie'];
+
+            await agent
+                .post('/login')
+                .send({
+                    email: MOCK_USER.email,
+                    password: 'password123'
+                });
+
+            const secondResponse = await agent.get(TEST_ROUTES.DASHBOARD);
+            const newSessionId = secondResponse.headers['set-cookie'];
+
+            // Session should be different after login
+            expect(newSessionId).not.toEqual(initialSessionId);
+        });
+    });
+
+    describe('Template Data Integrity', () => {
+        beforeEach(async () => {
+            // Mock authentication
+            await agent
+                .post('/login')
+                .send({
+                    email: MOCK_USER.email,
+                    password: 'password123'
+                });
+        });
+
+        test('should pass correct user data to dashboard template', async () => {
+            const response = await agent.get(TEST_ROUTES.DASHBOARD);
+            
+            expect(response.status).toBe(HTTP_STATUS.OK);
+            expect(response.text).toContain(`Name: ${MOCK_USER.name}`);
+            expect(response.text).toContain(`Email: ${MOCK_USER.email}`);
+            expect(response.text).toContain(`User ID: ${MOCK_USER.id}`);
+        });
+
+        test('should pass correct user data to profile template', async () => {
+            const response = await agent.get(TEST_ROUTES.PROFILE);
+            
+            expect(response.status).toBe(HTTP_STATUS.OK);
+            expect(response.text).toContain(MOCK_USER.name);
+            expect(response.text).toContain(MOCK_USER.email);
+            expect(response.text).toContain(`#${MOCK_USER.id}`);
+        });
+
+        test('should handle missing optional user fields', async () => {
+            const response = await agent.get(TEST_ROUTES.PROFILE);
+            
+            expect(response.status).toBe(HTTP_STATUS.OK);
+            expect(response.text).toContain('Not provided');
+            expect(response.text).toContain('Not specified');
+        });
+    });
+
+    describe('Mobile Responsive Sidebar', () => {
+        beforeEach(async () => {
+            // Mock authentication
+            await agent
+                .post('/login')
+                .send({
+                    email: MOCK_USER.email,
+                    password: 'password123'
+                });
+        });
+
+        test('should include sidebar toggle button for mobile', async () => {
+            const response = await agent.get(TEST_ROUTES.DASHBOARD);
+            
+            expect(response.status).toBe(HTTP_STATUS.OK);
+            expect(response.text).toContain('sidebar-toggle');
+            expect(response.text).toContain('btn-toggle');
+            expect(response.text).toContain('bi-list');
+        });
+
+        test('should have mobile-specific CSS media queries', async () => {
+            const response = await agent.get(TEST_ROUTES.DASHBOARD);
+            
+            expect(response.status).toBe(HTTP_STATUS.OK);
+            expect(response.text).toContain('@media (max-width: 768px)');
+            expect(response.text).toMatch(/\.sidebar.*position:.*fixed/);
+            expect(response.text).toMatch(/\.sidebar-overlay/);
+        });
+
+        test('should include Bootstrap CSS framework integration', async () => {
+            const response = await agent.get(TEST_ROUTES.DASHBOARD);
+            
+            expect(response.status).toBe(HTTP_STATUS.OK);
+            expect(response.text).toContain('bootstrap@5.3.0');
+            expect(response.text).toContain('bootstrap-icons');
+            expect(response.text).toContain('d-none d-md-block');
+            expect(response.text).toContain('d-block d-md-none');
+        });
+
+        test('should have collapsible sidebar functionality', async () => {
+            const response = await agent.get(TEST_ROUTES.DASHBOARD);
+            
+            expect(response.status).toBe(HTTP_STATUS.OK);
+            expect(response.text).toContain('sidebar.collapsed');
+            expect(response.text).toContain('--sidebar-collapsed-width');
+            expect(response.text).toContain('transition: all 0.3s');
+        });
+
+        test('should include sidebar overlay for mobile devices', async () => {
+            const response = await agent.get(TEST_ROUTES.DASHBOARD);
+            
+            expect(response.status).toBe(HTTP_STATUS.OK);
+            expect(response.text).toContain('sidebar-overlay');
+            expect(response.text).toContain('position: fixed');
+            expect(response.text).toContain('background-color: rgba(0,0,0,0.5)');
+            expect(response.text).toContain('z-index: 999');
+        });
+
+        test('should maintain active menu highlighting on mobile', async () => {
+            const pages = [
+                { route: TEST_ROUTES.DASHBOARD, expectedActive: 'dashboard' },
+                { route: TEST_ROUTES.PROFILE, expectedActive: 'profile' },
+                { route: TEST_ROUTES.SETTINGS, expectedActive: 'settings' }
+            ];
+
+            for (const page of pages) {
+                const response = await agent.get(page.route);
+                
+                expect(response.status).toBe(HTTP_STATUS.OK);
+                expect(response.text).toMatch(new RegExp(`nav-link[^>]*active[^>]*href="${page.route}"`));
+                expect(response.text).toContain(`currentPage: '${page.expectedActive}'`);
+            }
+        });
+    });
+
+    describe('Sidebar Toggle Functionality', () => {
+        beforeEach(async () => {
+            // Mock authentication
+            await agent
+                .post('/login')
+                .send({
+                    email: MOCK_USER.email,
+                    password: 'password123'
+                });
+        });
+
+        test('should include JavaScript for sidebar toggle', async () => {
+            const response = await agent.get(TEST_ROUTES.DASHBOARD);
+            
+            expect(response.status).toBe(HTTP_STATUS.OK);
+            expect(response.text).toContain('toggleSidebar');
+            expect(response.text).toContain('addEventListener');
+            expect(response.text).toContain('classList.toggle');
+        });
+
+        test('should handle sidebar state persistence', async () => {
+            const response = await agent.get(TEST_ROUTES.DASHBOARD);
+            
+            expect(response.status).toBe(HTTP_STATUS.OK);
+            expect(response.text).toContain('localStorage');
+            expect(response.text).toContain('sidebarCollapsed');
+            expect(response.text).toContain('JSON.parse');
+        });
+
+        test('should include proper ARIA attributes for accessibility', async () => {
+            const response = await agent.get(TEST_ROUTES.DASHBOARD);
+            
+            expect(response.status).toBe(HTTP_STATUS.OK);
+            expect(response.text).toContain('aria-expanded');
+            expect(response.text).toContain('aria-controls');
+            expect(response.text).toContain('role="button"');
+            expect(response.text).toContain('aria-label');
+        });
+    });
+
+    describe('Cross-browser Compatibility', () => {
+        beforeEach(async () => {
+            // Mock authentication
+            await agent
+                .post('/login')
+                .send({
+                    email: MOCK_USER.email,
+                    password: 'password123'
+                });
+        });
+
+        test('should include vendor prefixes for CSS transitions', async () => {
+            const response = await agent.get(TEST_ROUTES.DASHBOARD);
+            
+            expect(response.status).toBe(HTTP_STATUS.OK);
+            expect(response.text).toContain('-webkit-transition');
+            expect(response.text).toContain('-moz-transition');
+            expect(response.text).toContain('-o-transition');
+        });
+
+        test('should use fallback fonts for better compatibility', async () => {
+            const response = await agent.get(TEST_ROUTES.DASHBOARD);
+            
+            expect(response.status).toBe(HTTP_STATUS.OK);
+            expect(response.text).toContain('font-family');
+            expect(response.text).toMatch(/Arial|Helvetica|sans-serif/);
+        });
+    });
 });

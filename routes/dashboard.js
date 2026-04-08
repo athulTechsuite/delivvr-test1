@@ -7,17 +7,21 @@ const router = express.Router();
 // Initialize database connection
 const db = new sqlite3.Database(path.join(__dirname, '../database/users.db'));
 
+// Constants
+const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
+const TOKEN_COOKIE_NAME = 'token';
+
 // JWT authentication middleware
 const authenticateToken = (req, res, next) => {
-    const token = req.cookies.token;
+    const token = req.cookies[TOKEN_COOKIE_NAME];
     
     if (!token) {
         return res.redirect('/login');
     }
 
-    jwt.verify(token, process.env.JWT_SECRET || 'your-secret-key', (err, user) => {
+    jwt.verify(token, JWT_SECRET, (err, user) => {
         if (err) {
-            res.clearCookie('token');
+            res.clearCookie(TOKEN_COOKIE_NAME);
             return res.redirect('/login');
         }
         req.user = user;
@@ -25,35 +29,53 @@ const authenticateToken = (req, res, next) => {
     });
 };
 
-// Dashboard route - protected
-router.get('/', authenticateToken, (req, res) => {
-    // Get user details from database
-    db.get('SELECT id, name, email FROM users WHERE id = ?', [req.user.userId], (err, user) => {
+// Helper function to get user data from database
+const getUserById = (userId, callback) => {
+    if (!userId || typeof userId !== 'number') {
+        return callback(new Error('Invalid user ID'));
+    }
+
+    const query = 'SELECT id, name, email, created_at FROM users WHERE id = ?';
+    db.get(query, [userId], (err, user) => {
         if (err) {
-            console.error('Database error:', err);
-            return res.status(500).render('error', { 
-                title: 'Error',
-                message: 'Database error occurred'
-            });
+            console.error('Database error in getUserById:', err);
+            return callback(err);
         }
         
         if (!user) {
-            res.clearCookie('token');
-            return res.redirect('/login');
+            return callback(new Error('User not found'));
         }
 
-        res.render('dashboard', {
-            title: 'Dashboard',
-            user: user,
-            success: req.query.success
-        });
+        callback(null, user);
     });
+};
+
+// Logout route - GET method for navbar link and mobile overlay functionality
+router.get('/logout', (req, res) => {
+    try {
+        res.clearCookie(TOKEN_COOKIE_NAME);
+        res.redirect('/?message=Successfully logged out');
+    } catch (error) {
+        console.error('Error during logout:', error);
+        res.status(500).render('error', {
+            title: 'Error',
+            message: 'An error occurred during logout'
+        });
+    }
 });
 
-// Logout route
+// Logout route - POST method for form submission
 router.post('/logout', (req, res) => {
-    res.clearCookie('token');
-    res.redirect('/?message=Successfully logged out');
+    try {
+        res.clearCookie(TOKEN_COOKIE_NAME);
+        res.redirect('/?message=Successfully logged out');
+    } catch (error) {
+        console.error('Error during logout:', error);
+        res.status(500).render('error', {
+            title: 'Error',
+            message: 'An error occurred during logout'
+        });
+    }
 });
 
 module.exports = router;

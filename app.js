@@ -17,8 +17,8 @@ if (!process.env.JWT_SECRET) {
 }
 const JWT_SECRET = process.env.JWT_SECRET;
 
-// Database setup - use environment variable or fallback to default
-const DB_PATH = process.env.DB_PATH || path.join(__dirname, 'database.sqlite');
+// Database setup - use environment variable or fallback to default (matching dashboard.js expectations)
+const DB_PATH = process.env.DB_PATH || path.join(__dirname, 'database/users.db');
 const db = new sqlite3.Database(DB_PATH);
 
 // Create users table if it doesn't exist
@@ -57,6 +57,26 @@ const authenticateToken = (req, res, next) => {
         req.user = user;
         next();
     });
+};
+
+// Middleware to add user data and current page to locals for sidebar layout
+const addSidebarData = (req, res, next) => {
+    if (req.user) {
+        db.get('SELECT id, name, email, created_at FROM users WHERE id = ?', [req.user.userId], (err, user) => {
+            if (err) {
+                console.error('Database error in addSidebarData:', err);
+                return res.redirect('/login');
+            }
+            if (!user) {
+                return res.redirect('/login');
+            }
+            res.locals.user = user;
+            res.locals.currentPage = req.route ? req.route.path : req.path;
+            next();
+        });
+    } else {
+        next();
+    }
 };
 
 // Validation middleware
@@ -103,15 +123,46 @@ app.get('/login', (req, res) => {
     res.render('login', { error: null });
 });
 
-app.get('/dashboard', authenticateToken, (req, res) => {
-    // Get user info from database
-    db.get('SELECT name, email FROM users WHERE id = ?', [req.user.id], (err, user) => {
-        if (err) {
-            console.error(err);
-            return res.redirect('/login');
-        }
-        res.render('dashboard', { user });
-    });
+app.get('/dashboard', authenticateToken, addSidebarData, (req, res) => {
+    try {
+        res.render('sidebar-layout', { 
+            title: 'Dashboard',
+            currentPage: 'dashboard',
+            user: res.locals.user,
+            content: 'dashboard'
+        });
+    } catch (error) {
+        console.error('Error rendering dashboard:', error);
+        res.redirect('/login');
+    }
+});
+
+app.get('/profile', authenticateToken, addSidebarData, (req, res) => {
+    try {
+        res.render('sidebar-layout', { 
+            title: 'Profile',
+            currentPage: 'profile',
+            user: res.locals.user,
+            content: 'profile'
+        });
+    } catch (error) {
+        console.error('Error rendering profile:', error);
+        res.redirect('/login');
+    }
+});
+
+app.get('/settings', authenticateToken, addSidebarData, (req, res) => {
+    try {
+        res.render('sidebar-layout', { 
+            title: 'Settings',
+            currentPage: 'settings',
+            user: res.locals.user,
+            content: 'settings'
+        });
+    } catch (error) {
+        console.error('Error rendering settings:', error);
+        res.redirect('/login');
+    }
 });
 
 app.post('/signup', signupValidation, async (req, res) => {
@@ -135,7 +186,7 @@ app.post('/signup', signupValidation, async (req, res) => {
                     if (err.message.includes('UNIQUE constraint failed')) {
                         return res.render('signup', { error: 'Email already exists' });
                     }
-                    console.error(err);
+                    console.error('Signup error:', err);
                     return res.render('signup', { error: 'Registration failed' });
                 }
                 
@@ -144,7 +195,7 @@ app.post('/signup', signupValidation, async (req, res) => {
             }
         );
     } catch (error) {
-        console.error(error);
+        console.error('Signup error:', error);
         res.render('signup', { error: 'Registration failed' });
     }
 });
@@ -160,7 +211,7 @@ app.post('/login', loginValidation, (req, res) => {
     // Find user in database
     db.get('SELECT * FROM users WHERE email = ?', [email], async (err, user) => {
         if (err) {
-            console.error(err);
+            console.error('Login database error:', err);
             return res.render('login', { error: 'Login failed' });
         }
         
@@ -176,9 +227,9 @@ app.post('/login', loginValidation, (req, res) => {
                 return res.render('login', { error: 'Invalid email or password' });
             }
             
-            // Generate JWT token
+            // Generate JWT token - using userId to match routes/dashboard.js expectations
             const token = jwt.sign(
-                { id: user.id, email: user.email },
+                { userId: user.id, email: user.email },
                 JWT_SECRET,
                 { expiresIn: '24h' }
             );
@@ -192,7 +243,7 @@ app.post('/login', loginValidation, (req, res) => {
             
             res.redirect('/dashboard');
         } catch (error) {
-            console.error(error);
+            console.error('Login error:', error);
             res.render('login', { error: 'Login failed' });
         }
     });
