@@ -57,6 +57,7 @@ app.use((req, res, next) => {
                 res.locals.user = null;
             } else {
                 // Get user info from database for template context
+                // Using parameterized query to prevent SQL injection
                 db.get('SELECT id, name, email, created_at FROM users WHERE id = ?', [decoded.userId], (dbErr, user) => {
                     if (dbErr || !user) {
                         res.locals.user = null;
@@ -165,7 +166,7 @@ app.get('/dashboard', authenticateToken, (req, res) => {
     }
 
     try {
-        // Get user info from database
+        // Get user info from database - using parameterized query for SQL injection protection
         db.get('SELECT id, name, email, created_at FROM users WHERE id = ?', [req.user.userId], (err, user) => {
             if (err) {
                 console.error('Database error in dashboard route:', err);
@@ -242,7 +243,7 @@ app.post('/signup', signupValidation, async (req, res) => {
         const saltRounds = 10;
         const hashedPassword = await bcrypt.hash(password, saltRounds);
         
-        // Insert user into database
+        // Insert user into database - using parameterized query for SQL injection protection
         db.run('INSERT INTO users (name, email, password) VALUES (?, ?, ?)', 
             [name, email, hashedPassword], 
             function(err) {
@@ -297,7 +298,7 @@ app.post('/login', loginValidation, (req, res) => {
     }
     
     try {
-        // Find user in database
+        // Find user in database - using parameterized query for SQL injection protection
         db.get('SELECT * FROM users WHERE email = ?', [email], async (err, user) => {
             if (err) {
                 console.error('Database error during login:', err);

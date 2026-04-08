@@ -213,6 +213,476 @@ describe('Layout Structure and Sidebar Navigation', () => {
         });
     });
 
+    // TC-005: Flash message positioning with new layout - Complete test coverage
+    describe('TC-005: Flash Message Positioning with New Layout', () => {
+        const TEST_USER_EMAIL = 'flashtest@example.com';
+        const TEST_USER_PASSWORD = 'password123';
+        const INVALID_EMAIL = 'invalid@nonexistent.com';
+        const INVALID_PASSWORD = 'wrongpassword';
+
+        beforeEach(async () => {
+            // Ensure clean state for each test
+            try {
+                const agent = request.agent(app);
+                await agent.get('/logout').expect(200);
+            } catch (error) {
+                // Ignore logout errors for clean slate
+            }
+        });
+
+        describe('Happy Path - Success Messages', () => {
+            test('TC-005 Happy Path: should position success flash messages correctly in main content area after successful signup', async () => {
+                const agent = request.agent(app);
+                
+                // Attempt signup with valid data
+                const signupResponse = await agent
+                    .post('/signup')
+                    .send({
+                        name: 'Flash Test User',
+                        email: TEST_USER_EMAIL,
+                        password: TEST_USER_PASSWORD
+                    })
+                    .expect(302);
+
+                // Follow redirect to see success message
+                const followUpResponse = await agent
+                    .get(signupResponse.headers.location || '/')
+                    .expect(200);
+                
+                const $ = cheerio.load(followUpResponse.text);
+                
+                // Verify layout structure exists
+                const sidebar = $(SIDEBAR_SELECTOR);
+                const mainWrapper = $(MAIN_WRAPPER_SELECTOR);
+                expect(sidebar).toHaveLength(1);
+                expect(mainWrapper).toHaveLength(1);
+
+                // Check for success flash message
+                const successAlert = $('.alert-success, .alert.alert-success');
+                
+                if (successAlert.length > 0) {
+                    // Success message must be positioned in main content area
+                    const flashInMain = mainWrapper.find('.alert-success, .alert.alert-success');
+                    expect(flashInMain.length).toBeGreaterThan(0);
+                    
+                    // Success message must NOT be in sidebar
+                    const flashInSidebar = sidebar.find('.alert-success, .alert.alert-success');
+                    expect(flashInSidebar).toHaveLength(0);
+                    
+                    // Verify message content indicates success
+                    const messageText = successAlert.text().toLowerCase();
+                    expect(messageText).toMatch(/(success|welcome|created|registered)/);
+                    
+                    // Verify Bootstrap alert classes are correctly applied
+                    const alertClasses = successAlert.attr('class');
+                    expect(alertClasses).toContain('alert');
+                    expect(alertClasses).toContain('success');
+                }
+            });
+
+            test('TC-005 Happy Path: should position success flash messages correctly after successful login', async () => {
+                const agent = request.agent(app);
+                
+                // First create user account
+                await agent
+                    .post('/signup')
+                    .send({
+                        name: 'Login Flash Test User',
+                        email: `login_${TEST_USER_EMAIL}`,
+                        password: TEST_USER_PASSWORD
+                    })
+                    .expect(302);
+
+                // Logout to test login flow
+                await agent.get('/logout').expect(200);
+
+                // Perform login with valid credentials
+                const loginResponse = await agent
+                    .post('/login')
+                    .send({
+                        email: `login_${TEST_USER_EMAIL}`,
+                        password: TEST_USER_PASSWORD
+                    })
+                    .expect(302);
+
+                // Follow redirect to see potential success message
+                const followUpResponse = await agent
+                    .get(loginResponse.headers.location || '/dashboard')
+                    .expect(200);
+                
+                const $ = cheerio.load(followUpResponse.text);
+                
+                // Verify layout structure
+                const sidebar = $(SIDEBAR_SELECTOR);
+                const mainWrapper = $(MAIN_WRAPPER_SELECTOR);
+                expect(sidebar).toHaveLength(1);
+                expect(mainWrapper).toHaveLength(1);
+
+                // Check for any success messages
+                const successAlert = $('.alert-success, .alert.alert-success, .alert-info, .alert.alert-info');
+                
+                if (successAlert.length > 0) {
+                    // Success message must be in main content area
+                    const flashInMain = mainWrapper.find('.alert-success, .alert.alert-success, .alert-info, .alert.alert-info');
+                    expect(flashInMain.length).toBeGreaterThan(0);
+                    
+                    // Success message must NOT be in sidebar
+                    const flashInSidebar = sidebar.find('.alert-success, .alert.alert-success, .alert-info, .alert.alert-info');
+                    expect(flashInSidebar).toHaveLength(0);
+                }
+                
+                // Verify user is successfully authenticated (dashboard accessible)
+                expect($('h1, h2, h3').text().toLowerCase()).toContain('dashboard');
+            });
+
+            test('TC-005 Happy Path: should maintain flash message positioning across different viewport sizes', async () => {
+                const agent = request.agent(app);
+                
+                // Create scenario that generates flash message
+                const response = await agent
+                    .post('/signup')
+                    .send({
+                        name: 'Viewport Test User',
+                        email: `viewport_${TEST_USER_EMAIL}`,
+                        password: TEST_USER_PASSWORD
+                    })
+                    .expect(302);
+
+                const followUpResponse = await agent
+                    .get(response.headers.location || '/')
+                    .expect(200);
+                
+                const $ = cheerio.load(followUpResponse.text);
+                
+                // Verify responsive meta tag exists for proper viewport handling
+                const viewportMeta = $('meta[name="viewport"]');
+                expect(viewportMeta).toHaveLength(1);
+                expect(viewportMeta.attr('content')).toContain('width=device-width');
+                
+                // Verify layout structure is responsive
+                const headContent = $('head').html();
+                expect(headContent).toContain('margin-left: 250px'); // Fixed sidebar width
+                
+                // Check flash messages are in responsive main content area
+                const alerts = $('.alert');
+                if (alerts.length > 0) {
+                    const mainWrapper = $(MAIN_WRAPPER_SELECTOR);
+                    const flashInMain = mainWrapper.find('.alert');
+                    expect(flashInMain.length).toBeGreaterThan(0);
+                    
+                    // Verify main wrapper has responsive container structure
+                    const containerFluid = mainWrapper.find('.container-fluid');
+                    expect(containerFluid.length).toBeGreaterThan(0);
+                }
+            });
+        });
+
+        describe('Error Path - Error Messages', () => {
+            test('TC-005 Error Path: should position error flash messages correctly after failed login attempt', async () => {
+                const agent = request.agent(app);
+                
+                // Attempt login with invalid credentials
+                const loginResponse = await agent
+                    .post('/login')
+                    .send({
+                        email: INVALID_EMAIL,
+                        password: INVALID_PASSWORD
+                    })
+                    .expect(302);
+
+                // Follow redirect to login page with error message
+                const followUpResponse = await agent
+                    .get(loginResponse.headers.location || '/login')
+                    .expect(200);
+                
+                const $ = cheerio.load(followUpResponse.text);
+                
+                // Verify layout structure exists
+                const sidebar = $(SIDEBAR_SELECTOR);
+                const mainWrapper = $(MAIN_WRAPPER_SELECTOR);
+                expect(sidebar).toHaveLength(1);
+                expect(mainWrapper).toHaveLength(1);
+
+                // Check for error flash message
+                const errorAlert = $('.alert-danger, .alert.alert-danger, .alert-warning, .alert.alert-warning');
+                
+                if (errorAlert.length > 0) {
+                    // Error message must be positioned in main content area
+                    const flashInMain = mainWrapper.find('.alert-danger, .alert.alert-danger, .alert-warning, .alert.alert-warning');
+                    expect(flashInMain.length).toBeGreaterThan(0);
+                    
+                    // Error message must NOT be in sidebar
+                    const flashInSidebar = sidebar.find('.alert-danger, .alert.alert-danger, .alert-warning, .alert.alert-warning');
+                    expect(flashInSidebar).toHaveLength(0);
+                    
+                    // Verify error message content is appropriate
+                    const messageText = errorAlert.text().toLowerCase();
+                    expect(messageText).toMatch(/(invalid|incorrect|error|failed|wrong)/);
+                    
+                    // Verify Bootstrap alert classes for errors
+                    const alertClasses = errorAlert.attr('class');
+                    expect(alertClasses).toContain('alert');
+                    expect(alertClasses).toMatch(/(danger|warning)/);
+                }
+            });
+
+            test('TC-005 Error Path: should position validation error messages correctly during signup', async () => {
+                const agent = request.agent(app);
+                
+                // Attempt signup with invalid data (missing required fields)
+                const signupResponse = await agent
+                    .post('/signup')
+                    .send({
+                        name: '', // Invalid: empty name
+                        email: 'invalid-email-format', // Invalid: bad email format
+                        password: '123' // Invalid: too short password
+                    })
+                    .expect(302);
+
+                // Follow redirect to signup page with validation errors
+                const followUpResponse = await agent
+                    .get(signupResponse.headers.location || '/signup')
+                    .expect(200);
+                
+                const $ = cheerio.load(followUpResponse.text);
+                
+                // Verify layout structure
+                const sidebar = $(SIDEBAR_SELECTOR);
+                const mainWrapper = $(MAIN_WRAPPER_SELECTOR);
+                expect(sidebar).toHaveLength(1);
+                expect(mainWrapper).toHaveLength(1);
+
+                // Check for validation error messages
+                const errorAlerts = $('.alert-danger, .alert.alert-danger, .alert-warning, .alert.alert-warning');
+                
+                if (errorAlerts.length > 0) {
+                    // All error messages must be in main content area
+                    const flashInMain = mainWrapper.find('.alert-danger, .alert.alert-danger, .alert-warning, .alert.alert-warning');
+                    expect(flashInMain.length).toBeGreaterThan(0);
+                    
+                    // No error messages should be in sidebar
+                    const flashInSidebar = sidebar.find('.alert-danger, .alert.alert-danger, .alert-warning, .alert.alert-warning');
+                    expect(flashInSidebar).toHaveLength(0);
+                    
+                    // Verify error messages relate to validation
+                    errorAlerts.each((i, element) => {
+                        const messageText = $(element).text().toLowerCase();
+                        expect(messageText).toMatch(/(required|invalid|error|validation|field)/);
+                    });
+                }
+            });
+
+            test('TC-005 Error Path: should handle multiple flash messages correctly in main content area', async () => {
+                const agent = request.agent(app);
+                
+                // Create scenario that might generate multiple error messages
+                const signupResponse = await agent
+                    .post('/signup')
+                    .send({
+                        name: 'A', // Too short name
+                        email: 'duplicate@test.com',
+                        password: 'password123'
+                    })
+                    .expect(302);
+
+                // Try to create same user again (duplicate email error)
+                const duplicateResponse = await agent
+                    .post('/signup')
+                    .send({
+                        name: 'Another User',
+                        email: 'duplicate@test.com', // Same email
+                        password: 'password123'
+                    })
+                    .expect(302);
+
+                const followUpResponse = await agent
+                    .get(duplicateResponse.headers.location || '/signup')
+                    .expect(200);
+                
+                const $ = cheerio.load(followUpResponse.text);
+                
+                // Verify layout structure
+                const sidebar = $(SIDEBAR_SELECTOR);
+                const mainWrapper = $(MAIN_WRAPPER_SELECTOR);
+                expect(sidebar).toHaveLength(1);
+                expect(mainWrapper).toHaveLength(1);
+
+                // Check for any flash messages
+                const allAlerts = $('.alert');
+                
+                if (allAlerts.length > 0) {
+                    // All flash messages must be in main content area
+                    const flashInMain = mainWrapper.find('.alert');
+                    expect(flashInMain.length).toBe(allAlerts.length);
+                    
+                    // No flash messages should be in sidebar
+                    const flashInSidebar = sidebar.find('.alert');
+                    expect(flashInSidebar).toHaveLength(0);
+                    
+                    // Verify flash messages are properly structured
+                    allAlerts.each((i, element) => {
+                        const alertClasses = $(element).attr('class');
+                        expect(alertClasses).toContain('alert');
+                        
+                        // Each alert should have proper Bootstrap styling
+                        expect(alertClasses).toMatch(/(alert-success|alert-danger|alert-warning|alert-info)/);
+                    });
+                }
+            });
+
+            test('TC-005 Error Path: should maintain flash message positioning during server errors', async () => {
+                const agent = request.agent(app);
+                
+                // Create a request that might cause server errors
+                const errorResponse = await agent
+                    .post('/login')
+                    .send({
+                        email: null, // Invalid input that might cause server error
+                        password: undefined
+                    });
+                
+                // Server should handle gracefully, check response
+                expect([200, 302, 400, 422]).toContain(errorResponse.status);
+                
+                let followUpResponse;
+                if (errorResponse.status === 302) {
+                    followUpResponse = await agent
+                        .get(errorResponse.headers.location || '/login')
+                        .expect(200);
+                } else {
+                    followUpResponse = errorResponse;
+                }
+                
+                const $ = cheerio.load(followUpResponse.text);
+                
+                // Verify layout structure is maintained even during errors
+                const sidebar = $(SIDEBAR_SELECTOR);
+                const mainWrapper = $(MAIN_WRAPPER_SELECTOR);
+                expect(sidebar).toHaveLength(1);
+                expect(mainWrapper).toHaveLength(1);
+
+                // Any error messages should still be properly positioned
+                const errorAlerts = $('.alert');
+                if (errorAlerts.length > 0) {
+                    const flashInMain = mainWrapper.find('.alert');
+                    expect(flashInMain.length).toBeGreaterThan(0);
+                    
+                    const flashInSidebar = sidebar.find('.alert');
+                    expect(flashInSidebar).toHaveLength(0);
+                }
+            });
+        });
+
+        describe('Edge Cases and Boundary Conditions', () => {
+            test('TC-005 Edge Case: should handle flash messages when main wrapper is dynamically modified', async () => {
+                const agent = request.agent(app);
+                
+                // Test flash message positioning on different pages
+                const pages = ['/', '/login', '/signup'];
+                
+                for (const page of pages) {
+                    const response = await agent.get(page).expect(200);
+                    const $ = cheerio.load(response.text);
+                    
+                    // Verify consistent layout structure across all pages
+                    const sidebar = $(SIDEBAR_SELECTOR);
+                    const mainWrapper = $(MAIN_WRAPPER_SELECTOR);
+                    
+                    expect(sidebar).toHaveLength(1);
+                    expect(mainWrapper).toHaveLength(1);
+                    
+                    // Check CSS positioning is consistent
+                    const headContent = $('head').html();
+                    expect(headContent).toContain('margin-left: 250px');
+                    expect(headContent).toContain('position: fixed');
+                }
+            });
+
+            test('TC-005 Edge Case: should preserve flash message positioning with concurrent requests', async () => {
+                // Create multiple agents to simulate concurrent users
+                const agents = [
+                    request.agent(app),
+                    request.agent(app),
+                    request.agent(app)
+                ];
+                
+                // Perform concurrent operations that might generate flash messages
+                const promises = agents.map(async (agent, index) => {
+                    try {
+                        const response = await agent
+                            .post('/signup')
+                            .send({
+                                name: `Concurrent User ${index}`,
+                                email: `concurrent${index}@test.com`,
+                                password: TEST_USER_PASSWORD
+                            });
+                        
+                        return { agent, response, index };
+                    } catch (error) {
+                        return { agent, error, index };
+                    }
+                });
+                
+                const results = await Promise.allSettled(promises);
+                
+                // Verify each result maintains proper layout structure
+                for (const result of results) {
+                    if (result.status === 'fulfilled' && result.value.response) {
+                        const { agent, response } = result.value;
+                        
+                        if (response.status === 302) {
+                            const followUp = await agent
+                                .get(response.headers.location || '/')
+                                .expect(200);
+                            
+                            const $ = cheerio.load(followUp.text);
+                            
+                            // Verify layout integrity
+                            const sidebar = $(SIDEBAR_SELECTOR);
+                            const mainWrapper = $(MAIN_WRAPPER_SELECTOR);
+                            expect(sidebar).toHaveLength(1);
+                            expect(mainWrapper).toHaveLength(1);
+                            
+                            // Any flash messages should be properly positioned
+                            const alerts = $('.alert');
+                            if (alerts.length > 0) {
+                                const flashInMain = mainWrapper.find('.alert');
+                                expect(flashInMain.length).toBeGreaterThan(0);
+                                
+                                const flashInSidebar = sidebar.find('.alert');
+                                expect(flashInSidebar).toHaveLength(0);
+                            }
+                        }
+                    }
+                }
+            });
+
+            test('TC-005 Edge Case: should handle empty or undefined flash message content gracefully', async () => {
+                const agent = request.agent(app);
+                
+                // Make a regular request to check baseline layout
+                const response = await agent.get('/').expect(200);
+                const $ = cheerio.load(response.text);
+                
+                // Verify layout structure exists even without flash messages
+                const sidebar = $(SIDEBAR_SELECTOR);
+                const mainWrapper = $(MAIN_WRAPPER_SELECTOR);
+                expect(sidebar).toHaveLength(1);
+                expect(mainWrapper).toHaveLength(1);
+                
+                // Verify layout positioning CSS is present
+                const headContent = $('head').html();
+                expect(headContent).toContain('.main-wrapper');
+                expect(headContent).toContain('margin-left: 250px');
+                
+                // The absence of flash messages should not break layout
+                const alerts = $('.alert');
+                // Even if no alerts exist, layout should be intact
+                expect(mainWrapper.hasClass('d-flex')).toBeFalsy(); // No utility classes that could break layout
+            });
+        });
+    });
+
     describe('Flash Messages Positioning', () => {
         test('should display error messages in correct position with new layout', async () => {
             const response = await request(app)

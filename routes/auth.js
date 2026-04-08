@@ -1,15 +1,10 @@
 const express = require('express');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
-const sqlite3 = require('sqlite3').verbose();
-const path = require('path');
+const db = require('../db/database');
 const router = express.Router();
 
 const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key-change-in-production';
-
-// Database setup - use environment variable or fallback to default
-const DB_PATH = process.env.DB_PATH || path.join(__dirname, '../database.sqlite');
-const db = new sqlite3.Database(DB_PATH);
 
 // Authentication middleware
 const authenticateToken = (req, res, next) => {
