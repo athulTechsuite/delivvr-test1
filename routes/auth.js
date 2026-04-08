@@ -1,10 +1,59 @@
 const express = require('express');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
-const db = require('../config/database');
+const sqlite3 = require('sqlite3').verbose();
+const path = require('path');
 const router = express.Router();
 
 const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key-change-in-production';
+
+// Database setup - use environment variable or fallback to default
+const DB_PATH = process.env.DB_PATH || path.join(__dirname, '../database.sqlite');
+const db = new sqlite3.Database(DB_PATH);
+
+// Authentication middleware
+const authenticateToken = (req, res, next) => {
+  const token = req.cookies.token;
+  
+  if (!token) {
+    return res.redirect('/auth/login');
+  }
+  
+  jwt.verify(token, JWT_SECRET, (err, user) => {
+    if (err) {
+      return res.redirect('/auth/login');
+    }
+    req.user = user;
+    next();
+  });
+};
+
+// GET /dashboard - Dashboard page
+router.get('/dashboard', authenticateToken, async (req, res) => {
+  try {
+    // Get user info from database
+    const user = await new Promise((resolve, reject) => {
+      db.get('SELECT id, name, email, created_at FROM users WHERE id = ?', [req.user.userId], (err, row) => {
+        if (err) reject(err);
+        resolve(row);
+      });
+    });
+
+    if (!user) {
+      return res.redirect('/auth/login');
+    }
+
+    res.render('dashboard', { title: 'Dashboard', user });
+  } catch (error) {
+    console.error('Dashboard error:', error);
+    res.status(500).render('error', { 
+      title: 'Error',
+      error: 'An error occurred while loading the dashboard',
+      message: null,
+      user: null
+    });
+  }
+});
 
 // GET /signup - Show signup form
 router.get('/signup', (req, res) => {
@@ -111,10 +160,44 @@ router.post('/login', async (req, res) => {
     });
 
     // Redirect to dashboard
-    res.redirect('/dashboard');
+    res.redirect('/auth/dashboard');
   } catch (error) {
     console.error('Login error:', error);
     res.render('login', { error: 'An error occurred during login', message: null });
+  }
+});
+
+// GET /logout - Show static logout page
+router.get('/logout', (req, res) => {
+  try {
+    // Set security headers
+    res.set({
+      'X-Content-Type-Options': 'nosniff',
+      'X-Frame-Options': 'DENY',
+      'X-XSS-Protection': '1; mode=block'
+    });
+
+    // Validate and sanitize query parameters
+    const queryParams = {};
+    if (req.query.message && typeof req.query.message === 'string') {
+      queryParams.message = req.query.message.trim().substring(0, 255);
+    }
+
+    // Render logout page with template variables
+    res.render('logout', { 
+      title: 'Logout',
+      error: null,
+      message: queryParams.message || null,
+      user: null
+    });
+  } catch (error) {
+    console.error('Logout page error:', error);
+    res.status(500).render('error', { 
+      title: 'Error',
+      error: 'An error occurred while loading the logout page',
+      message: null,
+      user: null
+    });
   }
 });
 

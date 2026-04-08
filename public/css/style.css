@@ -3,6 +3,112 @@
 body {
     background-color: #f8f9fa;
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    margin: 0;
+    padding: 0;
+}
+
+/* Layout Container Styles */
+.layout-container {
+    display: flex;
+    min-height: 100vh;
+}
+
+/* Fixed Sidebar Styles */
+.sidebar {
+    width: 250px;
+    flex-shrink: 0;
+    position: fixed;
+    height: 100vh;
+    overflow-y: auto;
+    z-index: 1000;
+    top: 0;
+    left: 0;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+}
+
+/* Main Content Area */
+.main-content {
+    flex: 1;
+    margin-left: 250px;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
+
+/* Sidebar Navigation Styles */
+.sidebar .navbar-brand {
+    color: white !important;
+    font-size: 1.25rem;
+    font-weight: 600;
+    padding: 1.5rem;
+    text-decoration: none;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+    transition: all 0.3s ease;
+}
+
+.sidebar .navbar-brand:hover {
+    color: rgba(255, 255, 255, 0.9) !important;
+    background-color: rgba(255, 255, 255, 0.05);
+}
+
+.sidebar .nav-link {
+    color: rgba(255, 255, 255, 0.8) !important;
+    padding: 0.75rem 1.5rem;
+    border-radius: 0;
+    transition: all 0.3s ease;
+    font-weight: 500;
+    border-bottom: 1px solid transparent;
+    display: flex;
+    align-items: center;
+}
+
+.sidebar .nav-link:hover,
+.sidebar .nav-link:focus {
+    color: white !important;
+    background-color: rgba(255, 255, 255, 0.1);
+    border-bottom-color: rgba(255, 255, 255, 0.2);
+    transform: translateX(2px);
+}
+
+.sidebar .nav-link.active {
+    color: white !important;
+    background-color: rgba(255, 255, 255, 0.15);
+    font-weight: 600;
+    border-left: 4px solid white;
+    padding-left: calc(1.5rem - 4px);
+}
+
+.sidebar .nav-link i {
+    margin-right: 0.5rem;
+    font-size: 1.1rem;
+    width: 20px;
+    text-align: center;
+}
+
+/* Flash Messages Positioning */
+.flash-messages {
+    margin-bottom: 2rem;
+    padding: 0 1.5rem;
+}
+
+/* Content Area Styling */
+.content-area {
+    flex: 1;
+    padding: 0;
+    background-color: #f8f9fa;
+}
+
+/* Main Content Wrapper */
+.main-wrapper {
+    margin-left: 250px;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    background-color: #f8f9fa;
 }
 
 .navbar-brand {
@@ -124,6 +230,7 @@ body {
     border-radius: 10px;
     border: none;
     font-weight: 500;
+    margin: 1rem 0;
 }
 
 .alert-danger {
@@ -144,6 +251,7 @@ body {
     border-radius: 15px;
     padding: 2rem;
     margin-bottom: 2rem;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.1);
 }
 
 .dashboard-welcome h2 {
@@ -210,16 +318,73 @@ body {
     font-size: 2rem;
 }
 
+/* Footer Styles */
 .footer {
     background: #343a40;
     color: white;
     padding: 2rem 0;
     text-align: center;
     margin-top: auto;
+    margin-left: 0;
+    width: 100%;
 }
 
-/* Responsive adjustments */
+/* Border styles for dashboard cards */
+.border-left-primary {
+    border-left: 4px solid #007bff !important;
+}
+
+.border-left-success {
+    border-left: 4px solid #28a745 !important;
+}
+
+.border-left-info {
+    border-left: 4px solid #17a2b8 !important;
+}
+
+.border-left-warning {
+    border-left: 4px solid #ffc107 !important;
+}
+
+/* Responsive adjustments - Sidebar remains always visible as per PRD */
+@media (max-width: 1200px) {
+    .sidebar {
+        width: 250px !important;
+        position: fixed !important;
+        display: block !important;
+    }
+    
+    .main-content,
+    .main-wrapper {
+        margin-left: 250px !important;
+    }
+}
+
+@media (max-width: 992px) {
+    .sidebar {
+        width: 250px !important;
+        position: fixed !important;
+        display: block !important;
+    }
+    
+    .main-content,
+    .main-wrapper {
+        margin-left: 250px !important;
+    }
+}
+
 @media (max-width: 768px) {
+    .sidebar {
+        width: 250px !important;
+        position: fixed !important;
+        display: block !important;
+    }
+    
+    .main-content,
+    .main-wrapper {
+        margin-left: 250px !important;
+    }
+    
     .hero-section h1 {
         font-size: 2.5rem;
     }
@@ -242,6 +407,44 @@ body {
     
     .profile-info {
         padding: 1.5rem;
+    }
+    
+    .sidebar .navbar-brand {
+        padding: 1rem;
+        font-size: 1.1rem;
+    }
+    
+    .sidebar .nav-link {
+        padding: 0.6rem 1rem;
+    }
+}
+
+@media (max-width: 576px) {
+    .sidebar {
+        width: 250px !important;
+        position: fixed !important;
+        display: block !important;
+    }
+    
+    .main-content,
+    .main-wrapper {
+        margin-left: 250px !important;
+    }
+}
+
+/* Additional media queries to ensure sidebar never collapses */
+@media (max-width: 400px) {
+    .sidebar {
+        width: 250px !important;
+        position: fixed !important;
+        display: block !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+    }
+    
+    .main-content,
+    .main-wrapper {
+        margin-left: 250px !important;
     }
 }
 
@@ -297,6 +500,11 @@ body {
     box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
 }
 
+.sidebar .nav-link:focus {
+    outline: 2px solid rgba(255, 255, 255, 0.8);
+    outline-offset: -2px;
+}
+
 /* Custom scrollbar */
 ::-webkit-scrollbar {
     width: 8px;
@@ -313,4 +521,41 @@ body {
 
 ::-webkit-scrollbar-thumb:hover {
     background: linear-gradient(135deg, #5a67d8 0%, #6b46c1 100%);
+}
+
+/* Sidebar scrollbar */
+.sidebar::-webkit-scrollbar {
+    width: 6px;
+}
+
+.sidebar::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.sidebar::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.3);
+    border-radius: 3px;
+}
+
+.sidebar::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.5);
+}
+
+/* Text utilities for sidebar layout */
+.text-gray-800 {
+    color: #343a40 !important;
+}
+
+.text-xs {
+    font-size: 0.75rem;
+}
+
+.font-weight-bold {
+    font-weight: 700 !important;
+}
+
+/* Container fluid adjustments */
+.container-fluid {
+    padding-left: 1.5rem;
+    padding-right: 1.5rem;
 }

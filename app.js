@@ -42,6 +42,40 @@ app.use(express.static('public'));
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
 
+// User context middleware - makes user context available to all templates
+app.use((req, res, next) => {
+    const token = req.cookies.token;
+    
+    if (!token) {
+        res.locals.user = null;
+        return next();
+    }
+    
+    try {
+        jwt.verify(token, JWT_SECRET, (err, decoded) => {
+            if (err) {
+                res.locals.user = null;
+            } else {
+                // Get user info from database for template context
+                db.get('SELECT id, name, email, created_at FROM users WHERE id = ?', [decoded.userId], (dbErr, user) => {
+                    if (dbErr || !user) {
+                        res.locals.user = null;
+                    } else {
+                        res.locals.user = user;
+                    }
+                    next();
+                });
+                return;
+            }
+            next();
+        });
+    } catch (error) {
+        console.error('Error in user context middleware:', error);
+        res.locals.user = null;
+        next();
+    }
+});
+
 // Authentication middleware
 const authenticateToken = (req, res, next) => {
     const token = req.cookies.token;
@@ -90,37 +124,118 @@ const loginValidation = [
         .withMessage('Password is required')
 ];
 
+// Auth routes integration
+try {
+    app.use('/auth', require('./routes/auth'));
+} catch (error) {
+    console.warn('Auth routes not found, using inline auth routes');
+}
+
 // Routes
 app.get('/', (req, res) => {
-    res.render('index');
+    try {
+        res.render('index', { title: 'Home', error: null, success: null });
+    } catch (error) {
+        console.error('Error rendering home page:', error);
+        res.status(500).send('Internal Server Error');
+    }
 });
 
 app.get('/signup', (req, res) => {
-    res.render('signup', { error: null });
+    try {
+        res.render('signup', { title: 'Sign Up', error: null, success: null });
+    } catch (error) {
+        console.error('Error rendering signup page:', error);
+        res.status(500).send('Internal Server Error');
+    }
 });
 
 app.get('/login', (req, res) => {
-    res.render('login', { error: null });
+    try {
+        res.render('login', { title: 'Login', error: null, success: null });
+    } catch (error) {
+        console.error('Error rendering login page:', error);
+        res.status(500).send('Internal Server Error');
+    }
 });
 
 app.get('/dashboard', authenticateToken, (req, res) => {
-    // Get user info from database
-    db.get('SELECT name, email FROM users WHERE id = ?', [req.user.id], (err, user) => {
-        if (err) {
-            console.error(err);
-            return res.redirect('/login');
-        }
-        res.render('dashboard', { user });
-    });
+    if (!req.user || !req.user.userId) {
+        return res.redirect('/login');
+    }
+
+    try {
+        // Get user info from database
+        db.get('SELECT id, name, email, created_at FROM users WHERE id = ?', [req.user.userId], (err, user) => {
+            if (err) {
+                console.error('Database error in dashboard route:', err);
+                return res.status(500).render('error', { 
+                    title: 'Error', 
+                    error: 'Database error occurred',
+                    success: null
+                });
+            }
+            
+            if (!user) {
+                console.error('User not found in database for id:', req.user.userId);
+                return res.redirect('/login');
+            }
+            
+            try {
+                res.render('dashboard', { 
+                    title: 'Dashboard', 
+                    user: user,
+                    error: null,
+                    success: null
+                });
+            } catch (renderError) {
+                console.error('Error rendering dashboard template:', renderError);
+                res.status(500).send('Error rendering dashboard page');
+            }
+        });
+    } catch (error) {
+        console.error('Error in dashboard route:', error);
+        res.status(500).render('error', { 
+            title: 'Error', 
+            error: 'An unexpected error occurred',
+            success: null
+        });
+    }
+});
+
+app.get('/logout', (req, res) => {
+    try {
+        res.render('logout', { 
+            title: 'Logout', 
+            user: null,
+            error: null,
+            success: null
+        });
+    } catch (error) {
+        console.error('Error rendering logout page:', error);
+        res.status(500).send('Internal Server Error');
+    }
 });
 
 app.post('/signup', signupValidation, async (req, res) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
-        return res.render('signup', { error: errors.array()[0].msg });
+        return res.render('signup', { 
+            title: 'Sign Up',
+            error: errors.array()[0].msg,
+            success: null
+        });
     }
 
     const { name, email, password } = req.body;
+    
+    if (!name || !email || !password) {
+        return res.render('signup', { 
+            title: 'Sign Up',
+            error: 'All fields are required',
+            success: null
+        });
+    }
     
     try {
         // Hash password
@@ -132,11 +247,19 @@ app.post('/signup', signupValidation, async (req, res) => {
             [name, email, hashedPassword], 
             function(err) {
                 if (err) {
+                    console.error('Database error during signup:', err);
                     if (err.message.includes('UNIQUE constraint failed')) {
-                        return res.render('signup', { error: 'Email already exists' });
+                        return res.render('signup', { 
+                            title: 'Sign Up',
+                            error: 'Email already exists',
+                            success: null
+                        });
                     }
-                    console.error(err);
-                    return res.render('signup', { error: 'Registration failed' });
+                    return res.render('signup', { 
+                        title: 'Sign Up',
+                        error: 'Registration failed',
+                        success: null
+                    });
                 }
                 
                 // Redirect to login page after successful registration
@@ -144,72 +267,127 @@ app.post('/signup', signupValidation, async (req, res) => {
             }
         );
     } catch (error) {
-        console.error(error);
-        res.render('signup', { error: 'Registration failed' });
+        console.error('Error during signup:', error);
+        res.render('signup', { 
+            title: 'Sign Up',
+            error: 'Registration failed',
+            success: null
+        });
     }
 });
 
 app.post('/login', loginValidation, (req, res) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
-        return res.render('login', { error: errors.array()[0].msg });
+        return res.render('login', { 
+            title: 'Login',
+            error: errors.array()[0].msg,
+            success: null
+        });
     }
 
     const { email, password } = req.body;
     
-    // Find user in database
-    db.get('SELECT * FROM users WHERE email = ?', [email], async (err, user) => {
-        if (err) {
-            console.error(err);
-            return res.render('login', { error: 'Login failed' });
-        }
-        
-        if (!user) {
-            return res.render('login', { error: 'Invalid email or password' });
-        }
-        
-        try {
-            // Compare password
-            const passwordMatch = await bcrypt.compare(password, user.password);
-            
-            if (!passwordMatch) {
-                return res.render('login', { error: 'Invalid email or password' });
+    if (!email || !password) {
+        return res.render('login', { 
+            title: 'Login',
+            error: 'Email and password are required',
+            success: null
+        });
+    }
+    
+    try {
+        // Find user in database
+        db.get('SELECT * FROM users WHERE email = ?', [email], async (err, user) => {
+            if (err) {
+                console.error('Database error during login:', err);
+                return res.render('login', { 
+                    title: 'Login',
+                    error: 'Login failed',
+                    success: null
+                });
             }
             
-            // Generate JWT token
-            const token = jwt.sign(
-                { id: user.id, email: user.email },
-                JWT_SECRET,
-                { expiresIn: '24h' }
-            );
+            if (!user) {
+                return res.render('login', { 
+                    title: 'Login',
+                    error: 'Invalid email or password',
+                    success: null
+                });
+            }
             
-            // Set cookie and redirect to dashboard
-            res.cookie('token', token, { 
-                httpOnly: true, 
-                secure: process.env.NODE_ENV === 'production',
-                maxAge: 24 * 60 * 60 * 1000 // 24 hours
-            });
-            
-            res.redirect('/dashboard');
-        } catch (error) {
-            console.error(error);
-            res.render('login', { error: 'Login failed' });
-        }
-    });
+            try {
+                // Compare password
+                const passwordMatch = await bcrypt.compare(password, user.password);
+                
+                if (!passwordMatch) {
+                    return res.render('login', { 
+                        title: 'Login',
+                        error: 'Invalid email or password',
+                        success: null
+                    });
+                }
+                
+                // Generate JWT token
+                const token = jwt.sign(
+                    { userId: user.id, email: user.email },
+                    JWT_SECRET,
+                    { expiresIn: '24h' }
+                );
+                
+                // Set cookie and redirect to dashboard
+                res.cookie('token', token, { 
+                    httpOnly: true, 
+                    secure: process.env.NODE_ENV === 'production',
+                    maxAge: 24 * 60 * 60 * 1000 // 24 hours
+                });
+                
+                res.redirect('/dashboard');
+            } catch (error) {
+                console.error('Error comparing password during login:', error);
+                res.render('login', { 
+                    title: 'Login',
+                    error: 'Login failed',
+                    success: null
+                });
+            }
+        });
+    } catch (error) {
+        console.error('Error during login:', error);
+        res.render('login', { 
+            title: 'Login',
+            error: 'Login failed',
+            success: null
+        });
+    }
 });
 
 app.post('/logout', (req, res) => {
-    res.clearCookie('token');
-    res.redirect('/');
+    try {
+        res.clearCookie('token');
+        res.redirect('/');
+    } catch (error) {
+        console.error('Error during logout:', error);
+        res.redirect('/');
+    }
 });
 
 // Error handling middleware
 app.use((req, res) => {
-    res.status(404).render('404');
+    try {
+        res.status(404).render('404', { 
+            title: 'Page Not Found',
+            error: null,
+            success: null
+        });
+    } catch (error) {
+        console.error('Error rendering 404 page:', error);
+        res.status(404).send('Page Not Found');
+    }
 });
 
 app.use((err, req, res, next) => {
-    console.error(err.stack);
+    console.error('Unhandled error:', err.stack);
     res.status(500).send('Something broke!');
 });
 
@@ -222,9 +400,21 @@ app.listen(PORT, () => {
 process.on('SIGINT', () => {
     db.close((err) => {
         if (err) {
-            console.error(err.message);
+            console.error('Error closing database:', err.message);
+        } else {
+            console.log('Database connection closed.');
         }
-        console.log('Database connection closed.');
+        process.exit(0);
+    });
+});
+
+process.on('SIGTERM', () => {
+    db.close((err) => {
+        if (err) {
+            console.error('Error closing database:', err.message);
+        } else {
+            console.log('Database connection closed.');
+        }
         process.exit(0);
     });
 });
