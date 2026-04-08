@@ -1,121 +1,99 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard - Express Auth App</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
-</head>
-<body>
-    <!-- Navigation -->
-    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
-        <div class="container">
-            <a class="navbar-brand" href="/">Express Auth</a>
-            <div class="navbar-nav ms-auto">
-                <span class="navbar-text me-3">Welcome, <%= user.name %>!</span>
-                <a class="nav-link" href="/logout">Logout</a>
+<div class="container-fluid py-4">
+    <!-- Page Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <h1 class="h3 mb-3 text-gray-800">Dashboard</h1>
+            <p class="mb-0 text-muted">Welcome back, <%= user.name %>! Here's an overview of your account.</p>
+        </div>
+    </div>
+
+    <!-- Welcome Message -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="alert alert-success d-flex align-items-center" role="alert">
+                <i class="bi bi-check-circle-fill me-2"></i>
+                <div>
+                    <h4 class="alert-heading mb-1">Welcome to your dashboard!</h4>
+                    <p class="mb-0">You have successfully logged in to the Auth App. Everything is ready to go.</p>
+                </div>
             </div>
         </div>
-    </nav>
+    </div>
 
-    <!-- Main Content -->
-    <div class="container mt-5">
-        <div class="row justify-content-center">
-            <div class="col-md-8">
-                <div class="card shadow">
-                    <div class="card-header bg-success text-white">
-                        <h3 class="mb-0">
-                            <i class="fas fa-tachometer-alt me-2"></i>Dashboard
-                        </h3>
+    <!-- User Stats Cards -->
+    <div class="row mb-4">
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="card border-left-primary shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+                                Account Status
+                            </div>
+                            <div class="h6 mb-0 font-weight-bold text-gray-800">
+                                <span class="badge bg-success">Active</span>
+                            </div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="bi bi-person-check text-primary" style="font-size: 2rem;"></i>
+                        </div>
                     </div>
-                    <div class="card-body">
-                        <!-- Welcome Message -->
-                        <div class="alert alert-success" role="alert">
-                            <h4 class="alert-heading">Welcome to your dashboard!</h4>
-                            <p>You have successfully logged in to the Express Auth application.</p>
-                        </div>
+                </div>
+            </div>
+        </div>
 
-                        <!-- User Profile Information -->
-                        <div class="row">
-                            <div class="col-md-6">
-                                <div class="card mb-3">
-                                    <div class="card-header">
-                                        <h5 class="mb-0">Profile Information</h5>
-                                    </div>
-                                    <div class="card-body">
-                                        <table class="table table-borderless">
-                                            <tr>
-                                                <td><strong>Name:</strong></td>
-                                                <td><%= user.name %></td>
-                                            </tr>
-                                            <tr>
-                                                <td><strong>Email:</strong></td>
-                                                <td><%= user.email %></td>
-                                            </tr>
-                                            <tr>
-                                                <td><strong>User ID:</strong></td>
-                                                <td><%= user.id %></td>
-                                            </tr>
-                                            <tr>
-                                                <td><strong>Member Since:</strong></td>
-                                                <td><%= new Date(user.created_at).toLocaleDateString() %></td>
-                                            </tr>
-                                        </table>
-                                    </div>
-                                </div>
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="card border-left-success shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
+                                Member Since
                             </div>
-                            
-                            <div class="col-md-6">
-                                <div class="card mb-3">
-                                    <div class="card-header">
-                                        <h5 class="mb-0">Quick Actions</h5>
-                                    </div>
-                                    <div class="card-body">
-                                        <div class="d-grid gap-2">
-                                            <button class="btn btn-outline-primary" type="button">
-                                                Edit Profile
-                                            </button>
-                                            <button class="btn btn-outline-secondary" type="button">
-                                                Change Password
-                                            </button>
-                                            <button class="btn btn-outline-info" type="button">
-                                                Account Settings
-                                            </button>
-                                            <a href="/logout" class="btn btn-outline-danger">
-                                                Logout
-                                            </a>
-                                        </div>
-                                    </div>
-                                </div>
+                            <div class="h6 mb-0 font-weight-bold text-gray-800">
+                                <%= new Date(user.created_at).toLocaleDateString() %>
                             </div>
                         </div>
+                        <div class="col-auto">
+                            <i class="bi bi-calendar-check text-success" style="font-size: 2rem;"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
 
-                        <!-- Session Info -->
-                        <div class="card mt-3">
-                            <div class="card-header">
-                                <h5 class="mb-0">Session Information</h5>
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="card border-left-info shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
+                                Login Sessions
                             </div>
-                            <div class="card-body">
-                                <div class="row">
-                                    <div class="col-md-6">
-                                        <small class="text-muted">
-                                            <strong>Login Time:</strong> <%= new Date().toLocaleString() %>
-                                        </small>
-                                    </div>
-                                    <div class="col-md-6">
-                                        <small class="text-muted">
-                                            <strong>Session Status:</strong> <span class="text-success">Active</span>
-                                        </small>
-                                    </div>
-                                </div>
+                            <div class="h6 mb-0 font-weight-bold text-gray-800">24</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="bi bi-graph-up text-info" style="font-size: 2rem;"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="card border-left-warning shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
+                                Last Login
+                            </div>
+                            <div class="h6 mb-0 font-weight-bold text-gray-800">
+                                <%= new Date().toLocaleDateString() %>
                             </div>
                         </div>
-
-                        <!-- Navigation Back -->
-                        <div class="mt-4 text-center">
-                            <a href="/" class="btn btn-secondary">
-                                <i class="fas fa-home me-2"></i>Back to Home
-                            </a>
+                        <div class="col-auto">
+                            <i class="bi bi-clock text-warning" style="font-size: 2rem;"></i>
                         </div>
                     </div>
                 </div>
@@ -123,16 +101,264 @@
         </div>
     </div>
 
-    <!-- Footer -->
-    <footer class="mt-5 py-4 bg-light text-center">
-        <div class="container">
-            <small class="text-muted">
-                &copy; 2024 Express Auth App. Built with Express.js, EJS, and Bootstrap.
-            </small>
+    <!-- Main Content Row -->
+    <div class="row">
+        <!-- Profile Information -->
+        <div class="col-lg-6 mb-4">
+            <div class="card shadow">
+                <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                    <h6 class="m-0 font-weight-bold text-primary">Profile Information</h6>
+                    <i class="bi bi-person-circle text-primary"></i>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-borderless mb-0">
+                            <tbody>
+                                <tr>
+                                    <td class="font-weight-bold text-gray-800">Name:</td>
+                                    <td><%= user.name %></td>
+                                </tr>
+                                <tr>
+                                    <td class="font-weight-bold text-gray-800">Email:</td>
+                                    <td><%= user.email %></td>
+                                </tr>
+                                <tr>
+                                    <td class="font-weight-bold text-gray-800">User ID:</td>
+                                    <td><code><%= user.id %></code></td>
+                                </tr>
+                                <tr>
+                                    <td class="font-weight-bold text-gray-800">Account Type:</td>
+                                    <td><span class="badge bg-primary">Standard User</span></td>
+                                </tr>
+                                <tr>
+                                    <td class="font-weight-bold text-gray-800">Status:</td>
+                                    <td><span class="badge bg-success">Verified</span></td>
+                                </tr>
+                                <tr>
+                                    <td class="font-weight-bold text-gray-800">Created:</td>
+                                    <td><%= new Date(user.created_at).toLocaleString() %></td>
+                                </tr>
+                                <tr>
+                                    <td class="font-weight-bold text-gray-800">Last Updated:</td>
+                                    <td><%= new Date().toLocaleString() %></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="mt-3 text-center">
+                        <small class="text-muted">Profile information is kept secure and up to date.</small>
+                    </div>
+                </div>
+            </div>
         </div>
-    </footer>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="https://kit.fontawesome.com/your-font-awesome-kit.js" crossorigin="anonymous"></script>
-</body>
-</html>
+        <!-- Quick Actions -->
+        <div class="col-lg-6 mb-4">
+            <div class="card shadow">
+                <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                    <h6 class="m-0 font-weight-bold text-primary">Quick Actions</h6>
+                    <i class="bi bi-lightning-charge text-primary"></i>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-2">
+                        <button class="btn btn-outline-primary btn-sm" type="button" disabled>
+                            <i class="bi bi-person-gear me-2"></i>Edit Profile
+                        </button>
+                        <button class="btn btn-outline-secondary btn-sm" type="button" disabled>
+                            <i class="bi bi-key me-2"></i>Change Password
+                        </button>
+                        <button class="btn btn-outline-info btn-sm" type="button" disabled>
+                            <i class="bi bi-gear me-2"></i>Account Settings
+                        </button>
+                        <button class="btn btn-outline-warning btn-sm" type="button" disabled>
+                            <i class="bi bi-shield-check me-2"></i>Security Settings
+                        </button>
+                        <hr>
+                        <a href="/logout" class="btn btn-outline-danger btn-sm">
+                            <i class="bi bi-box-arrow-right me-2"></i>Logout
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Activity -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card shadow">
+                <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                    <h6 class="m-0 font-weight-bold text-primary">Recent Activity</h6>
+                    <i class="bi bi-activity text-primary"></i>
+                </div>
+                <div class="card-body">
+                    <div class="list-group list-group-flush">
+                        <div class="list-group-item d-flex justify-content-between align-items-center px-0">
+                            <div class="d-flex align-items-center">
+                                <i class="bi bi-box-arrow-in-right text-success me-3"></i>
+                                <div>
+                                    <h6 class="mb-1">Successful Login</h6>
+                                    <small class="text-muted">You logged in successfully</small>
+                                </div>
+                            </div>
+                            <small class="text-muted"><%= new Date().toLocaleTimeString() %></small>
+                        </div>
+                        <div class="list-group-item d-flex justify-content-between align-items-center px-0">
+                            <div class="d-flex align-items-center">
+                                <i class="bi bi-shield-check text-info me-3"></i>
+                                <div>
+                                    <h6 class="mb-1">Security Check</h6>
+                                    <small class="text-muted">Account security verified</small>
+                                </div>
+                            </div>
+                            <small class="text-muted">2 hours ago</small>
+                        </div>
+                        <div class="list-group-item d-flex justify-content-between align-items-center px-0">
+                            <div class="d-flex align-items-center">
+                                <i class="bi bi-person-plus text-primary me-3"></i>
+                                <div>
+                                    <h6 class="mb-1">Account Created</h6>
+                                    <small class="text-muted">Welcome to Auth App!</small>
+                                </div>
+                            </div>
+                            <small class="text-muted"><%= new Date(user.created_at).toLocaleDateString() %></small>
+                        </div>
+                    </div>
+                    <div class="text-center mt-3">
+                        <button class="btn btn-outline-secondary btn-sm" type="button" disabled>
+                            View All Activity
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Session Information -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow">
+                <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                    <h6 class="m-0 font-weight-bold text-primary">Session Information</h6>
+                    <i class="bi bi-clock-history text-primary"></i>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6 mb-3 mb-md-0">
+                            <div class="d-flex align-items-center">
+                                <i class="bi bi-calendar3 text-muted me-2"></i>
+                                <div>
+                                    <small class="text-muted d-block">Current Session Started</small>
+                                    <span class="font-weight-bold"><%= new Date().toLocaleString() %></span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="d-flex align-items-center">
+                                <i class="bi bi-check-circle text-success me-2"></i>
+                                <div>
+                                    <small class="text-muted d-block">Session Status</small>
+                                    <span class="font-weight-bold text-success">Active & Secure</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .border-left-primary {
+        border-left: 0.25rem solid #4e73df !important;
+    }
+    
+    .border-left-success {
+        border-left: 0.25rem solid #1cc88a !important;
+    }
+    
+    .border-left-info {
+        border-left: 0.25rem solid #36b9cc !important;
+    }
+    
+    .border-left-warning {
+        border-left: 0.25rem solid #f6c23e !important;
+    }
+    
+    .text-xs {
+        font-size: 0.7rem;
+    }
+    
+    .font-weight-bold {
+        font-weight: 700 !important;
+    }
+    
+    .text-gray-800 {
+        color: #5a5c69 !important;
+    }
+    
+    /* Sidebar always visible - prevent collapsing behavior */
+    .sidebar {
+        width: 250px !important;
+        min-width: 250px !important;
+        max-width: 250px !important;
+        flex-shrink: 0 !important;
+        position: fixed !important;
+        top: 0 !important;
+        left: 0 !important;
+        height: 100vh !important;
+        overflow-y: auto !important;
+        z-index: 1000 !important;
+    }
+    
+    .main-wrapper {
+        margin-left: 250px !important;
+        min-margin-left: 250px !important;
+    }
+    
+    /* Ensure sidebar remains visible on all screen sizes */
+    @media (max-width: 1200px) {
+        .sidebar {
+            width: 250px !important;
+            position: fixed !important;
+            display: block !important;
+        }
+        .main-wrapper {
+            margin-left: 250px !important;
+        }
+    }
+    
+    @media (max-width: 992px) {
+        .sidebar {
+            width: 250px !important;
+            position: fixed !important;
+            display: block !important;
+        }
+        .main-wrapper {
+            margin-left: 250px !important;
+        }
+    }
+    
+    @media (max-width: 768px) {
+        .sidebar {
+            width: 250px !important;
+            position: fixed !important;
+            display: block !important;
+        }
+        .main-wrapper {
+            margin-left: 250px !important;
+        }
+    }
+    
+    @media (max-width: 576px) {
+        .sidebar {
+            width: 250px !important;
+            position: fixed !important;
+            display: block !important;
+        }
+        .main-wrapper {
+            margin-left: 250px !important;
+        }
+    }
+</style>
