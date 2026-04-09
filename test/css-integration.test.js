@@ -8,6 +8,150 @@ const app = require('../app');
 
 describe('CSS and Styling Integration Tests', () => {
 
+  describe('AC-19: Main content responsive behavior', () => {
+    test('TC-019-1: Main content should adapt to desktop viewport with proper margins', async () => {
+      const cssResponse = await request(app).get('/css/style.css');
+      expect(cssResponse.status).toBe(200);
+      
+      const cssContent = cssResponse.text;
+      
+      // Validate desktop responsive behavior for main content
+      expect(cssContent).toContain('.main-content');
+      expect(cssContent).toContain('margin-left: 250px');
+      expect(cssContent).toContain('min-height: 100vh');
+      
+      // Check that main content container has proper responsive classes
+      const dashboardResponse = await request(app).get('/static/dashboard');
+      const $ = cheerio.load(dashboardResponse.text);
+      
+      const mainContent = $('.main-content');
+      expect(mainContent.length).toBe(1);
+      
+      // Validate container structure for responsive layout
+      expect(mainContent.find('.container-fluid').length).toBeGreaterThan(0);
+    });
+
+    test('TC-019-2: Main content should adapt to mobile viewport with full width', async () => {
+      const cssResponse = await request(app).get('/css/style.css');
+      const cssContent = cssResponse.text;
+      
+      // Validate mobile media queries exist for main content responsiveness
+      expect(cssContent).toContain('@media');
+      expect(cssContent).toContain('max-width: 768px');
+      
+      // Check for mobile-specific main content adjustments
+      const mobileMediaQuery = cssContent.match(/@media[^{]*max-width:\s*768px[^}]*\{[^}]*\}/g);
+      expect(mobileMediaQuery).toBeTruthy();
+      
+      // Should contain rules to reset margin-left on mobile
+      expect(cssContent).toMatch(/@media[\s\S]*max-width:\s*768px[\s\S]*\.main-content[\s\S]*margin-left:\s*0/);
+    });
+
+    test('TC-019-3: Main content should handle tablet viewport breakpoints correctly', async () => {
+      const cssResponse = await request(app).get('/css/style.css');
+      const cssContent = cssResponse.text;
+      
+      // Check for tablet-specific media queries
+      const tabletBreakpoints = ['768px', '992px', '1024px'];
+      let hasTabletBreakpoint = false;
+      
+      tabletBreakpoints.forEach(breakpoint => {
+        if (cssContent.includes(breakpoint)) {
+          hasTabletBreakpoint = true;
+        }
+      });
+      
+      expect(hasTabletBreakpoint).toBe(true);
+      
+      // Validate that main content positioning is responsive across breakpoints
+      expect(cssContent).toMatch(/\.main-content.*\{[\s\S]*transition/);
+    });
+
+    test('TC-019-4: Main content should preserve content visibility across all viewport sizes', async () => {
+      const dashboardResponse = await request(app).get('/static/dashboard');
+      const $ = cheerio.load(dashboardResponse.text);
+      
+      const mainContent = $('.main-content');
+      expect(mainContent.length).toBe(1);
+      
+      // Check that essential content elements are present
+      expect(mainContent.find('h1, h2, h3').length).toBeGreaterThan(0);
+      expect(mainContent.text().trim().length).toBeGreaterThan(0);
+      
+      // Validate that viewport meta tag exists for proper mobile rendering
+      const viewportMeta = $('meta[name="viewport"]');
+      expect(viewportMeta.length).toBe(1);
+      expect(viewportMeta.attr('content')).toContain('width=device-width');
+      expect(viewportMeta.attr('content')).toContain('initial-scale=1');
+    });
+
+    test('TC-019-5: Main content responsive behavior should handle sidebar toggle states', async () => {
+      const cssResponse = await request(app).get('/css/style.css');
+      const cssContent = cssResponse.text;
+      
+      // Check for CSS rules that handle sidebar show/hide states
+      expect(cssContent).toMatch(/\.sidebar-collapsed[\s\S]*\.main-content|\.main-content[\s\S]*\.sidebar-collapsed/);
+      
+      // Validate transition properties for smooth responsive behavior
+      expect(cssContent).toMatch(/\.main-content[\s\S]*transition[\s\S]*margin/);
+      
+      const dashboardResponse = await request(app).get('/static/dashboard');
+      const $ = cheerio.load(dashboardResponse.text);
+      
+      // Check for sidebar toggle functionality elements
+      const toggleButton = $('.sidebar-toggle, .navbar-toggler, [data-toggle="sidebar"]');
+      expect(toggleButton.length).toBeGreaterThan(0);
+    });
+
+    // Error path testing for AC-19
+    test('TC-019-E1: Main content should gracefully handle missing CSS responsive rules', async () => {
+      const dashboardResponse = await request(app).get('/static/dashboard');
+      expect(dashboardResponse.status).toBe(200);
+      
+      const $ = cheerio.load(dashboardResponse.text);
+      
+      // Even without CSS, main content structure should exist
+      const mainContent = $('.main-content');
+      expect(mainContent.length).toBe(1);
+      
+      // Essential content should still be accessible
+      expect(dashboardResponse.text).toContain('Dashboard');
+      expect(mainContent.text().trim().length).toBeGreaterThan(0);
+    });
+
+    test('TC-019-E2: Main content should handle malformed viewport configurations', async () => {
+      const dashboardResponse = await request(app).get('/static/dashboard');
+      const $ = cheerio.load(dashboardResponse.text);
+      
+      const viewportMeta = $('meta[name="viewport"]');
+      
+      // Should have properly formed viewport meta tag
+      expect(viewportMeta.length).toBe(1);
+      const content = viewportMeta.attr('content');
+      
+      // Validate viewport content is not malformed
+      expect(content).toBeTruthy();
+      expect(content).not.toContain('undefined');
+      expect(content).not.toContain('null');
+      expect(content.split(',').length).toBeGreaterThanOrEqual(2);
+    });
+
+    test('TC-019-E3: Main content should handle CSS load failures gracefully', async () => {
+      // Test that page still functions even if CSS fails to load
+      const dashboardResponse = await request(app).get('/static/dashboard');
+      const $ = cheerio.load(dashboardResponse.text);
+      
+      // Page should still have semantic HTML structure
+      expect($('nav.sidebar').length).toBe(1);
+      expect($('.main-content').length).toBe(1);
+      expect($('main, .main-content').text().trim().length).toBeGreaterThan(0);
+      
+      // Critical functionality should remain
+      expect(dashboardResponse.text).toContain('Dashboard');
+      expect($('.nav-link').length).toBeGreaterThan(0);
+    });
+  });
+
   describe('AC-23: CSS Sidebar Positioning', () => {
     test('TC-023-1: CSS file should contain sidebar positioning rules', async () => {
       const cssResponse = await request(app).get('/css/style.css');

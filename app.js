@@ -6,7 +6,6 @@ const sqlite3 = require('sqlite3').verbose();
 const path = require('path');
 const cookieParser = require('cookie-parser');
 const { body, validationResult } = require('express-validator');
-const expressLayouts = require('express-ejs-layouts');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -38,12 +37,10 @@ app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(cookieParser());
 app.use(express.static('public'));
-app.use(expressLayouts);
 
 // View engine setup
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
-app.set('layout', 'layout');
 
 // Authentication middleware
 const authenticateToken = (req, res, next) => {

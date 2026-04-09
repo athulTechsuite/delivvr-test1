@@ -167,4 +167,38 @@ describe('Side Navigation Layout Tests', () => {
       expect(logoutIcon.length).toBe(1);
     });
   });
+
+  describe('AC-23: Additional layout tests', () => {
+    test('TC-023: Layout should handle error states gracefully', async () => {
+      app.get('/error-test', (req, res, next) => {
+        const error = new Error('Test error');
+        next(error);
+      });
+
+      app.use((err, req, res, next) => {
+        res.status(500).render('error', { 
+          title: 'Error',
+          error: err.message 
+        });
+      });
+
+      const response = await request(app).get('/error-test');
+      expect(response.status).toBe(500);
+    });
+
+    test('TC-024: Layout should properly escape content to prevent XSS', async () => {
+      const maliciousTitle = '<script>alert("xss")</script>';
+      
+      app.get('/xss-test', (req, res) => {
+        res.render('index', { title: maliciousTitle });
+      });
+
+      const response = await request(app).get('/xss-test');
+      const $ = cheerio.load(response.text);
+      
+      // Content should be escaped
+      expect(response.text).not.toContain('<script>alert("xss")</script>');
+      expect(response.text).toContain('&lt;script&gt;');
+    });
+  });
 });
