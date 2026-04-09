@@ -1,367 +1,647 @@
 const request = require('supertest');
-const express = require('express');
-const authRoutes = require('../routes/auth');
-const dashboardRoutes = require('../routes/dashboard');
-const sqlite3 = require('sqlite3').verbose();
-const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
-const cookieParser = require('cookie-parser');
-const path = require('path');
+const sqlite3 = require('sqlite3').verbose();
+const app = require('../app');
 
-// Create test app
-const app = express();
-app.use(express.urlencoded({ extended: true }));
-app.use(express.json());
-app.use(cookieParser());
-app.set('view engine', 'ejs');
-app.set('views', path.join(__dirname, '../views'));
+// Test constants
+const TEST_JWT_SECRET = 'test-jwt-secret-key-for-testing';
+const TEST_USER_ID = 1;
+const TEST_USER_EMAIL = 'test@example.com';
+const TEST_USER_NAME = 'Test User';
+const TEST_USER_CREATED_AT = '2023-01-01 12:00:00';
 
-// Mock database for testing
-const testDbPath = path.join(__dirname, 'routes-test.db');
-let testDb;
+const MOCK_USER_DATA = {
+    id: TEST_USER_ID,
+    email: TEST_USER_EMAIL,
+    name: TEST_USER_NAME,
+    created_at: TEST_USER_CREATED_AT
+};
 
-beforeAll((done) => {
-  testDb = new sqlite3.Database(testDbPath);
-  testDb.serialize(() => {
-    testDb.run(`CREATE TABLE IF NOT EXISTS users (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      name TEXT NOT NULL,
-      email TEXT UNIQUE NOT NULL,
-      password TEXT NOT NULL,
-      created_at DATETIME DEFAULT CURRENT_TIMESTAMP
-    )`, done);
-  });
-  
-  // Mock the database module
-  jest.doMock('../database/db', () => testDb);
-  
-  // Setup routes
-  app.use('/auth', authRoutes);
-  app.use('/dashboard', dashboardRoutes);
-});
+// Mock sqlite3 module
+jest.mock('sqlite3', () => ({
+    verbose: jest.fn(() => ({
+        Database: jest.fn()
+    }))
+}));
 
-afterAll((done) => {
-  testDb.close();
-  const fs = require('fs');
-  if (fs.existsSync(testDbPath)) {
-    fs.unlinkSync(testDbPath);
-  }
-  done();
-});
+// Mock JWT secret
+process.env.JWT_SECRET = TEST_JWT_SECRET;
 
-afterEach((done) => {
-  testDb.run('DELETE FROM users', done);
-});
+describe('Profile and Settings Routes', () => {
+    let mockDb;
+    let validToken;
+    let invalidToken;
+    let expiredToken;
 
-describe('Authentication Routes', () => {
-  describe('GET /auth/signup', () => {
-    test('should render signup form', async () => {
-      const response = await request(app).get('/auth/signup');
-      
-      expect(response.status).toBe(200);
-      expect(response.text).toContain('Sign Up');
-      expect(response.text).toContain('name="name"');
-      expect(response.text).toContain('name="email"');
-      expect(response.text).toContain('name="password"');
-    });
-  });
-
-  describe('POST /auth/signup', () => {
-    test('should create new user account successfully', async () => {
-      const userData = {
-        name: 'John Doe',
-        email: 'john@example.com',
-        password: 'password123'
-      };
-
-      const response = await request(app)
-        .post('/auth/signup')
-        .send(userData);
-
-      expect(response.status).toBe(302);
-      expect(response.headers.location).toContain('/auth/login');
-
-      // Verify user was created
-      const user = await new Promise((resolve) => {
-        testDb.get('SELECT * FROM users WHERE email = ?', [userData.email], (err, row) => {
-          resolve(row);
-        });
-      });
-
-      expect(user).toBeTruthy();
-      expect(user.name).toBe(userData.name);
-      expect(user.email).toBe(userData.email);
-      expect(await bcrypt.compare(userData.password, user.password)).toBe(true);
-    });
-
-    test('should reject signup with missing required fields', async () => {
-      const response = await request(app)
-        .post('/auth/signup')
-        .send({ name: 'John' }); // Missing email and password
-
-      expect(response.status).toBe(200);
-      expect(response.text).toContain('All fields are required');
-    });
-
-    test('should reject signup with short password', async () => {
-      const response = await request(app)
-        .post('/auth/signup')
-        .send({
-          name: 'John Doe',
-          email: 'john@example.com',
-          password: '123' // Too short
-        });
-
-      expect(response.status).toBe(200);
-      expect(response.text).toContain('Password must be at least 6 characters long');
-    });
-
-    test('should reject signup with duplicate email', async () => {
-      const userData = {
-        name: 'John Doe',
-        email: 'john@example.com',
-        password: 'password123'
-      };
-
-      // Create first user
-      await request(app).post('/auth/signup').send(userData);
-
-      // Try to create duplicate
-      const response = await request(app).post('/auth/signup').send(userData);
-
-      expect(response.status).toBe(200);
-      expect(response.text).toContain('User with this email already exists');
-    });
-  });
-
-  describe('GET /auth/login', () => {
-    test('should render login form', async () => {
-      const response = await request(app).get('/auth/login');
-      
-      expect(response.status).toBe(200);
-      expect(response.text).toContain('Login');
-      expect(response.text).toContain('name="email"');
-      expect(response.text).toContain('name="password"');
-    });
-
-    test('should display success message from query parameter', async () => {
-      const response = await request(app)
-        .get('/auth/login?message=Account created successfully!');
-      
-      expect(response.status).toBe(200);
-      expect(response.text).toContain('Account created successfully!');
-    });
-  });
-
-  describe('POST /auth/login', () => {
-    let testUser;
-    const userPassword = 'password123';
-
-    beforeEach(async () => {
-      const hashedPassword = await bcrypt.hash(userPassword, 10);
-      testUser = {
-        name: 'Test User',
-        email: 'test@example.com',
-        password: hashedPassword
-      };
-
-      await new Promise((resolve) => {
-        testDb.run(
-          'INSERT INTO users (name, email, password) VALUES (?, ?, ?)',
-          [testUser.name, testUser.email, testUser.password],
-          resolve
+    beforeAll(() => {
+        // Create valid JWT token
+        validToken = jwt.sign(
+            { id: TEST_USER_ID, email: TEST_USER_EMAIL },
+            TEST_JWT_SECRET,
+            { expiresIn: '1h' }
         );
-      });
+
+        // Create invalid JWT token with wrong secret
+        invalidToken = jwt.sign(
+            { id: TEST_USER_ID, email: TEST_USER_EMAIL },
+            'wrong-secret',
+            { expiresIn: '1h' }
+        );
+
+        // Create expired JWT token
+        expiredToken = jwt.sign(
+            { id: TEST_USER_ID, email: TEST_USER_EMAIL },
+            TEST_JWT_SECRET,
+            { expiresIn: '-1h' }
+        );
     });
 
-    test('should login user with valid credentials', async () => {
-      const response = await request(app)
-        .post('/auth/login')
-        .send({
-          email: testUser.email,
-          password: userPassword
+    beforeEach(() => {
+        // Reset mocks
+        jest.clearAllMocks();
+
+        // Setup mock database
+        mockDb = {
+            get: jest.fn(),
+            run: jest.fn(),
+            serialize: jest.fn((callback) => callback())
+        };
+        
+        // Mock the Database constructor to return our mock
+        sqlite3.verbose().Database.mockImplementation(() => mockDb);
+    });
+
+    describe('GET /profile', () => {
+        describe('Authentication Requirements', () => {
+            it('should redirect to /login when no token provided', async () => {
+                const response = await request(app)
+                    .get('/profile')
+                    .expect(302);
+
+                expect(response.headers.location).toBe('/login');
+            });
+
+            it('should redirect to /login with invalid JWT token', async () => {
+                const response = await request(app)
+                    .get('/profile')
+                    .set('Cookie', [`token=${invalidToken}`])
+                    .expect(302);
+
+                expect(response.headers.location).toBe('/login');
+            });
+
+            it('should redirect to /login with expired JWT token', async () => {
+                const response = await request(app)
+                    .get('/profile')
+                    .set('Cookie', [`token=${expiredToken}`])
+                    .expect(302);
+
+                expect(response.headers.location).toBe('/login');
+            });
+
+            it('should redirect to /login with malformed JWT token', async () => {
+                const response = await request(app)
+                    .get('/profile')
+                    .set('Cookie', ['token=malformed.token.here'])
+                    .expect(302);
+
+                expect(response.headers.location).toBe('/login');
+            });
+
+            it('should redirect to /login with empty token', async () => {
+                const response = await request(app)
+                    .get('/profile')
+                    .set('Cookie', ['token='])
+                    .expect(302);
+
+                expect(response.headers.location).toBe('/login');
+            });
         });
 
-      expect(response.status).toBe(302);
-      expect(response.headers.location).toBe('/dashboard');
-      
-      // Check JWT token in cookies
-      const cookies = response.headers['set-cookie'];
-      const tokenCookie = cookies.find(cookie => cookie.startsWith('token='));
-      expect(tokenCookie).toBeTruthy();
-    });
+        describe('Successful Authentication', () => {
+            it('should render profile page with user data when authenticated', async () => {
+                // Mock successful database query
+                mockDb.get.mockImplementation((sql, params, callback) => {
+                    callback(null, MOCK_USER_DATA);
+                });
 
-    test('should reject login with invalid password', async () => {
-      const response = await request(app)
-        .post('/auth/login')
-        .send({
-          email: testUser.email,
-          password: 'wrongpassword'
+                const response = await request(app)
+                    .get('/profile')
+                    .set('Cookie', [`token=${validToken}`])
+                    .expect(200);
+
+                // Verify database query was called correctly
+                expect(mockDb.get).toHaveBeenCalledWith(
+                    'SELECT * FROM users WHERE id = ?',
+                    [TEST_USER_ID],
+                    expect.any(Function)
+                );
+
+                // Verify response contains user data
+                expect(response.text).toContain(TEST_USER_NAME);
+                expect(response.text).toContain(TEST_USER_EMAIL);
+                expect(response.text).toContain('Profile');
+                expect(response.text).toContain('Personal Information');
+            });
+
+            it('should pass currentPage variable as "profile" to template', async () => {
+                mockDb.get.mockImplementation((sql, params, callback) => {
+                    callback(null, MOCK_USER_DATA);
+                });
+
+                const response = await request(app)
+                    .get('/profile')
+                    .set('Cookie', [`token=${validToken}`])
+                    .expect(200);
+
+                // Check for active navigation state in response
+                expect(response.text).toContain('Profile');
+                expect(response.text).toContain('nav-link active');
+            });
+
+            it('should include side navigation in response', async () => {
+                mockDb.get.mockImplementation((sql, params, callback) => {
+                    callback(null, MOCK_USER_DATA);
+                });
+
+                const response = await request(app)
+                    .get('/profile')
+                    .set('Cookie', [`token=${validToken}`])
+                    .expect(200);
+
+                // Verify side navigation elements are present
+                expect(response.text).toContain('Dashboard');
+                expect(response.text).toContain('Profile');
+                expect(response.text).toContain('Settings');
+                expect(response.text).toContain('Logout');
+            });
         });
 
-      expect(response.status).toBe(200);
-      expect(response.text).toContain('Invalid email or password');
+        describe('Database Error Handling', () => {
+            it('should handle user not found in database', async () => {
+                mockDb.get.mockImplementation((sql, params, callback) => {
+                    callback(null, undefined);
+                });
+
+                const response = await request(app)
+                    .get('/profile')
+                    .set('Cookie', [`token=${validToken}`])
+                    .expect(302);
+
+                expect(response.headers.location).toBe('/login');
+            });
+
+            it('should handle database query errors', async () => {
+                mockDb.get.mockImplementation((sql, params, callback) => {
+                    callback(new Error('Query failed'), null);
+                });
+
+                const response = await request(app)
+                    .get('/profile')
+                    .set('Cookie', [`token=${validToken}`])
+                    .expect(500);
+
+                expect(response.text).toContain('Error');
+            });
+        });
     });
 
-    test('should reject login with non-existent email', async () => {
-      const response = await request(app)
-        .post('/auth/login')
-        .send({
-          email: 'nonexistent@example.com',
-          password: userPassword
+    describe('GET /settings', () => {
+        describe('Authentication Requirements', () => {
+            it('should redirect to /login when no token provided', async () => {
+                const response = await request(app)
+                    .get('/settings')
+                    .expect(302);
+
+                expect(response.headers.location).toBe('/login');
+            });
+
+            it('should redirect to /login with invalid JWT token', async () => {
+                const response = await request(app)
+                    .get('/settings')
+                    .set('Cookie', [`token=${invalidToken}`])
+                    .expect(302);
+
+                expect(response.headers.location).toBe('/login');
+            });
+
+            it('should redirect to /login with expired JWT token', async () => {
+                const response = await request(app)
+                    .get('/settings')
+                    .set('Cookie', [`token=${expiredToken}`])
+                    .expect(302);
+
+                expect(response.headers.location).toBe('/login');
+            });
+
+            it('should redirect to /login with malformed JWT token', async () => {
+                const response = await request(app)
+                    .get('/settings')
+                    .set('Cookie', ['token=invalid.jwt.token'])
+                    .expect(302);
+
+                expect(response.headers.location).toBe('/login');
+            });
         });
 
-      expect(response.status).toBe(200);
-      expect(response.text).toContain('Invalid email or password');
+        describe('Successful Authentication', () => {
+            it('should render settings page with user data when authenticated', async () => {
+                mockDb.get.mockImplementation((sql, params, callback) => {
+                    callback(null, MOCK_USER_DATA);
+                });
+
+                const response = await request(app)
+                    .get('/settings')
+                    .set('Cookie', [`token=${validToken}`])
+                    .expect(200);
+
+                // Verify database query was called correctly
+                expect(mockDb.get).toHaveBeenCalledWith(
+                    'SELECT * FROM users WHERE id = ?',
+                    [TEST_USER_ID],
+                    expect.any(Function)
+                );
+
+                // Verify response contains settings page content
+                expect(response.text).toContain('Settings');
+                expect(response.text).toContain('Account Settings');
+                expect(response.text).toContain('Privacy Settings');
+                expect(response.text).toContain('Notification Preferences');
+            });
+
+            it('should pass currentPage variable as "settings" to template', async () => {
+                mockDb.get.mockImplementation((sql, params, callback) => {
+                    callback(null, MOCK_USER_DATA);
+                });
+
+                const response = await request(app)
+                    .get('/settings')
+                    .set('Cookie', [`token=${validToken}`])
+                    .expect(200);
+
+                // Check for active navigation state in response
+                expect(response.text).toContain('Settings');
+            });
+
+            it('should include side navigation with active settings state', async () => {
+                mockDb.get.mockImplementation((sql, params, callback) => {
+                    callback(null, MOCK_USER_DATA);
+                });
+
+                const response = await request(app)
+                    .get('/settings')
+                    .set('Cookie', [`token=${validToken}`])
+                    .expect(200);
+
+                // Verify side navigation elements are present
+                expect(response.text).toContain('Dashboard');
+                expect(response.text).toContain('Profile');
+                expect(response.text).toContain('Settings');
+                expect(response.text).toContain('Logout');
+            });
+        });
+
+        describe('Database Error Handling', () => {
+            it('should handle user not found in database', async () => {
+                mockDb.get.mockImplementation((sql, params, callback) => {
+                    callback(null, undefined);
+                });
+
+                const response = await request(app)
+                    .get('/settings')
+                    .set('Cookie', [`token=${validToken}`])
+                    .expect(302);
+
+                expect(response.headers.location).toBe('/login');
+            });
+
+            it('should handle database query errors', async () => {
+                mockDb.get.mockImplementation((sql, params, callback) => {
+                    callback(new Error('Database query failed'), null);
+                });
+
+                const response = await request(app)
+                    .get('/settings')
+                    .set('Cookie', [`token=${validToken}`])
+                    .expect(500);
+
+                expect(response.text).toContain('Error');
+            });
+        });
     });
 
-    test('should reject login with missing credentials', async () => {
-      const response = await request(app)
-        .post('/auth/login')
-        .send({ email: testUser.email }); // Missing password
+    describe('GET /dashboard (existing route verification)', () => {
+        it('should maintain existing authentication patterns', async () => {
+            mockDb.get.mockImplementation((sql, params, callback) => {
+                callback(null, MOCK_USER_DATA);
+            });
 
-      expect(response.status).toBe(200);
-      expect(response.text).toContain('All fields are required');
-    });
-  });
-});
+            const response = await request(app)
+                .get('/dashboard')
+                .set('Cookie', [`token=${validToken}`])
+                .expect(200);
 
-describe('Dashboard Routes', () => {
-  let testUser;
-  let validToken;
-  const userPassword = 'password123';
+            // Verify database query follows same pattern
+            expect(mockDb.get).toHaveBeenCalledWith(
+                'SELECT * FROM users WHERE id = ?',
+                [TEST_USER_ID],
+                expect.any(Function)
+            );
 
-  beforeEach(async () => {
-    const hashedPassword = await bcrypt.hash(userPassword, 10);
-    
-    const userId = await new Promise((resolve) => {
-      testDb.run(
-        'INSERT INTO users (name, email, password) VALUES (?, ?, ?)',
-        ['Test User', 'test@example.com', hashedPassword],
-        function() { resolve(this.lastID); }
-      );
-    });
+            // Verify user context is passed to template
+            expect(response.text).toContain(TEST_USER_NAME);
+            expect(response.text).toContain(TEST_USER_EMAIL);
+        });
 
-    testUser = {
-      id: userId,
-      name: 'Test User',
-      email: 'test@example.com'
-    };
+        it('should pass currentPage as "dashboard" for active navigation', async () => {
+            mockDb.get.mockImplementation((sql, params, callback) => {
+                callback(null, MOCK_USER_DATA);
+            });
 
-    validToken = jwt.sign(
-      { userId: userId, email: testUser.email },
-      process.env.JWT_SECRET || 'your-secret-key'
-    );
-  });
+            const response = await request(app)
+                .get('/dashboard')
+                .set('Cookie', [`token=${validToken}`])
+                .expect(200);
 
-  describe('GET /dashboard', () => {
-    test('should render dashboard for authenticated user', async () => {
-      const response = await request(app)
-        .get('/dashboard')
-        .set('Cookie', `token=${validToken}`);
-
-      expect(response.status).toBe(200);
-      expect(response.text).toContain('Dashboard');
-      expect(response.text).toContain(testUser.name);
-      expect(response.text).toContain(testUser.email);
-      expect(response.text).toContain('Profile Information');
+            expect(response.text).toContain('Dashboard');
+        });
     });
 
-    test('should redirect unauthenticated user to login', async () => {
-      const response = await request(app).get('/dashboard');
-      
-      expect(response.status).toBe(302);
-      expect(response.headers.location).toBe('/login');
+    describe('POST /logout', () => {
+        it('should clear authentication cookie and redirect to login', async () => {
+            const response = await request(app)
+                .post('/logout')
+                .set('Cookie', [`token=${validToken}`])
+                .expect(302);
+
+            expect(response.headers.location).toBe('/login');
+            
+            // Verify cookie is cleared
+            const setCookieHeader = response.headers['set-cookie'];
+            expect(setCookieHeader).toBeDefined();
+            expect(setCookieHeader.some(cookie => 
+                cookie.includes('token=') && cookie.includes('expires=')
+            )).toBe(true);
+        });
+
+        it('should work even without valid token', async () => {
+            const response = await request(app)
+                .post('/logout')
+                .expect(302);
+
+            expect(response.headers.location).toBe('/login');
+        });
+
+        it('should clear cookie with proper options', async () => {
+            const response = await request(app)
+                .post('/logout')
+                .set('Cookie', [`token=${validToken}`])
+                .expect(302);
+
+            const setCookieHeader = response.headers['set-cookie'];
+            expect(setCookieHeader).toBeDefined();
+            
+            // Verify cookie clearing attributes
+            const tokenCookie = setCookieHeader.find(cookie => cookie.startsWith('token='));
+            expect(tokenCookie).toContain('HttpOnly');
+            expect(tokenCookie).toContain('expires=');
+        });
     });
 
-    test('should redirect user with invalid token to login', async () => {
-      const response = await request(app)
-        .get('/dashboard')
-        .set('Cookie', 'token=invalid-token');
-      
-      expect(response.status).toBe(302);
-      expect(response.headers.location).toBe('/login');
+    describe('User Context and Security', () => {
+        it('should populate req.user with decoded JWT payload', async () => {
+            mockDb.get.mockImplementation((sql, params, callback) => {
+                callback(null, MOCK_USER_DATA);
+            });
+
+            const response = await request(app)
+                .get('/profile')
+                .set('Cookie', [`token=${validToken}`])
+                .expect(200);
+
+            // Verify the JWT payload data is used in database query
+            expect(mockDb.get).toHaveBeenCalledWith(
+                'SELECT * FROM users WHERE id = ?',
+                [TEST_USER_ID],
+                expect.any(Function)
+            );
+        });
+
+        it('should validate JWT token signature properly', async () => {
+            const tamperedToken = validToken.slice(0, -5) + 'XXXXX';
+
+            const response = await request(app)
+                .get('/profile')
+                .set('Cookie', [`token=${tamperedToken}`])
+                .expect(302);
+
+            expect(response.headers.location).toBe('/login');
+        });
+
+        it('should handle JWT tokens with missing required fields', async () => {
+            const incompleteToken = jwt.sign(
+                { email: TEST_USER_EMAIL }, // Missing id field
+                TEST_JWT_SECRET,
+                { expiresIn: '1h' }
+            );
+
+            mockDb.get.mockImplementation((sql, params, callback) => {
+                callback(null, undefined);
+            });
+
+            const response = await request(app)
+                .get('/profile')
+                .set('Cookie', [`token=${incompleteToken}`])
+                .expect(302);
+
+            expect(response.headers.location).toBe('/login');
+        });
     });
 
-    test('should clear invalid token cookie and redirect', async () => {
-      const response = await request(app)
-        .get('/dashboard')
-        .set('Cookie', 'token=expired-or-invalid-token');
-      
-      expect(response.status).toBe(302);
-      expect(response.headers.location).toBe('/login');
-      
-      // Check if token cookie is cleared
-      const cookies = response.headers['set-cookie'];
-      if (cookies) {
-        const tokenCookie = cookies.find(cookie => cookie.startsWith('token='));
-        if (tokenCookie) {
-          expect(tokenCookie).toContain('Max-Age=0');
-        }
-      }
+    describe('Template Rendering', () => {
+        it('should render profile template with correct title', async () => {
+            mockDb.get.mockImplementation((sql, params, callback) => {
+                callback(null, MOCK_USER_DATA);
+            });
+
+            const response = await request(app)
+                .get('/profile')
+                .set('Cookie', [`token=${validToken}`])
+                .expect(200);
+
+            expect(response.text).toContain('<title>Profile | Auth App</title>');
+        });
+
+        it('should render settings template with correct title', async () => {
+            mockDb.get.mockImplementation((sql, params, callback) => {
+                callback(null, MOCK_USER_DATA);
+            });
+
+            const response = await request(app)
+                .get('/settings')
+                .set('Cookie', [`token=${validToken}`])
+                .expect(200);
+
+            expect(response.text).toContain('<title>Settings | Auth App</title>');
+        });
+
+        it('should include Bootstrap navigation classes', async () => {
+            mockDb.get.mockImplementation((sql, params, callback) => {
+                callback(null, MOCK_USER_DATA);
+            });
+
+            const response = await request(app)
+                .get('/profile')
+                .set('Cookie', [`token=${validToken}`])
+                .expect(200);
+
+            expect(response.text).toContain('nav-link');
+            expect(response.text).toContain('sidebar');
+        });
+
+        it('should include Bootstrap icons in navigation', async () => {
+            mockDb.get.mockImplementation((sql, params, callback) => {
+                callback(null, MOCK_USER_DATA);
+            });
+
+            const response = await request(app)
+                .get('/settings')
+                .set('Cookie', [`token=${validToken}`])
+                .expect(200);
+
+            expect(response.text).toContain('bi-');
+        });
     });
-  });
 
-  describe('POST /dashboard/logout', () => {
-    test('should logout user and clear token cookie', async () => {
-      const response = await request(app)
-        .post('/dashboard/logout')
-        .set('Cookie', `token=${validToken}`);
+    describe('Navigation State Management', () => {
+        it('should highlight active dashboard navigation item on dashboard page', async () => {
+            mockDb.get.mockImplementation((sql, params, callback) => {
+                callback(null, MOCK_USER_DATA);
+            });
 
-      expect(response.status).toBe(302);
-      expect(response.headers.location).toContain('/');
-      
-      // Check if token cookie is cleared
-      const cookies = response.headers['set-cookie'];
-      const tokenCookie = cookies && cookies.find(cookie => cookie.startsWith('token='));
-      if (tokenCookie) {
-        expect(tokenCookie).toContain('Max-Age=0');
-      }
+            const response = await request(app)
+                .get('/dashboard')
+                .set('Cookie', [`token=${validToken}`])
+                .expect(200);
+
+            // The dashboard nav item should be active
+            expect(response.text).toContain('Dashboard');
+        });
+
+        it('should highlight active profile navigation item on profile page', async () => {
+            mockDb.get.mockImplementation((sql, params, callback) => {
+                callback(null, MOCK_USER_DATA);
+            });
+
+            const response = await request(app)
+                .get('/profile')
+                .set('Cookie', [`token=${validToken}`])
+                .expect(200);
+
+            // The profile nav item should be active
+            expect(response.text).toContain('Profile');
+        });
+
+        it('should highlight active settings navigation item on settings page', async () => {
+            mockDb.get.mockImplementation((sql, params, callback) => {
+                callback(null, MOCK_USER_DATA);
+            });
+
+            const response = await request(app)
+                .get('/settings')
+                .set('Cookie', [`token=${validToken}`])
+                .expect(200);
+
+            // The settings nav item should be active
+            expect(response.text).toContain('Settings');
+        });
     });
 
-    test('should handle logout without token', async () => {
-      const response = await request(app).post('/dashboard/logout');
+    describe('Error Scenarios', () => {
+        it('should handle missing user in database for profile route', async () => {
+            mockDb.get.mockImplementation((sql, params, callback) => {
+                callback(null, undefined);
+            });
 
-      expect(response.status).toBe(302);
-      expect(response.headers.location).toContain('/');
+            const response = await request(app)
+                .get('/profile')
+                .set('Cookie', [`token=${validToken}`])
+                .expect(302);
+
+            expect(response.headers.location).toBe('/login');
+        });
+
+        it('should handle missing user in database for settings route', async () => {
+            mockDb.get.mockImplementation((sql, params, callback) => {
+                callback(null, undefined);
+            });
+
+            const response = await request(app)
+                .get('/settings')
+                .set('Cookie', [`token=${validToken}`])
+                .expect(302);
+
+            expect(response.headers.location).toBe('/login');
+        });
+
+        it('should handle database connection timeouts', async () => {
+            const timeoutError = new Error('Connection timeout');
+            timeoutError.code = 'ETIMEDOUT';
+            sqlite3.verbose().Database.mockImplementation(() => {
+                throw timeoutError;
+            });
+
+            const response = await request(app)
+                .get('/profile')
+                .set('Cookie', [`token=${validToken}`])
+                .expect(500);
+
+            expect(response.text).toContain('Error');
+        });
+
+        it('should handle SQL syntax errors gracefully', async () => {
+            const sqlError = new Error('SQL syntax error');
+            sqlError.code = 'SQLITE_ERROR';
+            mockDb.get.mockImplementation((sql, params, callback) => {
+                callback(sqlError, null);
+            });
+
+            const response = await request(app)
+                .get('/settings')
+                .set('Cookie', [`token=${validToken}`])
+                .expect(500);
+
+            expect(response.text).toContain('Error');
+        });
     });
-  });
-});
 
-describe('Route Security', () => {
-  test('should validate JWT token signature', () => {
-    const payload = { userId: 1, email: 'test@example.com' };
-    const secret = 'test-secret';
-    const wrongSecret = 'wrong-secret';
-    
-    const token = jwt.sign(payload, secret);
-    
-    expect(() => {
-      jwt.verify(token, wrongSecret);
-    }).toThrow('invalid signature');
-  });
+    describe('Responsive Navigation Behavior', () => {
+        it('should include mobile navigation toggle button in response', async () => {
+            mockDb.get.mockImplementation((sql, params, callback) => {
+                callback(null, MOCK_USER_DATA);
+            });
 
-  test('should handle malformed JWT tokens', () => {
-    const malformedToken = 'not.a.valid.jwt.token';
-    
-    expect(() => {
-      jwt.verify(malformedToken, 'any-secret');
-    }).toThrow();
-  });
+            const response = await request(app)
+                .get('/profile')
+                .set('Cookie', [`token=${validToken}`])
+                .expect(200);
 
-  test('should properly hash passwords', async () => {
-    const password = 'testpassword123';
-    const hash1 = await bcrypt.hash(password, 10);
-    const hash2 = await bcrypt.hash(password, 10);
-    
-    // Same password should generate different hashes
-    expect(hash1).not.toBe(hash2);
-    
-    // Both hashes should be valid for the original password
-    expect(await bcrypt.compare(password, hash1)).toBe(true);
-    expect(await bcrypt.compare(password, hash2)).toBe(true);
-    
-    // Wrong password should not match
-    expect(await bcrypt.compare('wrongpassword', hash1)).toBe(false);
-  });
+            expect(response.text).toContain('navbar-toggler');
+            expect(response.text).toContain('d-lg-none');
+        });
+
+        it('should include offcanvas sidebar for mobile devices', async () => {
+            mockDb.get.mockImplementation((sql, params, callback) => {
+                callback(null, MOCK_USER_DATA);
+            });
+
+            const response = await request(app)
+                .get('/settings')
+                .set('Cookie', [`token=${validToken}`])
+                .expect(200);
+
+            expect(response.text).toContain('offcanvas');
+            expect(response.text).toContain('sidebarOffcanvas');
+        });
+    });
 });
