@@ -1,0 +1,31 @@
+<%- include('layout', { title: 'Logout', user: user, error: error, success: success }) %>
+
+<!-- Page Content -->
+<main class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8 col-lg-6">
+            <div class="card shadow">
+                <div class="card-body text-center">
+                    <i class="bi bi-box-arrow-right display-4 text-warning mb-3"></i>
+                    <h1 class="card-title mb-4">Logout</h1>
+                    <p class="card-text mb-4">Are you sure you want to log out of your account?</p>
+                    
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-center">
+                        <form method="POST" action="/logout" class="d-inline">
+                            <button type="submit" class="btn btn-danger btn-lg">
+                                <i class="bi bi-box-arrow-right"></i> Yes, Logout
+                            </button>
+                        </form>
+                        <a href="/dashboard" class="btn btn-secondary btn-lg">
+                            <i class="bi bi-arrow-left"></i> Cancel
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

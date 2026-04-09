@@ -59,6 +59,41 @@ const authenticateToken = (req, res, next) => {
     });
 };
 
+// User context middleware for all routes
+const getUserContext = (req, res, next) => {
+    const token = req.cookies.token;
+    
+    if (!token) {
+        req.user = null;
+        return next();
+    }
+    
+    jwt.verify(token, JWT_SECRET, (err, user) => {
+        if (err) {
+            req.user = null;
+        } else {
+            req.user = user;
+        }
+        next();
+    });
+};
+
+// Flash message middleware
+const flashMessages = (req, res, next) => {
+    res.locals.error = req.cookies.error || null;
+    res.locals.success = req.cookies.success || null;
+    
+    // Clear flash message cookies after reading
+    if (req.cookies.error) {
+        res.clearCookie('error');
+    }
+    if (req.cookies.success) {
+        res.clearCookie('success');
+    }
+    
+    next();
+};
+
 // Validation middleware
 const signupValidation = [
     body('name')
@@ -91,33 +126,72 @@ const loginValidation = [
 ];
 
 // Routes
-app.get('/', (req, res) => {
-    res.render('index');
+app.get('/', getUserContext, flashMessages, (req, res) => {
+    res.render('index', {
+        title: 'Home',
+        user: req.user,
+        error: res.locals.error,
+        success: res.locals.success
+    });
 });
 
-app.get('/signup', (req, res) => {
-    res.render('signup', { error: null });
+app.get('/signup', getUserContext, flashMessages, (req, res) => {
+    res.render('signup', {
+        title: 'Sign Up',
+        user: req.user,
+        error: res.locals.error,
+        success: res.locals.success
+    });
 });
 
-app.get('/login', (req, res) => {
-    res.render('login', { error: null });
+app.get('/login', getUserContext, flashMessages, (req, res) => {
+    res.render('login', {
+        title: 'Login',
+        user: req.user,
+        error: res.locals.error,
+        success: res.locals.success
+    });
 });
 
-app.get('/dashboard', authenticateToken, (req, res) => {
+app.get('/dashboard', authenticateToken, flashMessages, (req, res) => {
     // Get user info from database
     db.get('SELECT name, email FROM users WHERE id = ?', [req.user.id], (err, user) => {
         if (err) {
             console.error(err);
             return res.redirect('/login');
         }
-        res.render('dashboard', { user });
+        res.render('dashboard', {
+            title: 'Dashboard',
+            user: user,
+            error: res.locals.error,
+            success: res.locals.success
+        });
     });
 });
 
-app.post('/signup', signupValidation, async (req, res) => {
+app.get('/logout', getUserContext, flashMessages, (req, res) => {
+    try {
+        res.render('logout', {
+            title: 'Logout',
+            user: req.user,
+            error: res.locals.error,
+            success: res.locals.success
+        });
+    } catch (error) {
+        console.error('Error rendering logout page:', error);
+        res.status(500).send('Failed to render logout page');
+    }
+});
+
+app.post('/signup', getUserContext, signupValidation, async (req, res) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
-        return res.render('signup', { error: errors.array()[0].msg });
+        return res.render('signup', {
+            title: 'Sign Up',
+            user: req.user,
+            error: errors.array()[0].msg,
+            success: null
+        });
     }
 
     const { name, email, password } = req.body;
@@ -132,27 +206,51 @@ app.post('/signup', signupValidation, async (req, res) => {
             [name, email, hashedPassword], 
             function(err) {
                 if (err) {
+                    console.error('Database error during signup:', err);
                     if (err.message.includes('UNIQUE constraint failed')) {
-                        return res.render('signup', { error: 'Email already exists' });
+                        return res.render('signup', {
+                            title: 'Sign Up',
+                            user: req.user,
+                            error: 'Email already exists',
+                            success: null
+                        });
                     }
-                    console.error(err);
-                    return res.render('signup', { error: 'Registration failed' });
+                    return res.render('signup', {
+                        title: 'Sign Up',
+                        user: req.user,
+                        error: 'Registration failed. Please try again.',
+                        success: null
+                    });
                 }
                 
-                // Redirect to login page after successful registration
+                // Set success flash message and redirect to login
+                res.cookie('success', 'Account created successfully! Please log in.', {
+                    httpOnly: true,
+                    maxAge: 5000 // 5 seconds
+                });
                 res.redirect('/login');
             }
         );
     } catch (error) {
-        console.error(error);
-        res.render('signup', { error: 'Registration failed' });
+        console.error('Unexpected error during signup:', error);
+        res.render('signup', {
+            title: 'Sign Up',
+            user: req.user,
+            error: 'Registration failed. Please try again.',
+            success: null
+        });
     }
 });
 
-app.post('/login', loginValidation, (req, res) => {
+app.post('/login', getUserContext, loginValidation, (req, res) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
-        return res.render('login', { error: errors.array()[0].msg });
+        return res.render('login', {
+            title: 'Login',
+            user: req.user,
+            error: errors.array()[0].msg,
+            success: null
+        });
     }
 
     const { email, password } = req.body;
@@ -160,12 +258,22 @@ app.post('/login', loginValidation, (req, res) => {
     // Find user in database
     db.get('SELECT * FROM users WHERE email = ?', [email], async (err, user) => {
         if (err) {
-            console.error(err);
-            return res.render('login', { error: 'Login failed' });
+            console.error('Database error during login:', err);
+            return res.render('login', {
+                title: 'Login',
+                user: req.user,
+                error: 'Login failed. Please try again.',
+                success: null
+            });
         }
         
         if (!user) {
-            return res.render('login', { error: 'Invalid email or password' });
+            return res.render('login', {
+                title: 'Login',
+                user: req.user,
+                error: 'Invalid email or password',
+                success: null
+            });
         }
         
         try {
@@ -173,7 +281,12 @@ app.post('/login', loginValidation, (req, res) => {
             const passwordMatch = await bcrypt.compare(password, user.password);
             
             if (!passwordMatch) {
-                return res.render('login', { error: 'Invalid email or password' });
+                return res.render('login', {
+                    title: 'Login',
+                    user: req.user,
+                    error: 'Invalid email or password',
+                    success: null
+                });
             }
             
             // Generate JWT token
@@ -190,17 +303,46 @@ app.post('/login', loginValidation, (req, res) => {
                 maxAge: 24 * 60 * 60 * 1000 // 24 hours
             });
             
+            // Set success flash message
+            res.cookie('success', 'Login successful! Welcome to your dashboard.', {
+                httpOnly: true,
+                maxAge: 5000 // 5 seconds
+            });
+            
             res.redirect('/dashboard');
         } catch (error) {
-            console.error(error);
-            res.render('login', { error: 'Login failed' });
+            console.error('Unexpected error during login:', error);
+            res.render('login', {
+                title: 'Login',
+                user: req.user,
+                error: 'Login failed. Please try again.',
+                success: null
+            });
         }
     });
 });
 
 app.post('/logout', (req, res) => {
-    res.clearCookie('token');
-    res.redirect('/');
+    try {
+        // Clear the JWT token cookie
+        res.clearCookie('token');
+        
+        // Set success flash message
+        res.cookie('success', 'You have been logged out successfully.', {
+            httpOnly: true,
+            maxAge: 5000 // 5 seconds
+        });
+        
+        // Redirect to home page
+        res.redirect('/');
+    } catch (error) {
+        console.error('Error during logout:', error);
+        res.cookie('error', 'An error occurred during logout.', {
+            httpOnly: true,
+            maxAge: 5000 // 5 seconds
+        });
+        res.redirect('/');
+    }
 });
 
 // Error handling middleware
