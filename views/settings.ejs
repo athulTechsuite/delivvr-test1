@@ -1,0 +1,433 @@
+<%- include('layout', { title: 'Settings', currentPage: 'settings' }) %>
+
+<!-- Settings Content -->
+<div class="row">
+    <div class="col-12">
+        <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+            <h1 class="h2"><i class="bi bi-gear me-2"></i>Settings</h1>
+        </div>
+
+        <!-- Disclaimer Notice -->
+        <div class="alert alert-info mb-4" role="alert">
+            <h5 class="alert-heading"><i class="bi bi-info-circle me-2"></i>Settings Preview</h5>
+            <p class="mb-0">These settings are currently read-only placeholders. No changes will be saved at this time.</p>
+        </div>
+
+        <!-- Settings Accordion -->
+        <div class="accordion" id="settingsAccordion">
+            
+            <!-- Account Settings -->
+            <div class="accordion-item">
+                <h2 class="accordion-header" id="accountSettingsHeading">
+                    <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#accountSettings" aria-expanded="true" aria-controls="accountSettings">
+                        <i class="bi bi-person-gear me-2"></i>Account Settings
+                    </button>
+                </h2>
+                <div id="accountSettings" class="accordion-collapse collapse show" aria-labelledby="accountSettingsHeading" data-bs-parent="#settingsAccordion">
+                    <div class="accordion-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="displayName" class="form-label">Display Name</label>
+                                    <input type="text" class="form-control" id="displayName" value="<%= user.name %>" readonly>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="emailAddress" class="form-label">Email Address</label>
+                                    <input type="email" class="form-control" id="emailAddress" value="<%= user.email %>" readonly>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="timezone" class="form-label">Timezone</label>
+                                    <select class="form-select" id="timezone" disabled>
+                                        <option value="UTC-8">Pacific Standard Time (UTC-8)</option>
+                                        <option value="UTC-5" selected>Eastern Standard Time (UTC-5)</option>
+                                        <option value="UTC">Coordinated Universal Time (UTC)</option>
+                                        <option value="UTC+1">Central European Time (UTC+1)</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="language" class="form-label">Language</label>
+                                    <select class="form-select" id="language" disabled>
+                                        <option value="en" selected>English</option>
+                                        <option value="es">Spanish</option>
+                                        <option value="fr">French</option>
+                                        <option value="de">German</option>
+                                    </select>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="dateFormat" class="form-label">Date Format</label>
+                                    <select class="form-select" id="dateFormat" disabled>
+                                        <option value="MM/DD/YYYY" selected>MM/DD/YYYY</option>
+                                        <option value="DD/MM/YYYY">DD/MM/YYYY</option>
+                                        <option value="YYYY-MM-DD">YYYY-MM-DD</option>
+                                    </select>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Account Status</label>
+                                    <div class="form-control-plaintext">
+                                        <span class="badge bg-success"><i class="bi bi-check-circle me-1"></i>Active</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Privacy Settings -->
+            <div class="accordion-item">
+                <h2 class="accordion-header" id="privacySettingsHeading">
+                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#privacySettings" aria-expanded="false" aria-controls="privacySettings">
+                        <i class="bi bi-shield-lock me-2"></i>Privacy Settings
+                    </button>
+                </h2>
+                <div id="privacySettings" class="accordion-collapse collapse" aria-labelledby="privacySettingsHeading" data-bs-parent="#settingsAccordion">
+                    <div class="accordion-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-check form-switch mb-3">
+                                    <input class="form-check-input" type="checkbox" id="profileVisible" checked disabled>
+                                    <label class="form-check-label" for="profileVisible">
+                                        Make profile publicly visible
+                                    </label>
+                                </div>
+                                <div class="form-check form-switch mb-3">
+                                    <input class="form-check-input" type="checkbox" id="showOnlineStatus" disabled>
+                                    <label class="form-check-label" for="showOnlineStatus">
+                                        Show online status
+                                    </label>
+                                </div>
+                                <div class="form-check form-switch mb-3">
+                                    <input class="form-check-input" type="checkbox" id="allowDirectMessages" checked disabled>
+                                    <label class="form-check-label" for="allowDirectMessages">
+                                        Allow direct messages
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-check form-switch mb-3">
+                                    <input class="form-check-input" type="checkbox" id="dataCollection" checked disabled>
+                                    <label class="form-check-label" for="dataCollection">
+                                        Allow analytics data collection
+                                    </label>
+                                </div>
+                                <div class="form-check form-switch mb-3">
+                                    <input class="form-check-input" type="checkbox" id="thirdPartySharing" disabled>
+                                    <label class="form-check-label" for="thirdPartySharing">
+                                        Share data with third parties
+                                    </label>
+                                </div>
+                                <div class="form-check form-switch mb-3">
+                                    <input class="form-check-input" type="checkbox" id="marketingEmails" disabled>
+                                    <label class="form-check-label" for="marketingEmails">
+                                        Receive marketing emails
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Notification Preferences -->
+            <div class="accordion-item">
+                <h2 class="accordion-header" id="notificationSettingsHeading">
+                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#notificationSettings" aria-expanded="false" aria-controls="notificationSettings">
+                        <i class="bi bi-bell me-2"></i>Notification Preferences
+                    </button>
+                </h2>
+                <div id="notificationSettings" class="accordion-collapse collapse" aria-labelledby="notificationSettingsHeading" data-bs-parent="#settingsAccordion">
+                    <div class="accordion-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <h6 class="mb-3">Email Notifications</h6>
+                                <div class="form-check form-switch mb-2">
+                                    <input class="form-check-input" type="checkbox" id="emailLogin" checked disabled>
+                                    <label class="form-check-label" for="emailLogin">
+                                        Login notifications
+                                    </label>
+                                </div>
+                                <div class="form-check form-switch mb-2">
+                                    <input class="form-check-input" type="checkbox" id="emailSecurity" checked disabled>
+                                    <label class="form-check-label" for="emailSecurity">
+                                        Security alerts
+                                    </label>
+                                </div>
+                                <div class="form-check form-switch mb-2">
+                                    <input class="form-check-input" type="checkbox" id="emailUpdates" disabled>
+                                    <label class="form-check-label" for="emailUpdates">
+                                        Product updates
+                                    </label>
+                                </div>
+                                <div class="form-check form-switch mb-2">
+                                    <input class="form-check-input" type="checkbox" id="emailNewsletter" disabled>
+                                    <label class="form-check-label" for="emailNewsletter">
+                                        Weekly newsletter
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <h6 class="mb-3">Push Notifications</h6>
+                                <div class="form-check form-switch mb-2">
+                                    <input class="form-check-input" type="checkbox" id="pushMessages" checked disabled>
+                                    <label class="form-check-label" for="pushMessages">
+                                        New messages
+                                    </label>
+                                </div>
+                                <div class="form-check form-switch mb-2">
+                                    <input class="form-check-input" type="checkbox" id="pushReminders" disabled>
+                                    <label class="form-check-label" for="pushReminders">
+                                        Reminders
+                                    </label>
+                                </div>
+                                <div class="form-check form-switch mb-2">
+                                    <input class="form-check-input" type="checkbox" id="pushAlerts" checked disabled>
+                                    <label class="form-check-label" for="pushAlerts">
+                                        System alerts
+                                    </label>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="notificationFrequency" class="form-label">Frequency</label>
+                                    <select class="form-select" id="notificationFrequency" disabled>
+                                        <option value="immediate" selected>Immediate</option>
+                                        <option value="hourly">Hourly digest</option>
+                                        <option value="daily">Daily digest</option>
+                                        <option value="weekly">Weekly digest</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Security Settings -->
+            <div class="accordion-item">
+                <h2 class="accordion-header" id="securitySettingsHeading">
+                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#securitySettings" aria-expanded="false" aria-controls="securitySettings">
+                        <i class="bi bi-shield-check me-2"></i>Security Settings
+                    </button>
+                </h2>
+                <div id="securitySettings" class="accordion-collapse collapse" aria-labelledby="securitySettingsHeading" data-bs-parent="#settingsAccordion">
+                    <div class="accordion-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <h6 class="mb-3">Password & Authentication</h6>
+                                <div class="mb-3">
+                                    <label class="form-label">Password Strength</label>
+                                    <div class="progress mb-2" style="height: 8px;">
+                                        <div class="progress-bar bg-success" role="progressbar" style="width: 85%" aria-valuenow="85" aria-valuemin="0" aria-valuemax="100"></div>
+                                    </div>
+                                    <small class="text-success">Strong</small>
+                                </div>
+                                <div class="mb-3">
+                                    <button class="btn btn-outline-primary btn-sm me-2" type="button" disabled>
+                                        <i class="bi bi-key me-1"></i>Change Password
+                                    </button>
+                                </div>
+                                <div class="form-check form-switch mb-3">
+                                    <input class="form-check-input" type="checkbox" id="twoFactor" disabled>
+                                    <label class="form-check-label" for="twoFactor">
+                                        Enable Two-Factor Authentication
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <h6 class="mb-3">Session Management</h6>
+                                <div class="form-check form-switch mb-3">
+                                    <input class="form-check-input" type="checkbox" id="rememberDevice" checked disabled>
+                                    <label class="form-check-label" for="rememberDevice">
+                                        Remember this device
+                                    </label>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="sessionTimeout" class="form-label">Session Timeout</label>
+                                    <select class="form-select" id="sessionTimeout" disabled>
+                                        <option value="15">15 minutes</option>
+                                        <option value="30" selected>30 minutes</option>
+                                        <option value="60">1 hour</option>
+                                        <option value="120">2 hours</option>
+                                    </select>
+                                </div>
+                                <div class="mb-3">
+                                    <button class="btn btn-outline-danger btn-sm" type="button" disabled>
+                                        <i class="bi bi-x-circle me-1"></i>Logout All Devices
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Theme and Appearance -->
+            <div class="accordion-item">
+                <h2 class="accordion-header" id="themeSettingsHeading">
+                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#themeSettings" aria-expanded="false" aria-controls="themeSettings">
+                        <i class="bi bi-palette me-2"></i>Theme & Appearance
+                    </button>
+                </h2>
+                <div id="themeSettings" class="accordion-collapse collapse" aria-labelledby="themeSettingsHeading" data-bs-parent="#settingsAccordion">
+                    <div class="accordion-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">Theme Preference</label>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="theme" id="themeLight" value="light" checked disabled>
+                                        <label class="form-check-label" for="themeLight">
+                                            <i class="bi bi-sun me-1"></i>Light Theme
+                                        </label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="theme" id="themeDark" value="dark" disabled>
+                                        <label class="form-check-label" for="themeDark">
+                                            <i class="bi bi-moon me-1"></i>Dark Theme
+                                        </label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="theme" id="themeAuto" value="auto" disabled>
+                                        <label class="form-check-label" for="themeAuto">
+                                            <i class="bi bi-circle-half me-1"></i>Auto (System)
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="fontSize" class="form-label">Font Size</label>
+                                    <select class="form-select" id="fontSize" disabled>
+                                        <option value="small">Small</option>
+                                        <option value="medium" selected>Medium</option>
+                                        <option value="large">Large</option>
+                                        <option value="xl">Extra Large</option>
+                                    </select>
+                                </div>
+                                <div class="form-check form-switch mb-3">
+                                    <input class="form-check-input" type="checkbox" id="reducedMotion" disabled>
+                                    <label class="form-check-label" for="reducedMotion">
+                                        Reduce motion effects
+                                    </label>
+                                </div>
+                                <div class="form-check form-switch mb-3">
+                                    <input class="form-check-input" type="checkbox" id="highContrast" disabled>
+                                    <label class="form-check-label" for="highContrast">
+                                        High contrast mode
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Data Export -->
+            <div class="accordion-item">
+                <h2 class="accordion-header" id="dataSettingsHeading">
+                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#dataSettings" aria-expanded="false" aria-controls="dataSettings">
+                        <i class="bi bi-download me-2"></i>Data & Export
+                    </button>
+                </h2>
+                <div id="dataSettings" class="accordion-collapse collapse" aria-labelledby="dataSettingsHeading" data-bs-parent="#settingsAccordion">
+                    <div class="accordion-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <h6 class="mb-3">Export Your Data</h6>
+                                <p class="text-muted small mb-3">Download a copy of your account data and activity.</p>
+                                <div class="mb-3">
+                                    <button class="btn btn-outline-primary btn-sm me-2 mb-2" type="button" disabled>
+                                        <i class="bi bi-file-earmark-text me-1"></i>Export Profile Data
+                                    </button>
+                                </div>
+                                <div class="mb-3">
+                                    <button class="btn btn-outline-secondary btn-sm me-2 mb-2" type="button" disabled>
+                                        <i class="bi bi-file-earmark-spreadsheet me-1"></i>Export Activity Log
+                                    </button>
+                                </div>
+                                <div class="mb-3">
+                                    <button class="btn btn-outline-info btn-sm mb-2" type="button" disabled>
+                                        <i class="bi bi-archive me-1"></i>Download All Data
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <h6 class="mb-3">Data Retention</h6>
+                                <div class="mb-3">
+                                    <label for="dataRetention" class="form-label">Keep my data for</label>
+                                    <select class="form-select" id="dataRetention" disabled>
+                                        <option value="1">1 year after account deletion</option>
+                                        <option value="2" selected>2 years after account deletion</option>
+                                        <option value="5">5 years after account deletion</option>
+                                        <option value="indefinite">Indefinitely</option>
+                                    </select>
+                                </div>
+                                <div class="alert alert-warning" role="alert">
+                                    <small><i class="bi bi-exclamation-triangle me-1"></i>Data export and retention settings are not yet functional.</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Save Settings Button -->
+        <div class="mt-4">
+            <button class="btn btn-success me-2" type="button" disabled>
+                <i class="bi bi-check-lg me-2"></i>Save All Settings
+            </button>
+            <button class="btn btn-outline-secondary" type="button" disabled>
+                <i class="bi bi-arrow-clockwise me-2"></i>Reset to Defaults
+            </button>
+        </div>
+
+    </div>
+</div>
+
+<!-- Mobile Offcanvas Sidebar -->
+<div class="offcanvas offcanvas-start" tabindex="-1" id="sidebarOffcanvas" aria-labelledby="sidebarOffcanvasLabel">
+    <div class="offcanvas-header">
+        <h5 class="offcanvas-title" id="sidebarOffcanvasLabel">
+            <i class="bi bi-shield-lock me-2"></i>Auth App
+        </h5>
+        <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+    </div>
+    <div class="offcanvas-body">
+        <ul class="nav flex-column">
+            <li class="nav-item">
+                <a class="nav-link <%= currentPage === 'dashboard' ? 'active' : '' %>" href="/dashboard">
+                    <i class="bi bi-speedometer2"></i> Dashboard
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link <%= currentPage === 'profile' ? 'active' : '' %>" href="/profile">
+                    <i class="bi bi-person-circle"></i> Profile
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link <%= currentPage === 'settings' ? 'active' : '' %>" href="/settings">
+                    <i class="bi bi-gear"></i> Settings
+                </a>
+            </li>
+            <li class="nav-item">
+                <hr class="my-2">
+            </li>
+            <li class="nav-item">
+                <form action="/logout" method="POST" class="d-inline">
+                    <button type="submit" class="nav-link btn btn-link text-start p-2 w-100 border-0">
+                        <i class="bi bi-box-arrow-right"></i> Logout
+                    </button>
+                </form>
+            </li>
+        </ul>
+    </div>
+</div>
+
+</div> <!-- Close container-fluid from layout -->
+</main> <!-- Close main from layout -->
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

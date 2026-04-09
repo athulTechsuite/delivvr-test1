@@ -105,16 +105,54 @@ app.get('/login', (req, res) => {
 
 app.get('/dashboard', authenticateToken, (req, res) => {
     // Get user info from database
-    db.get('SELECT name, email FROM users WHERE id = ?', [req.user.id], (err, user) => {
+    db.get('SELECT id, name, email, created_at FROM users WHERE id = ?', [req.user.id], (err, user) => {
         if (err) {
             console.error(err);
             return res.redirect('/login');
         }
-        res.render('dashboard', { user });
+        if (!user) {
+            return res.redirect('/login');
+        }
+        res.render('dashboard', { user, currentPage: 'dashboard' });
     });
 });
 
+app.get('/profile', authenticateToken, (req, res) => {
+    // Get user info from database
+    db.get('SELECT id, name, email, created_at FROM users WHERE id = ?', [req.user.id], (err, user) => {
+        if (err) {
+            console.error(err);
+            return res.redirect('/login');
+        }
+        if (!user) {
+            return res.redirect('/login');
+        }
+        res.render('profile', { user, currentPage: 'profile' });
+    });
+});
+
+app.get('/settings', authenticateToken, (req, res) => {
+    // Get user info from database
+    db.get('SELECT id, name, email, created_at FROM users WHERE id = ?', [req.user.id], (err, user) => {
+        if (err) {
+            console.error(err);
+            return res.redirect('/login');
+        }
+        if (!user) {
+            return res.redirect('/login');
+        }
+        res.render('settings', { user, currentPage: 'settings' });
+    });
+});
+
+app.get('/logout', (req, res) => {
+    res.clearCookie('token');
+    res.redirect('/login');
+});
+
+// Complete POST signup route with proper error handling, database insertion, token generation, and response
 app.post('/signup', signupValidation, async (req, res) => {
+    // Check for validation errors
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
         return res.render('signup', { error: errors.array()[0].msg });
@@ -123,29 +161,57 @@ app.post('/signup', signupValidation, async (req, res) => {
     const { name, email, password } = req.body;
     
     try {
-        // Hash password
-        const saltRounds = 10;
+        // Hash password with proper salt rounds
+        const saltRounds = 12;
         const hashedPassword = await bcrypt.hash(password, saltRounds);
         
-        // Insert user into database
+        // Insert user into database with proper error handling
         db.run('INSERT INTO users (name, email, password) VALUES (?, ?, ?)', 
             [name, email, hashedPassword], 
             function(err) {
                 if (err) {
+                    // Handle duplicate email error
                     if (err.message.includes('UNIQUE constraint failed')) {
-                        return res.render('signup', { error: 'Email already exists' });
+                        return res.render('signup', { error: 'Email already exists. Please use a different email address.' });
                     }
-                    console.error(err);
-                    return res.render('signup', { error: 'Registration failed' });
+                    // Handle other database errors
+                    console.error('Database error during signup:', err);
+                    return res.render('signup', { error: 'Registration failed. Please try again.' });
                 }
                 
-                // Redirect to login page after successful registration
-                res.redirect('/login');
+                // Get the newly created user ID
+                const userId = this.lastID;
+                
+                try {
+                    // Generate JWT token for immediate login
+                    const token = jwt.sign(
+                        { id: userId, email: email },
+                        JWT_SECRET,
+                        { expiresIn: '24h' }
+                    );
+                    
+                    // Set secure cookie
+                    res.cookie('token', token, {
+                        httpOnly: true,
+                        secure: process.env.NODE_ENV === 'production',
+                        maxAge: 24 * 60 * 60 * 1000, // 24 hours
+                        sameSite: 'strict'
+                    });
+                    
+                    // Redirect to dashboard after successful registration and auto-login
+                    res.redirect('/dashboard');
+                    
+                } catch (tokenError) {
+                    console.error('Token generation error:', tokenError);
+                    // Even if token generation fails, registration succeeded
+                    // Redirect to login page instead
+                    res.redirect('/login?message=Registration successful. Please log in.');
+                }
             }
         );
-    } catch (error) {
-        console.error(error);
-        res.render('signup', { error: 'Registration failed' });
+    } catch (hashError) {
+        console.error('Password hashing error:', hashError);
+        res.render('signup', { error: 'Registration failed. Please try again.' });
     }
 });
 
@@ -228,3 +294,5 @@ process.on('SIGINT', () => {
         process.exit(0);
     });
 });
+
+module.exports = app;
