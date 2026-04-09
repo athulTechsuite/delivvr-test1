@@ -10,6 +10,179 @@ body {
     color: #007bff !important;
 }
 
+/* Side Navigation Styles */
+.sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 100vh;
+    width: 250px;
+    background-color: #343a40;
+    z-index: 1050;
+    transition: all 0.3s ease-in-out;
+    overflow-y: auto;
+}
+
+.sidebar-content {
+    padding: 0;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+.sidebar-brand {
+    padding: 1rem 1.5rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    background-color: #212529;
+}
+
+.sidebar-brand .navbar-brand {
+    color: #ffffff !important;
+    font-size: 1.25rem;
+    font-weight: bold;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.sidebar-brand .navbar-brand:hover {
+    color: #adb5bd !important;
+}
+
+.sidebar-nav {
+    padding: 1rem 0;
+    flex: 1;
+}
+
+.sidebar-nav .nav-item {
+    margin-bottom: 0;
+}
+
+.sidebar-nav .nav-link {
+    color: #ffffff;
+    padding: 0.75rem 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    font-weight: 500;
+    border: none;
+    border-radius: 0;
+    transition: all 0.2s ease-in-out;
+    text-decoration: none;
+}
+
+.sidebar-nav .nav-link:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+    color: #ffffff;
+    transform: translateX(5px);
+}
+
+.sidebar-nav .nav-link.active {
+    background-color: #007bff;
+    color: #ffffff;
+    border-left: 4px solid #0056b3;
+    font-weight: bold;
+}
+
+.sidebar-nav .nav-link i {
+    width: 20px;
+    font-size: 1.1rem;
+}
+
+/* Hamburger Menu Button */
+.sidebar-toggle {
+    position: fixed;
+    top: 15px;
+    right: 15px;
+    z-index: 1100;
+    width: 44px;
+    height: 44px;
+    border-radius: 8px;
+    background-color: #343a40;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: #ffffff;
+    font-size: 1.25rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease-in-out;
+}
+
+.sidebar-toggle:hover {
+    background-color: #495057;
+    transform: scale(1.05);
+}
+
+.sidebar-toggle:focus {
+    box-shadow: 0 0 0 0.2rem rgba(52, 58, 64, 0.5);
+    outline: none;
+}
+
+/* Main Content Wrapper */
+.main-content {
+    margin-left: 250px;
+    min-height: 100vh;
+    transition: all 0.3s ease-in-out;
+    padding: 0;
+}
+
+/* Mobile Overlay */
+.sidebar-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 1040;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s ease-in-out;
+}
+
+.sidebar-overlay.show {
+    opacity: 1;
+    visibility: visible;
+}
+
+/* Responsive Design */
+@media (max-width: 991.98px) {
+    .sidebar {
+        transform: translateX(-100%);
+    }
+    
+    .sidebar.show {
+        transform: translateX(0);
+    }
+    
+    .main-content {
+        margin-left: 0;
+    }
+    
+    .sidebar-toggle {
+        display: flex;
+    }
+}
+
+@media (min-width: 992px) {
+    .sidebar-toggle {
+        display: none;
+    }
+    
+    .sidebar {
+        transform: translateX(0);
+    }
+}
+
+@media (max-width: 767.98px) {
+    .sidebar {
+        width: 100%;
+    }
+}
+
+/* Existing styles continue below */
+
 .hero-section {
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     color: white;
@@ -104,6 +277,7 @@ body {
 .btn-outline-primary:hover {
     background: #667eea;
     border-color: #667eea;
+    color: #ffffff;
     transform: translateY(-1px);
 }
 
