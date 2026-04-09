@@ -95,6 +95,15 @@ app.get('/', (req, res) => {
     res.render('index');
 });
 
+// Static routes for layout demo
+app.get('/static/dashboard', (req, res) => {
+    res.render('static-dashboard', { title: 'Static Dashboard' });
+});
+
+app.get('/static/logout', (req, res) => {
+    res.render('static-logout', { title: 'Static Logout' });
+});
+
 app.get('/signup', (req, res) => {
     res.render('signup', { error: null });
 });

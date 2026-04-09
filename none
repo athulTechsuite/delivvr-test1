@@ -1,0 +1,286 @@
+const request = require('supertest');
+const app = require('../app');
+const { generateAuthToken, createTestUser, cleanupTestData } = require('../test/helpers/auth');
+const { setupTestDatabase, teardownTestDatabase } = require('../test/helpers/database');
+
+describe('AC-20: Existing authenticated routes continue functioning', () => {
+  let authToken;
+  let testUser;
+
+  beforeAll(async () => {
+    await setupTestDatabase();
+  });
+
+  beforeEach(async () => {
+    testUser = await createTestUser({
+      email: 'test@example.com',
+      password: 'SecurePassword123!',
+      role: 'user'
+    });
+    authToken = generateAuthToken(testUser);
+  });
+
+  afterEach(async () => {
+    await cleanupTestData();
+  });
+
+  afterAll(async () => {
+    await teardownTestDatabase();
+  });
+
+  describe('TC-AC-20-001: Protected user profile routes', () => {
+    it('should successfully access user profile with valid authentication - happy path', async () => {
+      const response = await request(app)
+        .get('/api/user/profile')
+        .set('Authorization', `Bearer ${authToken}`)
+        .expect(200);
+
+      expect(response.body).toBeDefined();
+      expect(response.body.id).toBe(testUser.id);
+      expect(response.body.email).toBe(testUser.email);
+      expect(response.body.password).toBeUndefined();
+    });
+
+    it('should reject access to user profile without authentication - error path', async () => {
+      const response = await request(app)
+        .get('/api/user/profile')
+        .expect(401);
+
+      expect(response.body.error).toBe('Authentication required');
+    });
+
+    it('should reject access to user profile with invalid token - error path', async () => {
+      const response = await request(app)
+        .get('/api/user/profile')
+        .set('Authorization', 'Bearer invalid_token_here')
+        .expect(401);
+
+      expect(response.body.error).toBe('Invalid authentication token');
+    });
+
+    it('should reject access to user profile with expired token - error path', async () => {
+      const expiredToken = generateAuthToken(testUser, { expiresIn: '-1h' });
+      
+      const response = await request(app)
+        .get('/api/user/profile')
+        .set('Authorization', `Bearer ${expiredToken}`)
+        .expect(401);
+
+      expect(response.body.error).toBe('Token expired');
+    });
+  });
+
+  describe('TC-AC-20-002: Protected user settings routes', () => {
+    it('should successfully update user settings with valid authentication - happy path', async () => {
+      const updateData = {
+        firstName: 'Updated',
+        lastName: 'Name',
+        preferences: {
+          theme: 'dark',
+          notifications: true
+        }
+      };
+
+      const response = await request(app)
+        .put('/api/user/settings')
+        .set('Authorization', `Bearer ${authToken}`)
+        .send(updateData)
+        .expect(200);
+
+      expect(response.body.firstName).toBe(updateData.firstName);
+      expect(response.body.lastName).toBe(updateData.lastName);
+      expect(response.body.preferences.theme).toBe(updateData.preferences.theme);
+    });
+
+    it('should reject settings update without authentication - error path', async () => {
+      const updateData = {
+        firstName: 'Updated',
+        lastName: 'Name'
+      };
+
+      const response = await request(app)
+        .put('/api/user/settings')
+        .send(updateData)
+        .expect(401);
+
+      expect(response.body.error).toBe('Authentication required');
+    });
+
+    it('should validate input data for settings update - error path', async () => {
+      const invalidData = {
+        firstName: '', // Empty string should be invalid
+        lastName: null,
+        preferences: 'not_an_object'
+      };
+
+      const response = await request(app)
+        .put('/api/user/settings')
+        .set('Authorization', `Bearer ${authToken}`)
+        .send(invalidData)
+        .expect(400);
+
+      expect(response.body.error).toContain('Invalid input data');
+    });
+  });
+
+  describe('TC-AC-20-003: Protected dashboard routes', () => {
+    it('should successfully access dashboard data with valid authentication - happy path', async () => {
+      const response = await request(app)
+        .get('/api/dashboard')
+        .set('Authorization', `Bearer ${authToken}`)
+        .expect(200);
+
+      expect(response.body).toBeDefined();
+      expect(response.body.userId).toBe(testUser.id);
+      expect(response.body.data).toBeDefined();
+      expect(Array.isArray(response.body.items)).toBe(true);
+    });
+
+    it('should reject dashboard access without authentication - error path', async () => {
+      const response = await request(app)
+        .get('/api/dashboard')
+        .expect(401);
+
+      expect(response.body.error).toBe('Authentication required');
+    });
+
+    it('should handle dashboard data filtering with valid parameters - happy path', async () => {
+      const response = await request(app)
+        .get('/api/dashboard')
+        .query({ 
+          filter: 'recent',
+          limit: 10,
+          offset: 0
+        })
+        .set('Authorization', `Bearer ${authToken}`)
+        .expect(200);
+
+      expect(response.body.items.length).toBeLessThanOrEqual(10);
+      expect(response.body.pagination).toBeDefined();
+    });
+
+    it('should validate dashboard query parameters - error path', async () => {
+      const response = await request(app)
+        .get('/api/dashboard')
+        .query({ 
+          filter: 'invalid_filter',
+          limit: 'not_a_number',
+          offset: -1
+        })
+        .set('Authorization', `Bearer ${authToken}`)
+        .expect(400);
+
+      expect(response.body.error).toContain('Invalid query parameters');
+    });
+  });
+
+  describe('TC-AC-20-004: Protected API endpoints with different HTTP methods', () => {
+    it('should handle POST requests to protected endpoints - happy path', async () => {
+      const createData = {
+        title: 'Test Item',
+        description: 'Test description',
+        category: 'general'
+      };
+
+      const response = await request(app)
+        .post('/api/items')
+        .set('Authorization', `Bearer ${authToken}`)
+        .send(createData)
+        .expect(201);
+
+      expect(response.body.id).toBeDefined();
+      expect(response.body.title).toBe(createData.title);
+      expect(response.body.userId).toBe(testUser.id);
+    });
+
+    it('should handle DELETE requests to protected endpoints - happy path', async () => {
+      // First create an item
+      const createResponse = await request(app)
+        .post('/api/items')
+        .set('Authorization', `Bearer ${authToken}`)
+        .send({ title: 'To Delete', description: 'Will be deleted' });
+
+      const itemId = createResponse.body.id;
+
+      // Then delete it
+      const deleteResponse = await request(app)
+        .delete(`/api/items/${itemId}`)
+        .set('Authorization', `Bearer ${authToken}`)
+        .expect(204);
+
+      expect(deleteResponse.body).toEqual({});
+    });
+
+    it('should prevent unauthorized DELETE requests - error path', async () => {
+      const response = await request(app)
+        .delete('/api/items/123')
+        .expect(401);
+
+      expect(response.body.error).toBe('Authentication required');
+    });
+
+    it('should prevent access to non-existent protected resources - error path', async () => {
+      const response = await request(app)
+        .get('/api/items/999999')
+        .set('Authorization', `Bearer ${authToken}`)
+        .expect(404);
+
+      expect(response.body.error).toBe('Resource not found');
+    });
+  });
+
+  describe('TC-AC-20-005: Role-based access control on authenticated routes', () => {
+    it('should allow admin users to access admin-only routes - happy path', async () => {
+      const adminUser = await createTestUser({
+        email: 'admin@example.com',
+        password: 'AdminPassword123!',
+        role: 'admin'
+      });
+      const adminToken = generateAuthToken(adminUser);
+
+      const response = await request(app)
+        .get('/api/admin/users')
+        .set('Authorization', `Bearer ${adminToken}`)
+        .expect(200);
+
+      expect(response.body.users).toBeDefined();
+      expect(Array.isArray(response.body.users)).toBe(true);
+    });
+
+    it('should prevent regular users from accessing admin routes - error path', async () => {
+      const response = await request(app)
+        .get('/api/admin/users')
+        .set('Authorization', `Bearer ${authToken}`) // Regular user token
+        .expect(403);
+
+      expect(response.body.error).toBe('Insufficient permissions');
+    });
+
+    it('should handle role changes correctly - error path', async () => {
+      // Create a user with admin role
+      const adminUser = await createTestUser({
+        email: 'temp-admin@example.com',
+        password: 'TempAdminPassword123!',
+        role: 'admin'
+      });
+      const adminToken = generateAuthToken(adminUser);
+
+      // First verify admin access works
+      await request(app)
+        .get('/api/admin/settings')
+        .set('Authorization', `Bearer ${adminToken}`)
+        .expect(200);
+
+      // Simulate role change to regular user (this would typically happen through a separate admin action)
+      // Then try to access admin route - should fail
+      const demotedToken = generateAuthToken({ ...adminUser, role: 'user' });
+      
+      const response = await request(app)
+        .get('/api/admin/settings')
+        .set('Authorization', `Bearer ${demotedToken}`)
+        .expect(403);
+
+      expect(response.body.error).toBe('Insufficient permissions');
+    });
+  });
+});
