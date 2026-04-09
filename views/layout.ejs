@@ -6,39 +6,95 @@
     <title><%= title %> | Auth App</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="/css/style.css" rel="stylesheet">
 </head>
 <body>
-    <!-- Navigation -->
-    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
-        <div class="container">
-            <a class="navbar-brand" href="/">
-                <i class="bi bi-shield-lock"></i> Auth App
-            </a>
-            
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            
-            <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav me-auto">
-                    <li class="nav-item">
-                        <a class="nav-link" href="/">Home</a>
-                    </li>
-                </ul>
+    <% if (typeof user !== 'undefined' && user) { %>
+        <!-- Mobile Hamburger Button -->
+        <button class="hamburger-btn" id="hamburgerBtn" aria-label="Toggle navigation">
+            <i class="bi bi-list" id="hamburgerIcon"></i>
+        </button>
+
+        <!-- Sidebar Overlay for Mobile -->
+        <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+        <!-- Side Navigation -->
+        <nav class="sidebar" id="sidebar">
+            <div class="p-3 text-white">
+                <h4 class="mb-0">
+                    <i class="bi bi-shield-lock"></i> Auth App
+                </h4>
+                <small class="text-muted">Welcome, <%= user.name %></small>
+            </div>
+            <ul class="sidebar-nav">
+                <li class="nav-item">
+                    <a class="nav-link <%= typeof currentPath !== 'undefined' && currentPath === '/dashboard' ? 'active' : '' %>" href="/dashboard">
+                        <i class="bi bi-speedometer2"></i>
+                        Dashboard
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link <%= typeof currentPath !== 'undefined' && currentPath === '/profile' ? 'active' : '' %>" href="/profile">
+                        <i class="bi bi-person"></i>
+                        Profile
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link <%= typeof currentPath !== 'undefined' && currentPath === '/settings' ? 'active' : '' %>" href="/settings">
+                        <i class="bi bi-gear"></i>
+                        Settings
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <form method="POST" action="/logout" class="m-0">
+                        <button type="submit" class="nav-link">
+                            <i class="bi bi-box-arrow-right"></i>
+                            Logout
+                        </button>
+                    </form>
+                </li>
+            </ul>
+        </nav>
+
+        <!-- Main Content for Authenticated Users -->
+        <div class="main-content">
+            <!-- Flash Messages -->
+            <% if (typeof error !== 'undefined' && error) { %>
+                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                    <i class="bi bi-exclamation-triangle"></i> <%= error %>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            <% } %>
+
+            <% if (typeof success !== 'undefined' && success) { %>
+                <div class="alert alert-success alert-dismissible fade show" role="alert">
+                    <i class="bi bi-check-circle"></i> <%= success %>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            <% } %>
+
+            <%- body %>
+        </div>
+    <% } else { %>
+        <!-- Minimal Top Navigation for Unauthenticated Users -->
+        <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+            <div class="container">
+                <a class="navbar-brand" href="/">
+                    <i class="bi bi-shield-lock"></i> Auth App
+                </a>
                 
-                <ul class="navbar-nav">
-                    <% if (typeof user !== 'undefined' && user) { %>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                
+                <div class="collapse navbar-collapse" id="navbarNav">
+                    <ul class="navbar-nav me-auto">
                         <li class="nav-item">
-                            <a class="nav-link" href="/dashboard">
-                                <i class="bi bi-person-circle"></i> Dashboard
-                            </a>
+                            <a class="nav-link" href="/">Home</a>
                         </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="/logout">
-                                <i class="bi bi-box-arrow-right"></i> Logout
-                            </a>
-                        </li>
-                    <% } else { %>
+                    </ul>
+                    
+                    <ul class="navbar-nav">
                         <li class="nav-item">
                             <a class="nav-link" href="/login">
                                 <i class="bi bi-box-arrow-in-right"></i> Login
@@ -49,35 +105,35 @@
                                 <i class="bi bi-person-plus"></i> Sign Up
                             </a>
                         </li>
-                    <% } %>
-                </ul>
+                    </ul>
+                </div>
             </div>
-        </div>
-    </nav>
+        </nav>
 
-    <!-- Flash Messages -->
-    <% if (typeof error !== 'undefined' && error) { %>
-        <div class="container mt-3">
-            <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                <i class="bi bi-exclamation-triangle"></i> <%= error %>
-                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        <!-- Flash Messages for Unauthenticated Users -->
+        <% if (typeof error !== 'undefined' && error) { %>
+            <div class="container mt-3">
+                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                    <i class="bi bi-exclamation-triangle"></i> <%= error %>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
             </div>
-        </div>
+        <% } %>
+
+        <% if (typeof success !== 'undefined' && success) { %>
+            <div class="container mt-3">
+                <div class="alert alert-success alert-dismissible fade show" role="alert">
+                    <i class="bi bi-check-circle"></i> <%= success %>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            </div>
+        <% } %>
+
+        <!-- Main Content for Unauthenticated Users -->
+        <main class="container mt-4">
+            <%- body %>
+        </main>
     <% } %>
-
-    <% if (typeof success !== 'undefined' && success) { %>
-        <div class="container mt-3">
-            <div class="alert alert-success alert-dismissible fade show" role="alert">
-                <i class="bi bi-check-circle"></i> <%= success %>
-                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-            </div>
-        </div>
-    <% } %>
-
-    <!-- Main Content -->
-    <main class="container mt-4">
-        <%- body %>
-    </main>
 
     <!-- Footer -->
     <footer class="bg-light text-center text-muted py-4 mt-5">
@@ -86,6 +142,83 @@
         </div>
     </footer>
 
+    <!-- Bootstrap JS Bundle -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <% if (typeof user !== 'undefined' && user) { %>
+    <script>
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('sidebarOverlay');
+            const hamburgerIcon = document.getElementById('hamburgerIcon');
+            
+            if (!sidebar || !overlay || !hamburgerIcon) {
+                console.error('Sidebar elements not found');
+                return;
+            }
+            
+            const isOpen = sidebar.classList.contains('show');
+            
+            if (isOpen) {
+                sidebar.classList.remove('show');
+                overlay.classList.remove('show');
+                hamburgerIcon.className = 'bi bi-list';
+            } else {
+                sidebar.classList.add('show');
+                overlay.classList.add('show');
+                hamburgerIcon.className = 'bi bi-x';
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            const hamburgerBtn = document.getElementById('hamburgerBtn');
+            const overlay = document.getElementById('sidebarOverlay');
+            
+            if (hamburgerBtn) {
+                hamburgerBtn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    toggleSidebar();
+                });
+            }
+            
+            if (overlay) {
+                overlay.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    toggleSidebar();
+                });
+            }
+            
+            // Close sidebar when clicking outside on mobile
+            document.addEventListener('click', function(e) {
+                const sidebar = document.getElementById('sidebar');
+                const hamburgerBtn = document.getElementById('hamburgerBtn');
+                
+                if (sidebar && hamburgerBtn && window.innerWidth < 768) {
+                    const isClickInsideSidebar = sidebar.contains(e.target);
+                    const isClickOnHamburger = hamburgerBtn.contains(e.target);
+                    
+                    if (!isClickInsideSidebar && !isClickOnHamburger && sidebar.classList.contains('show')) {
+                        toggleSidebar();
+                    }
+                }
+            });
+            
+            // Handle window resize
+            window.addEventListener('resize', function() {
+                const sidebar = document.getElementById('sidebar');
+                const overlay = document.getElementById('sidebarOverlay');
+                const hamburgerIcon = document.getElementById('hamburgerIcon');
+                
+                if (window.innerWidth >= 768 && sidebar && overlay && hamburgerIcon) {
+                    sidebar.classList.remove('show');
+                    overlay.classList.remove('show');
+                    hamburgerIcon.className = 'bi bi-list';
+                }
+            });
+        });
+    </script>
+    <% } %>
 </body>
 </html>
