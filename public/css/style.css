@@ -5,6 +5,208 @@ body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
+/* Sidebar Styles */
+.offcanvas-lg {
+    --bs-offcanvas-width: 280px;
+    --bs-offcanvas-bg: var(--bs-primary);
+}
+
+/* Desktop sidebar - always visible on large screens */
+@media (min-width: 992px) {
+    .offcanvas-lg:not(.show) {
+        transform: none;
+        visibility: visible;
+    }
+    
+    .offcanvas-lg .offcanvas-header {
+        padding: 1.5rem 1rem;
+    }
+    
+    .offcanvas-lg .offcanvas-body {
+        padding: 0;
+    }
+}
+
+/* Sidebar header styling */
+.offcanvas-header {
+    background-color: var(--bs-primary);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.offcanvas-title {
+    font-weight: bold;
+    font-size: 1.25rem;
+}
+
+/* Sidebar navigation styles */
+.offcanvas .nav-link {
+    padding: 0.75rem 1rem;
+    color: rgba(255, 255, 255, 0.85);
+    border: none;
+    border-radius: 0;
+    transition: all 0.3s ease;
+    position: relative;
+    text-decoration: none;
+}
+
+.offcanvas .nav-link:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+    color: white;
+    transform: translateX(5px);
+}
+
+.offcanvas .nav-link.active {
+    background-color: rgba(255, 255, 255, 0.2);
+    color: white;
+    font-weight: 600;
+}
+
+.offcanvas .nav-link.active::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 4px;
+    background-color: white;
+}
+
+/* User profile section in sidebar */
+.offcanvas .border-bottom {
+    border-color: rgba(255, 255, 255, 0.2) !important;
+}
+
+/* Logout button styling */
+.offcanvas form .btn {
+    padding: 0;
+    margin: 0;
+    text-align: left;
+    background: none;
+    border: none;
+}
+
+.offcanvas form .nav-link {
+    display: block;
+    width: 100%;
+    padding: 0.75rem 1rem;
+}
+
+/* Main content wrapper */
+.main-content {
+    margin-left: 0;
+    min-height: 100vh;
+    transition: margin-left 0.3s ease;
+}
+
+/* Desktop layout adjustments */
+@media (min-width: 992px) {
+    .main-content {
+        margin-left: 280px;
+    }
+    
+    /* Hide mobile toggle button on desktop */
+    .d-lg-none {
+        display: none !important;
+    }
+}
+
+/* Mobile toggle button styling */
+.d-lg-none {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 1030;
+    background-color: var(--bs-primary);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.d-lg-none .btn {
+    color: white;
+    background: none;
+    border: none;
+    font-size: 1.1rem;
+}
+
+/* Mobile content adjustment */
+@media (max-width: 991.98px) {
+    .main-content {
+        padding-top: 70px; /* Account for mobile toggle button */
+    }
+    
+    .main-content .container:first-child {
+        margin-top: 0 !important;
+    }
+}
+
+/* Sidebar backdrop for mobile */
+.offcanvas-backdrop {
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 1040;
+}
+
+/* Bootstrap primary dark variant */
+.bg-primary-dark {
+    background-color: rgba(255, 255, 255, 0.2) !important;
+}
+
+/* Close button styling */
+.btn-close-white {
+    filter: invert(1) grayscale(100%) brightness(200%);
+}
+
+/* Icons in sidebar */
+.offcanvas .nav-link i {
+    margin-right: 0.75rem;
+    width: 20px;
+    text-align: center;
+    font-size: 1.1rem;
+}
+
+/* Smooth animations */
+.offcanvas {
+    transition: transform 0.3s ease-in-out;
+}
+
+/* Print styles - hide sidebar */
+@media print {
+    .offcanvas,
+    .d-lg-none {
+        display: none !important;
+    }
+    
+    .main-content {
+        margin-left: 0 !important;
+    }
+}
+
+/* Focus styles for accessibility */
+.offcanvas .nav-link:focus {
+    outline: 2px solid rgba(255, 255, 255, 0.8);
+    outline-offset: -2px;
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+    .offcanvas .nav-link {
+        border-bottom: 1px solid rgba(255, 255, 255, 0.3);
+    }
+    
+    .offcanvas .nav-link:hover,
+    .offcanvas .nav-link:focus {
+        background-color: rgba(255, 255, 255, 0.3);
+    }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+    .offcanvas,
+    .main-content,
+    .offcanvas .nav-link {
+        transition: none;
+    }
+}
+
 .navbar-brand {
     font-weight: bold;
     color: #007bff !important;
