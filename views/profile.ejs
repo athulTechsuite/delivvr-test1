@@ -1,0 +1,722 @@
+<%- include('partials/header') %>
+
+<div class="container-fluid">
+    <div class="row">
+        <!-- Sidebar -->
+        <nav class="col-md-3 col-lg-2 d-md-block bg-dark sidebar collapse">
+            <div class="position-sticky pt-3">
+                <ul class="nav flex-column">
+                    <li class="nav-item">
+                        <a class="nav-link text-white" href="/dashboard">
+                            <i class="bi bi-house-door me-2"></i>
+                            Dashboard
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link text-white active" href="/dashboard/profile">
+                            <i class="bi bi-person me-2"></i>
+                            Profile
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link text-white" href="/logout">
+                            <i class="bi bi-box-arrow-right me-2"></i>
+                            Logout
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </nav>
+
+        <!-- Main content -->
+        <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+            <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                <h1 class="h2 text-white">Profile</h1>
+            </div>
+
+            <!-- Success message -->
+            <% if (typeof success !== 'undefined' && success) { %>
+                <div class="alert alert-success alert-dismissible fade show" role="alert">
+                    Profile updated successfully!
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            <% } %>
+
+            <!-- Error message -->
+            <% if (typeof error !== 'undefined' && error) { %>
+                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                    <%- error %>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            <% } %>
+
+            <!-- Validation errors display area -->
+            <div id="validation-errors" class="alert alert-danger d-none" role="alert">
+                <ul id="validation-errors-list" class="mb-0"></ul>
+            </div>
+
+            <!-- Profile Card -->
+            <div class="row">
+                <div class="col-lg-8">
+                    <div class="card shadow-sm">
+                        <div class="card-body p-4">
+                            <div class="d-flex justify-content-between align-items-center mb-4">
+                                <h5 class="card-title mb-0">
+                                    <i class="bi bi-person-circle me-2"></i>
+                                    Profile Information
+                                </h5>
+                                <button id="edit-profile-btn" class="btn btn-primary" type="button">
+                                    <i class="bi bi-pencil me-1"></i>
+                                    Edit Profile
+                                </button>
+                            </div>
+
+                            <!-- Loading state -->
+                            <div id="loading-state" class="d-none text-center py-3">
+                                <div class="spinner-border text-primary" role="status">
+                                    <span class="visually-hidden">Updating...</span>
+                                </div>
+                                <p class="mt-2 text-muted">Updating your profile...</p>
+                            </div>
+
+                            <!-- Profile Form with method override -->
+                            <form id="profile-form" action="/dashboard/profile" method="POST" enctype="multipart/form-data">
+                                <input type="hidden" name="_method" value="PUT">
+                                
+                                <!-- Avatar section with file upload -->
+                                <div class="row mb-4">
+                                    <div class="col-sm-3">
+                                        <label class="form-label text-muted">Avatar</label>
+                                    </div>
+                                    <div class="col-sm-9">
+                                        <div id="avatar-display" class="d-flex align-items-center">
+                                            <% if (user.avatar_url && user.avatar_url.trim()) { %>
+                                                <img src="<%= user.avatar_url %>" alt="Profile Avatar" class="rounded-circle me-3" width="64" height="64" style="object-fit: cover;">
+                                            <% } else { %>
+                                                <div class="bg-secondary rounded-circle me-3 d-flex align-items-center justify-content-center" style="width: 64px; height: 64px;">
+                                                    <i class="bi bi-person text-white" style="font-size: 1.5rem;"></i>
+                                                </div>
+                                            <% } %>
+                                            <div>
+                                                <input type="file" class="form-control d-none" id="avatar" name="avatar" accept="image/*">
+                                                <button type="button" id="upload-avatar-btn" class="btn btn-outline-secondary btn-sm d-none">
+                                                    <i class="bi bi-upload me-1"></i>
+                                                    Choose Photo
+                                                </button>
+                                                <small class="text-muted d-block mt-1">Upload a profile photo (optional)</small>
+                                                <small class="text-muted">Supported formats: JPG, PNG, GIF. Max size: 5MB</small>
+                                            </div>
+                                        </div>
+                                        <input type="hidden" id="avatar_url" name="avatar_url" value="<%= user.avatar_url || '' %>">
+                                    </div>
+                                </div>
+
+                                <!-- Name field -->
+                                <div class="row mb-3">
+                                    <div class="col-sm-3">
+                                        <label for="name" class="form-label text-muted">
+                                            <i class="bi bi-person me-1"></i>
+                                            Full Name <span class="text-danger">*</span>
+                                        </label>
+                                    </div>
+                                    <div class="col-sm-9">
+                                        <div id="name-display" class="form-control-plaintext">
+                                            <%= user.name || 'Not provided' %>
+                                        </div>
+                                        <input type="text" class="form-control d-none" id="name" name="name" 
+                                               value="<%= user.name || '' %>" 
+                                               minlength="2" maxlength="50" required
+                                               placeholder="Enter your full name">
+                                        <div class="invalid-feedback">
+                                            Name must be between 2 and 50 characters.
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Email field -->
+                                <div class="row mb-3">
+                                    <div class="col-sm-3">
+                                        <label for="email" class="form-label text-muted">
+                                            <i class="bi bi-envelope me-1"></i>
+                                            Email Address <span class="text-danger">*</span>
+                                        </label>
+                                    </div>
+                                    <div class="col-sm-9">
+                                        <div id="email-display" class="form-control-plaintext">
+                                            <%= user.email || 'Not provided' %>
+                                        </div>
+                                        <input type="email" class="form-control d-none" id="email" name="email" 
+                                               value="<%= user.email || '' %>" required
+                                               placeholder="Enter your email address">
+                                        <div class="invalid-feedback">
+                                            Please provide a valid email address.
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Phone field -->
+                                <div class="row mb-3">
+                                    <div class="col-sm-3">
+                                        <label for="phone" class="form-label text-muted">
+                                            <i class="bi bi-phone me-1"></i>
+                                            Phone Number
+                                        </label>
+                                    </div>
+                                    <div class="col-sm-9">
+                                        <div id="phone-display" class="form-control-plaintext">
+                                            <%= user.phone || 'Not provided' %>
+                                        </div>
+                                        <input type="tel" class="form-control d-none" id="phone" name="phone" 
+                                               value="<%= user.phone || '' %>" 
+                                               maxlength="20" placeholder="e.g., (555) 123-4567">
+                                        <div class="invalid-feedback">
+                                            Phone number can only contain digits, spaces, dashes, and parentheses.
+                                        </div>
+                                        <small class="form-text text-muted d-none" id="phone-help">
+                                            Optional. Use digits, spaces, dashes, and parentheses only.
+                                        </small>
+                                    </div>
+                                </div>
+
+                                <!-- Bio field -->
+                                <div class="row mb-4">
+                                    <div class="col-sm-3">
+                                        <label for="bio" class="form-label text-muted">
+                                            <i class="bi bi-card-text me-1"></i>
+                                            Bio
+                                        </label>
+                                    </div>
+                                    <div class="col-sm-9">
+                                        <div id="bio-display" class="form-control-plaintext">
+                                            <% if (user.bio && user.bio.trim()) { %>
+                                                <%- user.bio.replace(/\n/g, '<br>') %>
+                                            <% } else { %>
+                                                No bio provided
+                                            <% } %>
+                                        </div>
+                                        <textarea class="form-control d-none" id="bio" name="bio" 
+                                                  rows="4" maxlength="500" 
+                                                  placeholder="Tell us about yourself..."><%= user.bio || '' %></textarea>
+                                        <div class="invalid-feedback">
+                                            Bio must not exceed 500 characters.
+                                        </div>
+                                        <small class="form-text text-muted d-none" id="bio-help">
+                                            Optional. Maximum 500 characters. <span id="bio-counter">0</span>/500
+                                        </small>
+                                    </div>
+                                </div>
+
+                                <!-- Action buttons (hidden by default) -->
+                                <div id="form-actions" class="d-none">
+                                    <hr class="mb-3">
+                                    <div class="d-flex justify-content-end gap-2">
+                                        <button type="button" id="cancel-btn" class="btn btn-outline-secondary">
+                                            <i class="bi bi-x-circle me-1"></i>
+                                            Cancel
+                                        </button>
+                                        <button type="submit" id="save-btn" class="btn btn-primary">
+                                            <i class="bi bi-check-circle me-1"></i>
+                                            Save Changes
+                                        </button>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Account Info Card -->
+                <div class="col-lg-4">
+                    <div class="card shadow-sm mt-4 mt-lg-0">
+                        <div class="card-body p-4">
+                            <h5 class="card-title mb-3">
+                                <i class="bi bi-info-circle me-2"></i>
+                                Account Information
+                            </h5>
+                            <div class="mb-2">
+                                <small class="text-muted d-block">User ID</small>
+                                <span class="fw-medium"><%= user.id %></span>
+                            </div>
+                            <div class="mb-2">
+                                <small class="text-muted d-block">Member Since</small>
+                                <span class="fw-medium">
+                                    <% if (user.created_at) { %>
+                                        <%= new Date(user.created_at).toLocaleDateString('en-US', { 
+                                            year: 'numeric', 
+                                            month: 'long', 
+                                            day: 'numeric' 
+                                        }) %>
+                                    <% } else { %>
+                                        Not available
+                                    <% } %>
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Security Tips Card -->
+                    <div class="card shadow-sm mt-3">
+                        <div class="card-body p-4">
+                            <h6 class="card-title mb-3">
+                                <i class="bi bi-shield-check me-2 text-success"></i>
+                                Security Tips
+                            </h6>
+                            <ul class="list-unstyled mb-0">
+                                <li class="mb-2">
+                                    <i class="bi bi-check2 text-success me-2"></i>
+                                    <small>Keep your profile information up to date</small>
+                                </li>
+                                <li class="mb-2">
+                                    <i class="bi bi-check2 text-success me-2"></i>
+                                    <small>Use a strong, unique password</small>
+                                </li>
+                                <li>
+                                    <i class="bi bi-check2 text-success me-2"></i>
+                                    <small>Don't share personal information publicly</small>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+</div>
+
+<!-- Profile management JavaScript -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Constants for validation
+    const VALIDATION_CONSTANTS = {
+        NAME_MIN_LENGTH: 2,
+        NAME_MAX_LENGTH: 50,
+        BIO_MAX_LENGTH: 500,
+        PHONE_MAX_LENGTH: 20,
+        EMAIL_REGEX: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
+        PHONE_REGEX: /^[\d\s\-\(\)]*$/,
+        AVATAR_MAX_SIZE: 5 * 1024 * 1024, // 5MB
+        ALLOWED_IMAGE_TYPES: ['image/jpeg', 'image/jpg', 'image/png', 'image/gif']
+    };
+
+    // Elements
+    const editBtn = document.getElementById('edit-profile-btn');
+    const cancelBtn = document.getElementById('cancel-btn');
+    const saveBtn = document.getElementById('save-btn');
+    const formActions = document.getElementById('form-actions');
+    const profileForm = document.getElementById('profile-form');
+    const loadingState = document.getElementById('loading-state');
+    const validationErrors = document.getElementById('validation-errors');
+    const validationErrorsList = document.getElementById('validation-errors-list');
+    const uploadAvatarBtn = document.getElementById('upload-avatar-btn');
+    const avatarInput = document.getElementById('avatar');
+
+    // Form fields
+    const fields = {
+        name: {
+            display: document.getElementById('name-display'),
+            input: document.getElementById('name')
+        },
+        email: {
+            display: document.getElementById('email-display'),
+            input: document.getElementById('email')
+        },
+        phone: {
+            display: document.getElementById('phone-display'),
+            input: document.getElementById('phone')
+        },
+        bio: {
+            display: document.getElementById('bio-display'),
+            input: document.getElementById('bio')
+        }
+    };
+
+    const bioCounter = document.getElementById('bio-counter');
+    const bioHelp = document.getElementById('bio-help');
+    const phoneHelp = document.getElementById('phone-help');
+
+    // Store original values for cancel functionality
+    let originalValues = {};
+
+    // XSS Protection function
+    function escapeHtml(text) {
+        const map = {
+            '&': '&amp;',
+            '<': '&lt;',
+            '>': '&gt;',
+            '"': '&quot;',
+            "'": '&#039;'
+        };
+        return text.replace(/[&<>"']/g, function(m) { return map[m]; });
+    }
+
+    // Initialize original values
+    function storeOriginalValues() {
+        originalValues = {
+            name: fields.name.input.value,
+            email: fields.email.input.value,
+            phone: fields.phone.input.value,
+            bio: fields.bio.input.value
+        };
+    }
+
+    // Toggle to edit mode
+    function enterEditMode() {
+        editBtn.classList.add('d-none');
+        formActions.classList.remove('d-none');
+        uploadAvatarBtn.classList.remove('d-none');
+        
+        // Show input fields, hide display elements
+        Object.keys(fields).forEach(key => {
+            fields[key].display.classList.add('d-none');
+            fields[key].input.classList.remove('d-none');
+            fields[key].input.classList.remove('is-invalid');
+        });
+
+        // Show help text
+        bioHelp.classList.remove('d-none');
+        phoneHelp.classList.remove('d-none');
+        
+        // Focus first field
+        fields.name.input.focus();
+        
+        // Update bio counter
+        updateBioCounter();
+        
+        // Store original values
+        storeOriginalValues();
+    }
+
+    // Toggle to display mode
+    function exitEditMode() {
+        editBtn.classList.remove('d-none');
+        formActions.classList.add('d-none');
+        uploadAvatarBtn.classList.add('d-none');
+        
+        // Hide input fields, show display elements
+        Object.keys(fields).forEach(key => {
+            fields[key].display.classList.remove('d-none');
+            fields[key].input.classList.add('d-none');
+            fields[key].input.classList.remove('is-invalid');
+        });
+
+        // Hide help text
+        bioHelp.classList.add('d-none');
+        phoneHelp.classList.add('d-none');
+        
+        // Clear validation errors
+        hideValidationErrors();
+    }
+
+    // Update display values from inputs
+    function updateDisplayValues() {
+        fields.name.display.textContent = escapeHtml(fields.name.input.value || 'Not provided');
+        fields.email.display.textContent = escapeHtml(fields.email.input.value || 'Not provided');
+        fields.phone.display.textContent = escapeHtml(fields.phone.input.value || 'Not provided');
+        
+        // Handle bio with line breaks
+        const bioValue = fields.bio.input.value;
+        if (bioValue && bioValue.trim()) {
+            fields.bio.display.innerHTML = escapeHtml(bioValue).replace(/\n/g, '<br>');
+        } else {
+            fields.bio.display.textContent = 'No bio provided';
+        }
+    }
+
+    // Restore original values
+    function restoreOriginalValues() {
+        Object.keys(originalValues).forEach(key => {
+            fields[key].input.value = originalValues[key];
+        });
+        updateBioCounter();
+        avatarInput.value = '';
+    }
+
+    // Update bio character counter
+    function updateBioCounter() {
+        const bioLength = fields.bio.input.value.length;
+        bioCounter.textContent = bioLength;
+        
+        if (bioLength > VALIDATION_CONSTANTS.BIO_MAX_LENGTH) {
+            bioCounter.parentElement.classList.add('text-danger');
+        } else {
+            bioCounter.parentElement.classList.remove('text-danger');
+        }
+    }
+
+    // Validate avatar file
+    function validateAvatarFile(file) {
+        const errors = [];
+        
+        if (!VALIDATION_CONSTANTS.ALLOWED_IMAGE_TYPES.includes(file.type)) {
+            errors.push('Please select a valid image file (JPG, PNG, or GIF)');
+        }
+        
+        if (file.size > VALIDATION_CONSTANTS.AVATAR_MAX_SIZE) {
+            errors.push('Image file size must be less than 5MB');
+        }
+        
+        return errors;
+    }
+
+    // Show validation errors
+    function showValidationErrors(errors) {
+        validationErrorsList.innerHTML = '';
+        errors.forEach(error => {
+            const li = document.createElement('li');
+            li.textContent = error;
+            validationErrorsList.appendChild(li);
+        });
+        validationErrors.classList.remove('d-none');
+        validationErrors.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+
+    // Hide validation errors
+    function hideValidationErrors() {
+        validationErrors.classList.add('d-none');
+        validationErrorsList.innerHTML = '';
+    }
+
+    // Client-side validation
+    function validateForm() {
+        const errors = [];
+        let hasErrors = false;
+
+        // Clear previous validation states
+        Object.keys(fields).forEach(key => {
+            fields[key].input.classList.remove('is-invalid');
+        });
+
+        // Validate name
+        const name = fields.name.input.value.trim();
+        if (!name) {
+            errors.push('Name is required');
+            fields.name.input.classList.add('is-invalid');
+            hasErrors = true;
+        } else if (name.length < VALIDATION_CONSTANTS.NAME_MIN_LENGTH || name.length > VALIDATION_CONSTANTS.NAME_MAX_LENGTH) {
+            errors.push(`Name must be between ${VALIDATION_CONSTANTS.NAME_MIN_LENGTH} and ${VALIDATION_CONSTANTS.NAME_MAX_LENGTH} characters`);
+            fields.name.input.classList.add('is-invalid');
+            hasErrors = true;
+        }
+
+        // Validate email
+        const email = fields.email.input.value.trim();
+        if (!email) {
+            errors.push('Email is required');
+            fields.email.input.classList.add('is-invalid');
+            hasErrors = true;
+        } else if (!VALIDATION_CONSTANTS.EMAIL_REGEX.test(email)) {
+            errors.push('Please provide a valid email address');
+            fields.email.input.classList.add('is-invalid');
+            hasErrors = true;
+        }
+
+        // Validate phone (optional)
+        const phone = fields.phone.input.value.trim();
+        if (phone && !VALIDATION_CONSTANTS.PHONE_REGEX.test(phone)) {
+            errors.push('Phone number can only contain digits, spaces, dashes, and parentheses');
+            fields.phone.input.classList.add('is-invalid');
+            hasErrors = true;
+        } else if (phone && phone.length > VALIDATION_CONSTANTS.PHONE_MAX_LENGTH) {
+            errors.push(`Phone number must not exceed ${VALIDATION_CONSTANTS.PHONE_MAX_LENGTH} characters`);
+            fields.phone.input.classList.add('is-invalid');
+            hasErrors = true;
+        }
+
+        // Validate bio (optional)
+        const bio = fields.bio.input.value;
+        if (bio && bio.length > VALIDATION_CONSTANTS.BIO_MAX_LENGTH) {
+            errors.push(`Bio must not exceed ${VALIDATION_CONSTANTS.BIO_MAX_LENGTH} characters`);
+            fields.bio.input.classList.add('is-invalid');
+            hasErrors = true;
+        }
+
+        // Validate avatar file if selected
+        if (avatarInput.files.length > 0) {
+            const avatarErrors = validateAvatarFile(avatarInput.files[0]);
+            errors.push(...avatarErrors);
+            hasErrors = hasErrors || avatarErrors.length > 0;
+        }
+
+        if (hasErrors) {
+            showValidationErrors(errors);
+        } else {
+            hideValidationErrors();
+        }
+
+        return !hasErrors;
+    }
+
+    // Show loading state
+    function showLoading() {
+        loadingState.classList.remove('d-none');
+        profileForm.classList.add('d-none');
+    }
+
+    // Hide loading state
+    function hideLoading() {
+        loadingState.classList.add('d-none');
+        profileForm.classList.remove('d-none');
+    }
+
+    // Show success message
+    function showSuccessMessage() {
+        const successAlert = document.createElement('div');
+        successAlert.className = 'alert alert-success alert-dismissible fade show';
+        successAlert.setAttribute('role', 'alert');
+        successAlert.innerHTML = `
+            Profile updated successfully!
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        `;
+        
+        const mainContent = document.querySelector('main');
+        const firstCard = mainContent.querySelector('.card');
+        firstCard.parentNode.insertBefore(successAlert, firstCard);
+        
+        // Auto-dismiss after 5 seconds
+        setTimeout(() => {
+            if (successAlert && successAlert.parentNode) {
+                successAlert.remove();
+            }
+        }, 5000);
+    }
+
+    // Event listeners
+    editBtn.addEventListener('click', enterEditMode);
+
+    cancelBtn.addEventListener('click', function() {
+        restoreOriginalValues();
+        exitEditMode();
+    });
+
+    // Avatar upload button
+    uploadAvatarBtn.addEventListener('click', function() {
+        avatarInput.click();
+    });
+
+    // Avatar file change
+    avatarInput.addEventListener('change', function(e) {
+        const file = e.target.files[0];
+        if (file) {
+            const errors = validateAvatarFile(file);
+            if (errors.length > 0) {
+                showValidationErrors(errors);
+                avatarInput.value = '';
+            } else {
+                hideValidationErrors();
+                // You could add preview functionality here
+                console.log('Avatar file selected:', file.name);
+            }
+        }
+    });
+
+    // Bio counter update
+    fields.bio.input.addEventListener('input', updateBioCounter);
+
+    // Form submission
+    profileForm.addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        if (!validateForm()) {
+            return;
+        }
+
+        showLoading();
+
+        // Create form data with method override
+        const formData = new FormData();
+        formData.append('_method', 'PUT');
+        formData.append('name', fields.name.input.value.trim());
+        formData.append('email', fields.email.input.value.trim());
+        formData.append('phone', fields.phone.input.value.trim());
+        formData.append('bio', fields.bio.input.value);
+        formData.append('avatar_url', document.getElementById('avatar_url').value);
+        
+        // Add avatar file if selected
+        if (avatarInput.files.length > 0) {
+            formData.append('avatar', avatarInput.files[0]);
+        }
+
+        // Submit via fetch
+        fetch('/dashboard/profile', {
+            method: 'POST',
+            body: formData
+        })
+        .then(async response => {
+            if (response.ok) {
+                // Update display values and exit edit mode
+                updateDisplayValues();
+                exitEditMode();
+                showSuccessMessage();
+            } else {
+                const errorData = await response.json().catch(() => null);
+                const errorMessage = errorData?.error || 'Failed to update profile. Please try again.';
+                showValidationErrors([errorMessage]);
+            }
+        })
+        .catch(error => {
+            console.error('Error updating profile:', error);
+            showValidationErrors(['An error occurred while updating your profile. Please try again.']);
+        })
+        .finally(() => {
+            hideLoading();
+        });
+    });
+
+    // Initialize bio counter on page load
+    updateBioCounter();
+
+    // Initialize form validation on input change
+    Object.keys(fields).forEach(key => {
+        fields[key].input.addEventListener('input', function() {
+            // Clear validation state on input
+            this.classList.remove('is-invalid');
+            hideValidationErrors();
+        });
+
+        fields[key].input.addEventListener('blur', function() {
+            // Optional: Add individual field validation on blur
+            const fieldName = key;
+            const value = this.value.trim();
+            
+            if (fieldName === 'name' && value && (value.length < VALIDATION_CONSTANTS.NAME_MIN_LENGTH || value.length > VALIDATION_CONSTANTS.NAME_MAX_LENGTH)) {
+                this.classList.add('is-invalid');
+            } else if (fieldName === 'email' && value && !VALIDATION_CONSTANTS.EMAIL_REGEX.test(value)) {
+                this.classList.add('is-invalid');
+            } else if (fieldName === 'phone' && value && (!VALIDATION_CONSTANTS.PHONE_REGEX.test(value) || value.length > VALIDATION_CONSTANTS.PHONE_MAX_LENGTH)) {
+                this.classList.add('is-invalid');
+            } else if (fieldName === 'bio' && value.length > VALIDATION_CONSTANTS.BIO_MAX_LENGTH) {
+                this.classList.add('is-invalid');
+            } else {
+                this.classList.remove('is-invalid');
+            }
+        });
+    });
+
+    // Mobile responsive adjustments
+    function handleResponsiveDesign() {
+        const isMobile = window.innerWidth < 768;
+        
+        if (isMobile) {
+            // Adjust form layout for mobile
+            document.querySelectorAll('.row.mb-3').forEach(row => {
+                const label = row.querySelector('.col-sm-3');
+                const field = row.querySelector('.col-sm-9');
+                
+                if (label && field) {
+                    label.className = 'col-12';
+                    field.className = 'col-12';
+                }
+            });
+        }
+    }
+
+    // Handle window resize for responsive design
+    window.addEventListener('resize', handleResponsiveDesign);
+    handleResponsiveDesign(); // Initial call
+});
+</script>
+
+<!-- Bootstrap JavaScript for interactive components -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+<%- include('partials/footer') %>

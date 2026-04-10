@@ -1,90 +1,764 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sign Up - Express Auth App</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
-</head>
-<body>
-    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
-        <div class="container">
-            <a class="navbar-brand" href="/">Express Auth</a>
-            <div class="navbar-nav ms-auto">
-                <a class="nav-link" href="/">Home</a>
-                <a class="nav-link" href="/login">Login</a>
-                <a class="nav-link active" href="/signup">Sign Up</a>
-            </div>
-        </div>
-    </nav>
+<% 
+// Set page-specific variables for layout
+const title = 'Sign Up';
+const bodyClass = 'signup-page';
+%>
 
-    <div class="container mt-5">
-        <div class="row justify-content-center">
-            <div class="col-md-6">
-                <div class="card">
-                    <div class="card-header">
-                        <h4 class="mb-0">Create Account</h4>
-                    </div>
-                    <div class="card-body">
-                        <% if (typeof error !== 'undefined' && error) { %>
-                            <div class="alert alert-danger" role="alert">
-                                <%= error %>
-                            </div>
-                        <% } %>
-                        
-                        <% if (typeof success !== 'undefined' && success) { %>
-                            <div class="alert alert-success" role="alert">
-                                <%= success %>
-                            </div>
-                        <% } %>
+<%- include('layout', { title, bodyClass, user: null }) %>
 
-                        <form action="/signup" method="POST">
-                            <div class="mb-3">
-                                <label for="name" class="form-label">Full Name</label>
-                                <input type="text" class="form-control" id="name" name="name" required>
-                            </div>
-                            
-                            <div class="mb-3">
-                                <label for="email" class="form-label">Email Address</label>
-                                <input type="email" class="form-control" id="email" name="email" required>
-                            </div>
-                            
-                            <div class="mb-3">
-                                <label for="password" class="form-label">Password</label>
-                                <input type="password" class="form-control" id="password" name="password" required minlength="6">
-                                <div class="form-text">Password must be at least 6 characters long.</div>
-                            </div>
-                            
-                            <div class="mb-3">
-                                <label for="confirmPassword" class="form-label">Confirm Password</label>
-                                <input type="password" class="form-control" id="confirmPassword" name="confirmPassword" required>
-                            </div>
-                            
-                            <button type="submit" class="btn btn-primary w-100">Create Account</button>
-                        </form>
-                        
-                        <div class="text-center mt-3">
-                            <p>Already have an account? <a href="/login">Sign in here</a></p>
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6 col-lg-5">
+            <div class="card shadow-lg border-0">
+                <div class="card-header bg-primary text-white text-center">
+                    <h4 class="mb-0">
+                        <i class="bi bi-person-plus-fill me-2"></i>
+                        Create Account
+                    </h4>
+                </div>
+                <div class="card-body p-4">
+                    <% if (typeof error !== 'undefined' && error) { %>
+                        <div class="alert alert-danger d-flex align-items-center" role="alert">
+                            <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                            <div><%- typeof error === 'string' ? error.replace(/</g, '&lt;').replace(/>/g, '&gt;') : 'An error occurred' %></div>
                         </div>
+                    <% } %>
+                    
+                    <% if (typeof success !== 'undefined' && success) { %>
+                        <div class="alert alert-success d-flex align-items-center" role="alert">
+                            <i class="bi bi-check-circle-fill me-2"></i>
+                            <div><%- typeof success === 'string' ? success.replace(/</g, '&lt;').replace(/>/g, '&gt;') : 'Success!' %></div>
+                        </div>
+                    <% } %>
+
+                    <!-- Validation errors display area -->
+                    <div id="validation-errors" class="alert alert-danger d-none" role="alert">
+                        <ul id="validation-errors-list" class="mb-0"></ul>
+                    </div>
+
+                    <form action="/signup" method="POST" id="signupForm" enctype="multipart/form-data" novalidate>
+                        <!-- Avatar Upload Section -->
+                        <div class="mb-3 text-center">
+                            <label for="avatar" class="form-label">
+                                <i class="bi bi-image me-1"></i>
+                                Profile Photo (Optional)
+                            </label>
+                            <div class="avatar-upload-container">
+                                <div class="avatar-preview mb-2">
+                                    <img id="avatarPreview" src="/images/default-avatar.png" alt="Profile Preview" class="rounded-circle" style="width: 80px; height: 80px; object-fit: cover; border: 3px solid #dee2e6;">
+                                </div>
+                                <input 
+                                    type="file" 
+                                    class="form-control form-control-sm" 
+                                    id="avatar" 
+                                    name="avatar"
+                                    accept="image/jpeg,image/jpg,image/png,image/webp"
+                                    style="max-width: 250px; margin: 0 auto;"
+                                >
+                                <div class="form-text">
+                                    <i class="bi bi-info-circle me-1"></i>
+                                    JPEG, PNG, or WebP. Max 5MB.
+                                </div>
+                                <div class="invalid-feedback" id="avatarFeedback">
+                                    Please select a valid image file (JPEG, PNG, or WebP) under 5MB.
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="name" class="form-label">
+                                <i class="bi bi-person me-1"></i>
+                                Full Name <span class="text-danger">*</span>
+                            </label>
+                            <input 
+                                type="text" 
+                                class="form-control form-control-lg" 
+                                id="name" 
+                                name="name" 
+                                required 
+                                minlength="2"
+                                maxlength="50"
+                                placeholder="Enter your full name"
+                                autocomplete="name"
+                                value="<%= typeof formData !== 'undefined' && formData.name ? formData.name.replace(/"/g, '&quot;') : '' %>"
+                            >
+                            <div class="invalid-feedback">
+                                Please provide a valid name (2-50 characters).
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="email" class="form-label">
+                                <i class="bi bi-envelope me-1"></i>
+                                Email Address <span class="text-danger">*</span>
+                            </label>
+                            <input 
+                                type="email" 
+                                class="form-control form-control-lg" 
+                                id="email" 
+                                name="email" 
+                                required
+                                placeholder="Enter your email address"
+                                autocomplete="email"
+                                value="<%= typeof formData !== 'undefined' && formData.email ? formData.email.replace(/"/g, '&quot;') : '' %>"
+                            >
+                            <div class="invalid-feedback">
+                                Please provide a valid email address.
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="phone" class="form-label">
+                                <i class="bi bi-telephone me-1"></i>
+                                Phone Number (Optional)
+                            </label>
+                            <input 
+                                type="tel" 
+                                class="form-control form-control-lg" 
+                                id="phone" 
+                                name="phone" 
+                                maxlength="20"
+                                placeholder="Enter your phone number"
+                                autocomplete="tel"
+                                value="<%= typeof formData !== 'undefined' && formData.phone ? formData.phone.replace(/"/g, '&quot;') : '' %>"
+                            >
+                            <div class="form-text">
+                                <i class="bi bi-info-circle me-1"></i>
+                                Format: (555) 123-4567 or +1-555-123-4567
+                            </div>
+                            <div class="invalid-feedback">
+                                Please provide a valid phone number format.
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="bio" class="form-label">
+                                <i class="bi bi-text-paragraph me-1"></i>
+                                Bio (Optional)
+                            </label>
+                            <textarea 
+                                class="form-control" 
+                                id="bio" 
+                                name="bio" 
+                                rows="3"
+                                maxlength="500"
+                                placeholder="Tell us a little about yourself..."
+                            ><%= typeof formData !== 'undefined' && formData.bio ? formData.bio.replace(/</g, '&lt;').replace(/>/g, '&gt;') : '' %></textarea>
+                            <div class="form-text d-flex justify-content-between">
+                                <span>
+                                    <i class="bi bi-info-circle me-1"></i>
+                                    Optional bio for your profile
+                                </span>
+                                <span id="bioCounter" class="text-muted">0/500</span>
+                            </div>
+                            <div class="invalid-feedback">
+                                Bio must not exceed 500 characters.
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="password" class="form-label">
+                                <i class="bi bi-lock me-1"></i>
+                                Password <span class="text-danger">*</span>
+                            </label>
+                            <div class="position-relative">
+                                <input 
+                                    type="password" 
+                                    class="form-control form-control-lg" 
+                                    id="password" 
+                                    name="password" 
+                                    required 
+                                    minlength="6"
+                                    placeholder="Create a secure password"
+                                    autocomplete="new-password"
+                                >
+                                <button type="button" class="btn btn-link position-absolute top-50 end-0 translate-middle-y me-2 p-0" id="togglePassword" style="border: none; background: none; z-index: 10;">
+                                    <i class="bi bi-eye" id="togglePasswordIcon"></i>
+                                </button>
+                            </div>
+                            <div class="form-text">
+                                <i class="bi bi-info-circle me-1"></i>
+                                Password must be at least 6 characters long.
+                            </div>
+                            <div class="invalid-feedback">
+                                Password must be at least 6 characters long.
+                            </div>
+                            <!-- Password strength indicator -->
+                            <div class="mt-2">
+                                <div class="progress" style="height: 4px;">
+                                    <div class="progress-bar" id="passwordStrength" role="progressbar" style="width: 0%"></div>
+                                </div>
+                                <small id="passwordStrengthText" class="text-muted"></small>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-4">
+                            <label for="confirmPassword" class="form-label">
+                                <i class="bi bi-lock-fill me-1"></i>
+                                Confirm Password <span class="text-danger">*</span>
+                            </label>
+                            <input 
+                                type="password" 
+                                class="form-control form-control-lg" 
+                                id="confirmPassword" 
+                                name="confirmPassword" 
+                                required
+                                placeholder="Confirm your password"
+                                autocomplete="new-password"
+                            >
+                            <div class="invalid-feedback" id="confirmPasswordFeedback">
+                                Please confirm your password.
+                            </div>
+                        </div>
+
+                        <!-- Terms and Conditions -->
+                        <div class="mb-3 form-check">
+                            <input type="checkbox" class="form-check-input" id="agreeTerms" name="agreeTerms" required>
+                            <label class="form-check-label" for="agreeTerms">
+                                I agree to the <a href="/terms" target="_blank" class="text-primary">Terms of Service</a> and <a href="/privacy" target="_blank" class="text-primary">Privacy Policy</a> <span class="text-danger">*</span>
+                            </label>
+                            <div class="invalid-feedback">
+                                You must agree to the Terms of Service and Privacy Policy.
+                            </div>
+                        </div>
+                        
+                        <button type="submit" class="btn btn-primary btn-lg w-100 mb-3" id="submitBtn">
+                            <i class="bi bi-person-plus me-2"></i>
+                            Create Account
+                        </button>
+                    </form>
+                    
+                    <div class="text-center">
+                        <p class="mb-0 text-muted">
+                            Already have an account? 
+                            <a href="/login" class="text-primary text-decoration-none fw-bold">
+                                <i class="bi bi-box-arrow-in-right me-1"></i>
+                                Sign in here
+                            </a>
+                        </p>
                     </div>
                 </div>
             </div>
         </div>
     </div>
+</div>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
-    <script>
-        // Client-side password confirmation validation
-        document.querySelector('form').addEventListener('submit', function(e) {
-            const password = document.getElementById('password').value;
-            const confirmPassword = document.getElementById('confirmPassword').value;
+<script>
+    // Constants for validation
+    const VALIDATION_CONSTANTS = {
+        NAME_MIN_LENGTH: 2,
+        NAME_MAX_LENGTH: 50,
+        PASSWORD_MIN_LENGTH: 6,
+        BIO_MAX_LENGTH: 500,
+        PHONE_MAX_LENGTH: 20,
+        AVATAR_MAX_SIZE: 5 * 1024 * 1024, // 5MB
+        EMAIL_REGEX: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
+        PHONE_REGEX: /^[\+]?[\d\s\-\(\)]+$/,
+        AVATAR_TYPES: ['image/jpeg', 'image/jpg', 'image/png', 'image/webp']
+    };
+
+    // XSS prevention utility
+    const escapeHtml = (text) => {
+        const map = {
+            '&': '&amp;',
+            '<': '&lt;',
+            '>': '&gt;',
+            '"': '&quot;',
+            "'": '&#039;'
+        };
+        return text.replace(/[&<>"']/g, (m) => map[m]);
+    };
+
+    // Client-side validation and enhancement
+    document.addEventListener('DOMContentLoaded', function() {
+        const form = document.getElementById('signupForm');
+        const nameInput = document.getElementById('name');
+        const emailInput = document.getElementById('email');
+        const phoneInput = document.getElementById('phone');
+        const bioInput = document.getElementById('bio');
+        const passwordInput = document.getElementById('password');
+        const confirmPasswordInput = document.getElementById('confirmPassword');
+        const avatarInput = document.getElementById('avatar');
+        const avatarPreview = document.getElementById('avatarPreview');
+        const agreeTerms = document.getElementById('agreeTerms');
+        const confirmPasswordFeedback = document.getElementById('confirmPasswordFeedback');
+        const bioCounter = document.getElementById('bioCounter');
+        const togglePassword = document.getElementById('togglePassword');
+        const togglePasswordIcon = document.getElementById('togglePasswordIcon');
+        const passwordStrength = document.getElementById('passwordStrength');
+        const passwordStrengthText = document.getElementById('passwordStrengthText');
+        const submitBtn = document.getElementById('submitBtn');
+        const validationErrors = document.getElementById('validation-errors');
+        const validationErrorsList = document.getElementById('validation-errors-list');
+
+        // Initialize bio counter
+        updateBioCounter();
+
+        // Password toggle functionality
+        if (togglePassword) {
+            togglePassword.addEventListener('click', function() {
+                const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+                passwordInput.setAttribute('type', type);
+                togglePasswordIcon.className = type === 'password' ? 'bi bi-eye' : 'bi bi-eye-slash';
+            });
+        }
+
+        // Avatar preview functionality
+        if (avatarInput && avatarPreview) {
+            avatarInput.addEventListener('change', function(e) {
+                const file = e.target.files[0];
+                if (file) {
+                    // Validate file
+                    if (!validateAvatarFile(file)) {
+                        return;
+                    }
+
+                    // Create preview
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        avatarPreview.src = e.target.result;
+                    };
+                    reader.readAsDataURL(file);
+                }
+            });
+        }
+
+        // Bio counter update
+        function updateBioCounter() {
+            if (bioInput && bioCounter) {
+                const length = bioInput.value.length;
+                bioCounter.textContent = `${length}/${VALIDATION_CONSTANTS.BIO_MAX_LENGTH}`;
+                
+                if (length > VALIDATION_CONSTANTS.BIO_MAX_LENGTH * 0.9) {
+                    bioCounter.className = 'text-warning';
+                } else if (length > VALIDATION_CONSTANTS.BIO_MAX_LENGTH) {
+                    bioCounter.className = 'text-danger';
+                } else {
+                    bioCounter.className = 'text-muted';
+                }
+            }
+        }
+
+        // Bio input event
+        if (bioInput) {
+            bioInput.addEventListener('input', updateBioCounter);
+            bioInput.addEventListener('keyup', updateBioCounter);
+        }
+
+        // Password strength checker
+        function checkPasswordStrength(password) {
+            let strength = 0;
+            let feedback = '';
             
-            if (password !== confirmPassword) {
-                e.preventDefault();
-                alert('Passwords do not match!');
+            if (password.length >= 6) strength += 1;
+            if (password.length >= 8) strength += 1;
+            if (/[a-z]/.test(password)) strength += 1;
+            if (/[A-Z]/.test(password)) strength += 1;
+            if (/[0-9]/.test(password)) strength += 1;
+            if (/[^A-Za-z0-9]/.test(password)) strength += 1;
+
+            const strengthPercent = (strength / 6) * 100;
+            
+            if (strength <= 2) {
+                passwordStrength.className = 'progress-bar bg-danger';
+                feedback = 'Weak';
+            } else if (strength <= 4) {
+                passwordStrength.className = 'progress-bar bg-warning';
+                feedback = 'Medium';
+            } else {
+                passwordStrength.className = 'progress-bar bg-success';
+                feedback = 'Strong';
+            }
+
+            passwordStrength.style.width = strengthPercent + '%';
+            passwordStrengthText.textContent = feedback;
+        }
+
+        // Password input event
+        if (passwordInput) {
+            passwordInput.addEventListener('input', function() {
+                checkPasswordStrength(this.value);
+                validatePasswordConfirmation();
+            });
+        }
+
+        // Avatar file validation
+        function validateAvatarFile(file) {
+            const avatarFeedback = document.getElementById('avatarFeedback');
+            
+            if (!VALIDATION_CONSTANTS.AVATAR_TYPES.includes(file.type)) {
+                avatarInput.classList.add('is-invalid');
+                avatarFeedback.textContent = 'Please select a valid image file (JPEG, PNG, or WebP).';
                 return false;
             }
+
+            if (file.size > VALIDATION_CONSTANTS.AVATAR_MAX_SIZE) {
+                avatarInput.classList.add('is-invalid');
+                avatarFeedback.textContent = 'File size must be less than 5MB.';
+                return false;
+            }
+
+            avatarInput.classList.remove('is-invalid');
+            avatarInput.classList.add('is-valid');
+            return true;
+        }
+
+        // Real-time password confirmation validation
+        function validatePasswordConfirmation() {
+            const password = passwordInput.value;
+            const confirmPassword = confirmPasswordInput.value;
+            
+            if (confirmPassword && password !== confirmPassword) {
+                confirmPasswordInput.classList.add('is-invalid');
+                confirmPasswordFeedback.textContent = 'Passwords do not match!';
+                return false;
+            } else if (confirmPassword && password === confirmPassword) {
+                confirmPasswordInput.classList.remove('is-invalid');
+                confirmPasswordInput.classList.add('is-valid');
+                return true;
+            }
+            
+            confirmPasswordInput.classList.remove('is-invalid', 'is-valid');
+            return true;
+        }
+
+        // Real-time validation for all fields
+        function validateField(input, validationFn, errorMessage) {
+            const value = input.value.trim();
+            
+            if (!validationFn(value)) {
+                input.classList.add('is-invalid');
+                input.classList.remove('is-valid');
+                const feedback = input.parentNode.querySelector('.invalid-feedback');
+                if (feedback) {
+                    feedback.textContent = escapeHtml(errorMessage);
+                }
+                return false;
+            } else if (value || input.hasAttribute('required')) {
+                input.classList.remove('is-invalid');
+                input.classList.add('is-valid');
+                return true;
+            }
+            
+            input.classList.remove('is-invalid', 'is-valid');
+            return true;
+        }
+
+        // Validation functions
+        const validateName = (name) => {
+            return name && name.length >= VALIDATION_CONSTANTS.NAME_MIN_LENGTH && 
+                   name.length <= VALIDATION_CONSTANTS.NAME_MAX_LENGTH;
+        };
+
+        const validateEmail = (email) => {
+            return email && VALIDATION_CONSTANTS.EMAIL_REGEX.test(email);
+        };
+
+        const validatePhone = (phone) => {
+            return !phone || VALIDATION_CONSTANTS.PHONE_REGEX.test(phone);
+        };
+
+        const validateBio = (bio) => {
+            return !bio || bio.length <= VALIDATION_CONSTANTS.BIO_MAX_LENGTH;
+        };
+
+        const validatePassword = (password) => {
+            return password && password.length >= VALIDATION_CONSTANTS.PASSWORD_MIN_LENGTH;
+        };
+
+        // Add event listeners for real-time validation
+        nameInput.addEventListener('blur', function() {
+            validateField(this, validateName, `Name must be between ${VALIDATION_CONSTANTS.NAME_MIN_LENGTH} and ${VALIDATION_CONSTANTS.NAME_MAX_LENGTH} characters`);
         });
-    </script>
-</body>
-</html>
+
+        emailInput.addEventListener('blur', function() {
+            validateField(this, validateEmail, 'Please provide a valid email address');
+        });
+
+        phoneInput.addEventListener('blur', function() {
+            validateField(this, validatePhone, 'Please provide a valid phone number format');
+        });
+
+        bioInput.addEventListener('blur', function() {
+            validateField(this, validateBio, 'Bio must not exceed 500 characters');
+        });
+
+        passwordInput.addEventListener('blur', function() {
+            validateField(this, validatePassword, `Password must be at least ${VALIDATION_CONSTANTS.PASSWORD_MIN_LENGTH} characters long`);
+            validatePasswordConfirmation();
+        });
+
+        confirmPasswordInput.addEventListener('input', validatePasswordConfirmation);
+        confirmPasswordInput.addEventListener('blur', validatePasswordConfirmation);
+
+        // Show validation errors
+        function showValidationErrors(errors) {
+            validationErrorsList.innerHTML = '';
+            errors.forEach(error => {
+                const li = document.createElement('li');
+                li.textContent = escapeHtml(error);
+                validationErrorsList.appendChild(li);
+            });
+            validationErrors.classList.remove('d-none');
+            validationErrors.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+
+        // Hide validation errors
+        function hideValidationErrors() {
+            validationErrors.classList.add('d-none');
+        }
+
+        // Form submission validation
+        form.addEventListener('submit', function(e) {
+            hideValidationErrors();
+            
+            let isValid = true;
+            const errors = [];
+            
+            // Validate all fields
+            if (!validateField(nameInput, validateName, `Name must be between ${VALIDATION_CONSTANTS.NAME_MIN_LENGTH} and ${VALIDATION_CONSTANTS.NAME_MAX_LENGTH} characters`)) {
+                isValid = false;
+                errors.push('Name must be between 2 and 50 characters');
+            }
+            
+            if (!validateField(emailInput, validateEmail, 'Please provide a valid email address')) {
+                isValid = false;
+                errors.push('Please provide a valid email address');
+            }
+
+            if (!validateField(phoneInput, validatePhone, 'Please provide a valid phone number format')) {
+                isValid = false;
+                errors.push('Please provide a valid phone number format');
+            }
+
+            if (!validateField(bioInput, validateBio, 'Bio must not exceed 500 characters')) {
+                isValid = false;
+                errors.push('Bio must not exceed 500 characters');
+            }
+            
+            if (!validateField(passwordInput, validatePassword, `Password must be at least ${VALIDATION_CONSTANTS.PASSWORD_MIN_LENGTH} characters long`)) {
+                isValid = false;
+                errors.push('Password must be at least 6 characters long');
+            }
+            
+            if (!validatePasswordConfirmation()) {
+                isValid = false;
+                errors.push('Passwords do not match');
+            }
+
+            // Validate avatar file if selected
+            if (avatarInput.files.length > 0) {
+                if (!validateAvatarFile(avatarInput.files[0])) {
+                    isValid = false;
+                    errors.push('Please select a valid image file under 5MB');
+                }
+            }
+
+            // Validate terms agreement
+            if (!agreeTerms.checked) {
+                agreeTerms.classList.add('is-invalid');
+                isValid = false;
+                errors.push('You must agree to the Terms of Service and Privacy Policy');
+            } else {
+                agreeTerms.classList.remove('is-invalid');
+                agreeTerms.classList.add('is-valid');
+            }
+
+            // Check for required fields
+            const password = passwordInput.value;
+            const confirmPassword = confirmPasswordInput.value;
+            
+            if (!password || !confirmPassword || password !== confirmPassword) {
+                e.preventDefault();
+                if (password !== confirmPassword) {
+                    confirmPasswordInput.classList.add('is-invalid');
+                    confirmPasswordFeedback.textContent = 'Passwords do not match!';
+                    errors.push('Passwords do not match');
+                }
+                isValid = false;
+            }
+
+            if (!isValid) {
+                e.preventDefault();
+                
+                if (errors.length > 0) {
+                    showValidationErrors(errors);
+                }
+                
+                // Focus on first invalid field
+                const firstInvalid = form.querySelector('.is-invalid');
+                if (firstInvalid) {
+                    firstInvalid.focus();
+                }
+                
+                return false;
+            }
+
+            // Show loading state
+            const originalText = submitBtn.innerHTML;
+            submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Creating Account...';
+            submitBtn.disabled = true;
+            
+            // Re-enable button after a delay in case of server error
+            setTimeout(() => {
+                submitBtn.innerHTML = originalText;
+                submitBtn.disabled = false;
+            }, 10000);
+        });
+
+        // Clear validation states on input
+        [nameInput, emailInput, phoneInput, bioInput, passwordInput, confirmPasswordInput, avatarInput, agreeTerms].forEach(input => {
+            if (input) {
+                input.addEventListener('input', function() {
+                    if (this.classList.contains('is-invalid') || this.classList.contains('is-valid')) {
+                        this.classList.remove('is-invalid', 'is-valid');
+                    }
+                    hideValidationErrors();
+                });
+            }
+        });
+
+        // Handle form reset
+        form.addEventListener('reset', function() {
+            // Clear all validation states
+            form.querySelectorAll('.is-invalid, .is-valid').forEach(el => {
+                el.classList.remove('is-invalid', 'is-valid');
+            });
+            
+            // Reset avatar preview
+            if (avatarPreview) {
+                avatarPreview.src = '/images/default-avatar.png';
+            }
+            
+            // Reset password strength
+            if (passwordStrength) {
+                passwordStrength.style.width = '0%';
+                passwordStrengthText.textContent = '';
+            }
+            
+            // Reset bio counter
+            updateBioCounter();
+            
+            hideValidationErrors();
+        });
+    });
+</script>
+
+<style>
+/* Mobile-first responsive design enhancements */
+@media (max-width: 767.98px) {
+    .container {
+        padding: 0.5rem;
+    }
+    
+    .card {
+        border-radius: 0;
+        border-left: none;
+        border-right: none;
+        box-shadow: none;
+        border-top: 1px solid #dee2e6;
+        border-bottom: 1px solid #dee2e6;
+    }
+    
+    .card-body {
+        padding: 1.5rem;
+    }
+    
+    .form-control-lg {
+        font-size: 1rem;
+        padding: 0.75rem;
+    }
+    
+    .btn-lg {
+        font-size: 1rem;
+        padding: 0.75rem 1rem;
+    }
+}
+
+/* Avatar upload styling */
+.avatar-upload-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.avatar-preview img {
+    border: 3px solid #dee2e6;
+    transition: border-color 0.3s ease;
+}
+
+.avatar-preview img:hover {
+    border-color: #0d6efd;
+}
+
+/* Password strength indicator styling */
+.progress {
+    background-color: #e9ecef;
+}
+
+.progress-bar {
+    transition: width 0.3s ease, background-color 0.3s ease;
+}
+
+/* Form validation enhancements */
+.form-control.is-invalid {
+    border-color: #dc3545;
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12' width='12' height='12' fill='none' stroke='%23dc3545'%3e%3ccircle cx='6' cy='6' r='4.5'/%3e%3cpath d='m5.8 3.6.4.4.4-.4M5.8 8.4l.4-.4.4.4M8.4 5.8L8 6.2l-.4-.4'/%3e%3c/svg%3e");
+}
+
+.form-control.is-valid {
+    border-color: #198754;
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 8 8'%3e%3cpath fill='%23198754' d='m2.3 6.73.94-.94 2.94 2.94L8 6.9 6.97 5.87l-2.94 2.94L2.3 6.73z'/%3e%3c/svg%3e");
+}
+
+/* Loading spinner animation */
+@keyframes spinner-border {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+.spinner-border {
+    display: inline-block;
+    width: 1rem;
+    height: 1rem;
+    vertical-align: text-bottom;
+    border: 0.125rem solid currentColor;
+    border-right-color: transparent;
+    border-radius: 50%;
+    animation: spinner-border 0.75s linear infinite;
+}
+
+.spinner-border-sm {
+    width: 0.875rem;
+    height: 0.875rem;
+    border-width: 0.125rem;
+}
+
+/* Enhanced accessibility */
+.form-check-input:focus {
+    border-color: #86b7fe;
+    outline: 0;
+    box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+}
+
+/* Dark theme compatibility */
+@media (prefers-color-scheme: dark) {
+    .card {
+        background-color: var(--bs-dark);
+        border-color: #495057;
+    }
+    
+    .form-control {
+        background-color: #2d3338;
+        border-color: #495057;
+        color: #fff;
+    }
+    
+    .form-control:focus {
+        background-color: #2d3338;
+        border-color: #86b7fe;
+        color: #fff;
+    }
+}
+</style>

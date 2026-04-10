@@ -1,60 +1,581 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login - Authentication App</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
-</head>
-<body>
-    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
-        <div class="container">
-            <a class="navbar-brand" href="/">Auth App</a>
-            <div class="navbar-nav ms-auto">
-                <a class="nav-link" href="/">Home</a>
-                <a class="nav-link" href="/signup">Sign Up</a>
-                <a class="nav-link active" href="/login">Login</a>
-            </div>
-        </div>
-    </nav>
-
-    <div class="container mt-5">
-        <div class="row justify-content-center">
-            <div class="col-md-6">
-                <div class="card">
-                    <div class="card-header">
-                        <h3 class="text-center">Login</h3>
-                    </div>
-                    <div class="card-body">
-                        <% if (typeof error !== 'undefined' && error) { %>
-                            <div class="alert alert-danger" role="alert">
-                                <%= error %>
-                            </div>
-                        <% } %>
-                        
-                        <form action="/login" method="POST">
-                            <div class="mb-3">
-                                <label for="email" class="form-label">Email</label>
-                                <input type="email" class="form-control" id="email" name="email" required>
-                            </div>
-                            <div class="mb-3">
-                                <label for="password" class="form-label">Password</label>
-                                <input type="password" class="form-control" id="password" name="password" required>
-                            </div>
-                            <div class="d-grid">
-                                <button type="submit" class="btn btn-primary">Login</button>
-                            </div>
-                        </form>
-                        
-                        <div class="text-center mt-3">
-                            <p>Don't have an account? <a href="/signup">Sign up here</a></p>
+<div class="container-fluid h-100">
+    <div class="row justify-content-center align-items-center min-vh-100">
+        <div class="col-md-6 col-lg-4">
+            <div class="card shadow-lg border-0" style="background-color: #34495e;">
+                <div class="card-header bg-transparent border-bottom-0 text-center py-4">
+                    <h3 class="text-white mb-0">
+                        <i class="bi bi-box-arrow-in-right me-2"></i>
+                        Login
+                    </h3>
+                </div>
+                <div class="card-body p-4">
+                    <% if (typeof error !== 'undefined' && error) { %>
+                        <div class="alert alert-danger border-0 mb-4" role="alert" style="background-color: #e74c3c; color: white;">
+                            <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                            <%- typeof error === 'string' ? error.replace(/</g, '&lt;').replace(/>/g, '&gt;') : '' %>
                         </div>
+                    <% } %>
+                    
+                    <form action="/login" method="POST" novalidate id="loginForm">
+                        <div class="mb-4">
+                            <label for="email" class="form-label text-white">
+                                <i class="bi bi-envelope me-2"></i>
+                                Email Address
+                            </label>
+                            <input type="email" 
+                                   class="form-control form-control-lg bg-dark text-white border-secondary" 
+                                   id="email" 
+                                   name="email" 
+                                   required 
+                                   autocomplete="email"
+                                   placeholder="Enter your email"
+                                   style="border-radius: 0.5rem;">
+                            <div class="invalid-feedback">
+                                Please provide a valid email address.
+                            </div>
+                        </div>
+
+                        <div class="mb-4">
+                            <label for="password" class="form-label text-white">
+                                <i class="bi bi-lock me-2"></i>
+                                Password
+                            </label>
+                            <input type="password" 
+                                   class="form-control form-control-lg bg-dark text-white border-secondary" 
+                                   id="password" 
+                                   name="password" 
+                                   required 
+                                   autocomplete="current-password"
+                                   placeholder="Enter your password"
+                                   style="border-radius: 0.5rem;">
+                            <div class="invalid-feedback">
+                                Password is required.
+                            </div>
+                        </div>
+
+                        <div class="d-grid mb-4">
+                            <button type="submit" 
+                                    class="btn btn-primary btn-lg" 
+                                    id="loginSubmitBtn"
+                                    style="border-radius: 0.5rem; background-color: #3498db; border-color: #3498db;">
+                                <span class="btn-text">
+                                    <i class="bi bi-box-arrow-in-right me-2"></i>
+                                    Sign In
+                                </span>
+                                <span class="btn-loading d-none">
+                                    <i class="bi bi-arrow-repeat spin me-2"></i>
+                                    Signing In...
+                                </span>
+                            </button>
+                        </div>
+                    </form>
+                    
+                    <div class="text-center">
+                        <p class="text-white-50 mb-0">
+                            Don't have an account? 
+                            <a href="/signup" 
+                               class="text-decoration-none" 
+                               style="color: #3498db;">
+                                Sign up here
+                            </a>
+                        </p>
                     </div>
                 </div>
             </div>
         </div>
     </div>
+</div>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
-</body>
-</html>
+<style>
+    .form-control:focus {
+        background-color: #2c3e50 !important;
+        border-color: #3498db !important;
+        box-shadow: 0 0 0 0.2rem rgba(52, 152, 219, 0.25) !important;
+        color: white !important;
+    }
+    
+    .form-control::placeholder {
+        color: #bdc3c7 !important;
+    }
+    
+    .btn-primary:hover {
+        background-color: #2980b9 !important;
+        border-color: #2980b9 !important;
+        transform: translateY(-2px);
+        transition: all 0.3s ease;
+    }
+    
+    .btn-primary:disabled {
+        background-color: #5a6c7d !important;
+        border-color: #5a6c7d !important;
+        cursor: not-allowed;
+        transform: none;
+    }
+    
+    .card {
+        transition: transform 0.3s ease;
+    }
+    
+    .card:hover {
+        transform: translateY(-5px);
+    }
+    
+    .alert {
+        border-radius: 0.5rem !important;
+    }
+    
+    .min-vh-100 {
+        min-height: 100vh;
+    }
+    
+    .spin {
+        animation: spin 1s linear infinite;
+    }
+    
+    @keyframes spin {
+        from { transform: rotate(0deg); }
+        to { transform: rotate(360deg); }
+    }
+    
+    .form-control.is-valid {
+        background-color: #2c3e50 !important;
+        border-color: #27ae60 !important;
+        color: white !important;
+    }
+    
+    .form-control.is-invalid {
+        background-color: #2c3e50 !important;
+        border-color: #e74c3c !important;
+        color: white !important;
+    }
+    
+    .valid-feedback {
+        display: block;
+        color: #27ae60;
+        font-size: 0.875rem;
+        margin-top: 0.25rem;
+    }
+    
+    .invalid-feedback {
+        display: block;
+        color: #e74c3c;
+        font-size: 0.875rem;
+        margin-top: 0.25rem;
+    }
+
+    /* Mobile responsive design */
+    @media (max-width: 576px) {
+        .col-md-6.col-lg-4 {
+            margin: 1rem;
+        }
+        
+        .card-body {
+            padding: 2rem 1.5rem !important;
+        }
+        
+        .form-control-lg {
+            padding: 0.75rem 1rem;
+            font-size: 1rem;
+        }
+        
+        .btn-lg {
+            padding: 0.75rem 1.5rem;
+            font-size: 1rem;
+        }
+        
+        .card {
+            margin: 0.5rem;
+        }
+    }
+    
+    @media (max-width: 768px) {
+        .min-vh-100 {
+            padding: 1rem 0;
+        }
+        
+        .container-fluid {
+            padding: 0 1rem;
+        }
+    }
+</style>
+
+<script>
+(function() {
+    'use strict';
+    
+    // Constants for validation
+    const VALIDATION_CONFIG = {
+        EMAIL_REGEX: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
+        MIN_PASSWORD_LENGTH: 1,
+        DEBOUNCE_DELAY: 300
+    };
+    
+    // State management
+    let isSubmitting = false;
+    let debounceTimers = {};
+    
+    // Bootstrap form validation
+    const forms = document.querySelectorAll('form[novalidate]');
+    
+    Array.prototype.slice.call(forms).forEach(function (form) {
+        form.addEventListener('submit', function (event) {
+            event.preventDefault();
+            event.stopPropagation();
+            
+            // Prevent double submission
+            if (isSubmitting) {
+                return;
+            }
+            
+            const email = form.querySelector('#email');
+            const password = form.querySelector('#password');
+            const submitBtn = document.getElementById('loginSubmitBtn');
+            
+            let isValid = true;
+            
+            // Clear previous validation states
+            clearValidationStates([email, password]);
+            
+            // Email validation with XSS prevention
+            const emailValue = sanitizeInput(email.value.trim());
+            if (!emailValue) {
+                setFieldError(email, 'Email address is required.');
+                isValid = false;
+            } else if (!isValidEmail(emailValue)) {
+                setFieldError(email, 'Please provide a valid email address.');
+                isValid = false;
+            } else {
+                setFieldSuccess(email, 'Email format is valid.');
+            }
+            
+            // Password validation with XSS prevention
+            const passwordValue = sanitizeInput(password.value);
+            if (!passwordValue || passwordValue.length < VALIDATION_CONFIG.MIN_PASSWORD_LENGTH) {
+                setFieldError(password, 'Password is required.');
+                isValid = false;
+            } else {
+                setFieldSuccess(password, 'Password provided.');
+            }
+            
+            // Submit form if valid
+            if (isValid) {
+                submitForm(form, submitBtn, {
+                    email: emailValue,
+                    password: passwordValue
+                });
+            } else {
+                // Focus on first invalid field
+                const firstInvalid = form.querySelector('.is-invalid');
+                if (firstInvalid) {
+                    firstInvalid.focus();
+                }
+            }
+        });
+        
+        // Real-time validation feedback with debouncing
+        const inputs = form.querySelectorAll('input');
+        inputs.forEach(function(input) {
+            input.addEventListener('blur', function() {
+                debounceValidation(input, 0); // Immediate validation on blur
+            });
+            
+            input.addEventListener('input', function() {
+                // Only validate if field has been marked invalid before
+                if (input.classList.contains('is-invalid')) {
+                    debounceValidation(input, VALIDATION_CONFIG.DEBOUNCE_DELAY);
+                }
+                
+                // Clear previous validation messages
+                if (input.value.trim() === '') {
+                    clearFieldValidation(input);
+                }
+            });
+            
+            // Prevent XSS in real-time
+            input.addEventListener('paste', function(e) {
+                setTimeout(() => {
+                    input.value = sanitizeInput(input.value);
+                }, 0);
+            });
+        });
+    });
+    
+    /**
+     * Debounced field validation
+     */
+    function debounceValidation(field, delay) {
+        const fieldId = field.id;
+        
+        if (debounceTimers[fieldId]) {
+            clearTimeout(debounceTimers[fieldId]);
+        }
+        
+        debounceTimers[fieldId] = setTimeout(() => {
+            validateField(field);
+        }, delay);
+    }
+    
+    /**
+     * Validate individual field
+     */
+    function validateField(field) {
+        const value = sanitizeInput(field.value.trim());
+        
+        if (field.type === 'email') {
+            if (!value) {
+                setFieldError(field, 'Email address is required.');
+            } else if (!isValidEmail(value)) {
+                setFieldError(field, 'Please provide a valid email address.');
+            } else {
+                setFieldSuccess(field, 'Email format is valid.');
+            }
+        } else if (field.type === 'password') {
+            if (!value || value.length < VALIDATION_CONFIG.MIN_PASSWORD_LENGTH) {
+                setFieldError(field, 'Password is required.');
+            } else {
+                setFieldSuccess(field, 'Password provided.');
+            }
+        }
+    }
+    
+    /**
+     * XSS prevention - sanitize input
+     */
+    function sanitizeInput(input) {
+        if (typeof input !== 'string') {
+            return '';
+        }
+        
+        return input
+            .replace(/[<>]/g, '') // Remove potential HTML tags
+            .replace(/javascript:/gi, '') // Remove javascript: protocol
+            .replace(/on\w+=/gi, '') // Remove event handlers
+            .trim();
+    }
+    
+    /**
+     * Email validation with XSS prevention
+     */
+    function isValidEmail(email) {
+        const sanitizedEmail = sanitizeInput(email);
+        return VALIDATION_CONFIG.EMAIL_REGEX.test(sanitizedEmail) && 
+               sanitizedEmail.length <= 254 && // RFC compliant max length
+               !sanitizedEmail.includes('<') && 
+               !sanitizedEmail.includes('>');
+    }
+    
+    /**
+     * Set field error state
+     */
+    function setFieldError(field, message) {
+        field.classList.remove('is-valid');
+        field.classList.add('is-invalid');
+        
+        const feedback = field.parentNode.querySelector('.invalid-feedback');
+        if (feedback) {
+            feedback.textContent = message;
+            feedback.style.display = 'block';
+        }
+        
+        // Hide valid feedback
+        const validFeedback = field.parentNode.querySelector('.valid-feedback');
+        if (validFeedback) {
+            validFeedback.style.display = 'none';
+        }
+    }
+    
+    /**
+     * Set field success state
+     */
+    function setFieldSuccess(field, message) {
+        field.classList.remove('is-invalid');
+        field.classList.add('is-valid');
+        
+        const feedback = field.parentNode.querySelector('.valid-feedback');
+        if (feedback) {
+            feedback.textContent = message;
+            feedback.style.display = 'block';
+        }
+        
+        // Hide invalid feedback
+        const invalidFeedback = field.parentNode.querySelector('.invalid-feedback');
+        if (invalidFeedback) {
+            invalidFeedback.style.display = 'none';
+        }
+    }
+    
+    /**
+     * Clear field validation state
+     */
+    function clearFieldValidation(field) {
+        field.classList.remove('is-valid', 'is-invalid');
+        
+        const validFeedback = field.parentNode.querySelector('.valid-feedback');
+        const invalidFeedback = field.parentNode.querySelector('.invalid-feedback');
+        
+        if (validFeedback) validFeedback.style.display = 'none';
+        if (invalidFeedback) invalidFeedback.style.display = 'none';
+    }
+    
+    /**
+     * Clear validation states for multiple fields
+     */
+    function clearValidationStates(fields) {
+        fields.forEach(field => {
+            if (field) {
+                clearFieldValidation(field);
+            }
+        });
+    }
+    
+    /**
+     * Submit form with loading state
+     */
+    function submitForm(form, submitBtn, sanitizedData) {
+        isSubmitting = true;
+        
+        // Show loading state
+        const btnText = submitBtn.querySelector('.btn-text');
+        const btnLoading = submitBtn.querySelector('.btn-loading');
+        
+        if (btnText && btnLoading) {
+            btnText.classList.add('d-none');
+            btnLoading.classList.remove('d-none');
+        }
+        
+        submitBtn.disabled = true;
+        
+        // Update form values with sanitized data
+        form.querySelector('#email').value = sanitizedData.email;
+        form.querySelector('#password').value = sanitizedData.password;
+        
+        // Create a timeout to prevent infinite loading state
+        const timeoutId = setTimeout(() => {
+            resetSubmitButton(submitBtn, btnText, btnLoading);
+            isSubmitting = false;
+            
+            // Show error message
+            showErrorMessage('Login request timed out. Please try again.');
+        }, 10000); // 10 second timeout
+        
+        // Handle form submission
+        try {
+            form.submit();
+        } catch (error) {
+            clearTimeout(timeoutId);
+            resetSubmitButton(submitBtn, btnText, btnLoading);
+            isSubmitting = false;
+            showErrorMessage('An error occurred during login. Please try again.');
+            console.error('Form submission error:', error);
+        }
+    }
+    
+    /**
+     * Reset submit button state
+     */
+    function resetSubmitButton(submitBtn, btnText, btnLoading) {
+        if (btnText && btnLoading) {
+            btnText.classList.remove('d-none');
+            btnLoading.classList.add('d-none');
+        }
+        submitBtn.disabled = false;
+    }
+    
+    /**
+     * Show error message
+     */
+    function showErrorMessage(message) {
+        // Remove existing error messages
+        const existingError = document.querySelector('.alert-danger.dynamic-error');
+        if (existingError) {
+            existingError.remove();
+        }
+        
+        // Create new error message
+        const errorDiv = document.createElement('div');
+        errorDiv.className = 'alert alert-danger border-0 mb-4 dynamic-error';
+        errorDiv.style.cssText = 'background-color: #e74c3c; color: white; border-radius: 0.5rem;';
+        errorDiv.innerHTML = `
+            <i class="bi bi-exclamation-triangle-fill me-2"></i>
+            ${sanitizeInput(message)}
+        `;
+        
+        // Insert error message
+        const form = document.getElementById('loginForm');
+        if (form) {
+            form.parentNode.insertBefore(errorDiv, form);
+            
+            // Auto-remove error after 5 seconds
+            setTimeout(() => {
+                if (errorDiv.parentNode) {
+                    errorDiv.remove();
+                }
+            }, 5000);
+        }
+    }
+    
+    /**
+     * Handle page visibility changes to prevent stale submissions
+     */
+    document.addEventListener('visibilitychange', function() {
+        if (document.hidden && isSubmitting) {
+            isSubmitting = false;
+            const submitBtn = document.getElementById('loginSubmitBtn');
+            if (submitBtn) {
+                const btnText = submitBtn.querySelector('.btn-text');
+                const btnLoading = submitBtn.querySelector('.btn-loading');
+                resetSubmitButton(submitBtn, btnText, btnLoading);
+            }
+        }
+    });
+    
+    /**
+     * Initialize accessibility features
+     */
+    function initializeAccessibility() {
+        const form = document.getElementById('loginForm');
+        if (form) {
+            form.setAttribute('aria-label', 'Login form');
+            
+            // Add ARIA attributes to form fields
+            const email = document.getElementById('email');
+            const password = document.getElementById('password');
+            
+            if (email) {
+                email.setAttribute('aria-describedby', 'email-feedback');
+                email.setAttribute('aria-required', 'true');
+            }
+            
+            if (password) {
+                password.setAttribute('aria-describedby', 'password-feedback');
+                password.setAttribute('aria-required', 'true');
+            }
+        }
+    }
+    
+    // Initialize accessibility features
+    initializeAccessibility();
+    
+    /**
+     * Handle keyboard shortcuts
+     */
+    document.addEventListener('keydown', function(e) {
+        // Allow Enter key to submit form when not in a textarea
+        if (e.key === 'Enter' && e.target.tagName !== 'TEXTAREA') {
+            const form = document.getElementById('loginForm');
+            if (form && document.activeElement && form.contains(document.activeElement)) {
+                e.preventDefault();
+                form.dispatchEvent(new Event('submit'));
+            }
+        }
+        
+        // Escape key clears current focus and validation
+        if (e.key === 'Escape') {
+            if (document.activeElement && document.activeElement.classList.contains('form-control')) {
+                document.activeElement.blur();
+            }
+        }
+    });
+    
+})();
+</script>

@@ -3,59 +3,78 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title><%= title %> | Auth App</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+    <meta name="theme-color" content="#2c3e50">
+    <meta name="description" content="Secure authentication system with Express.js">
+    <meta http-equiv="X-Content-Type-Options" content="nosniff">
+    <meta http-equiv="X-Frame-Options" content="DENY">
+    <meta http-equiv="X-XSS-Protection" content="1; mode=block">
+    <meta name="referrer" content="strict-origin-when-cross-origin">
+    <title><%- title ? title.replace(/[<>]/g, '') : 'Auth App' %> | Auth App</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-9ndCyUa6c3mRx6kBQ8YH7XjYpX8pIcMbDZvXrjnkYOG5p5aRJZG8m9QLaOjPPd8w" crossorigin="anonymous">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet" integrity="sha384-b6lVK+yci+bfDmaY1u0zE8YYJt0TZxLEAFyYSLHId4xoVvsrQu3INevFKo+Xir8e" crossorigin="anonymous">
     <link href="/css/style.css" rel="stylesheet">
 </head>
-<body>
+<body class="bg-dark text-light">
+    <!-- Skip to content for accessibility -->
+    <a href="#main-content" class="visually-hidden-focusable">Skip to main content</a>
+    
     <!-- Sidebar Toggle Button for Mobile -->
-    <div class="d-lg-none p-3 bg-primary">
-        <button class="btn btn-primary" type="button" data-bs-toggle="offcanvas" data-bs-target="#sidebar" aria-controls="sidebar" aria-expanded="false" aria-label="Toggle navigation">
-            <i class="bi bi-list"></i> Menu
+    <div class="d-lg-none p-3" style="background-color: #2c3e50;">
+        <button class="btn btn-outline-light" type="button" data-bs-toggle="offcanvas" data-bs-target="#sidebar" aria-controls="sidebar" aria-expanded="false" aria-label="Toggle navigation">
+            <i class="bi bi-list" aria-hidden="true"></i> Menu
         </button>
     </div>
 
     <!-- Sidebar Navigation -->
-    <div class="offcanvas-lg offcanvas-start bg-primary" tabindex="-1" id="sidebar" aria-labelledby="sidebarLabel">
-        <div class="offcanvas-header border-bottom border-light">
+    <div class="offcanvas-lg offcanvas-start" style="background-color: #2c3e50;" tabindex="-1" id="sidebar" aria-labelledby="sidebarLabel">
+        <div class="offcanvas-header border-bottom border-secondary">
             <h5 class="offcanvas-title text-white" id="sidebarLabel">
-                <i class="bi bi-shield-lock"></i> Auth App
+                <i class="bi bi-shield-lock" aria-hidden="true"></i> Auth App
             </h5>
-            <button type="button" class="btn-close btn-close-white d-lg-none" data-bs-dismiss="offcanvas" data-bs-target="#sidebar" aria-label="Close"></button>
+            <button type="button" class="btn-close btn-close-white d-lg-none" data-bs-dismiss="offcanvas" data-bs-target="#sidebar" aria-label="Close navigation menu"></button>
         </div>
         <div class="offcanvas-body p-0">
-            <nav class="nav flex-column">
-                <a class="nav-link text-white <%= (typeof title !== 'undefined' && title === 'Home') ? 'active bg-primary-dark' : '' %>" href="/">
-                    <i class="bi bi-house"></i> Home
+            <nav class="nav flex-column" role="navigation" aria-label="Main navigation">
+                <a class="nav-link text-white px-3 py-3 sidebar-link <%= (typeof title !== 'undefined' && title === 'Home') ? 'active' : '' %>" href="/" role="menuitem">
+                    <i class="bi bi-house me-2" aria-hidden="true"></i> Home
                 </a>
                 
                 <% if (typeof user !== 'undefined' && user !== null && user) { %>
-                    <div class="px-3 py-2 border-bottom border-light">
-                        <small class="text-white-50">Signed in as:</small>
+                    <div class="px-3 py-2 border-bottom border-secondary">
+                        <small class="text-light opacity-75">Signed in as:</small>
                         <div class="text-white fw-bold">
-                            <i class="bi bi-person-circle"></i> <%= user?.username || 'Unknown User' %>
+                            <% if (user?.avatar_url) { %>
+                                <img src="<%- user.avatar_url.replace(/[<>"']/g, '') %>" alt="Avatar" class="rounded-circle me-1" width="20" height="20" loading="lazy">
+                            <% } else { %>
+                                <i class="bi bi-person-circle me-1" aria-hidden="true"></i>
+                            <% } %>
+                            <%- (user?.name || user?.username || 'Unknown User').replace(/[<>]/g, '') %>
                         </div>
                     </div>
                     
-                    <a class="nav-link text-white <%= (typeof title !== 'undefined' && title === 'Dashboard') ? 'active bg-primary-dark' : '' %>" href="/dashboard">
-                        <i class="bi bi-speedometer2"></i> Dashboard
+                    <a class="nav-link text-white px-3 py-3 sidebar-link <%= (typeof title !== 'undefined' && title === 'Dashboard') ? 'active' : '' %>" href="/dashboard" role="menuitem">
+                        <i class="bi bi-speedometer2 me-2" aria-hidden="true"></i> Dashboard
                     </a>
                     
-                    <form action="/auth/logout" method="POST" class="d-inline">
-                        <button type="submit" class="nav-link text-white btn btn-link text-start w-100 border-0 p-0" style="text-decoration: none;">
-                            <span class="d-block px-3 py-2">
-                                <i class="bi bi-box-arrow-right"></i> Logout
+                    <a class="nav-link text-white px-3 py-3 sidebar-link <%= (typeof title !== 'undefined' && title === 'Profile') ? 'active' : '' %>" href="/dashboard/profile" role="menuitem">
+                        <i class="bi bi-person me-2" aria-hidden="true"></i> Profile
+                    </a>
+                    
+                    <form action="/auth/logout" method="POST" class="d-inline" role="none">
+                        <input type="hidden" name="_method" value="POST">
+                        <button type="submit" class="nav-link text-white btn btn-link text-start w-100 border-0 p-0 sidebar-link" style="text-decoration: none;" role="menuitem">
+                            <span class="d-block px-3 py-3">
+                                <i class="bi bi-box-arrow-right me-2" aria-hidden="true"></i> Logout
                             </span>
                         </button>
                     </form>
                 <% } else { %>
-                    <a class="nav-link text-white <%= (typeof title !== 'undefined' && title === 'Login') ? 'active bg-primary-dark' : '' %>" href="/login">
-                        <i class="bi bi-box-arrow-in-right"></i> Login
+                    <a class="nav-link text-white px-3 py-3 sidebar-link <%= (typeof title !== 'undefined' && title === 'Login') ? 'active' : '' %>" href="/login" role="menuitem">
+                        <i class="bi bi-box-arrow-in-right me-2" aria-hidden="true"></i> Login
                     </a>
                     
-                    <a class="nav-link text-white <%= (typeof title !== 'undefined' && title === 'Sign Up') ? 'active bg-primary-dark' : '' %>" href="/signup">
-                        <i class="bi bi-person-plus"></i> Sign Up
+                    <a class="nav-link text-white px-3 py-3 sidebar-link <%= (typeof title !== 'undefined' && title === 'Sign Up') ? 'active' : '' %>" href="/signup" role="menuitem">
+                        <i class="bi bi-person-plus me-2" aria-hidden="true"></i> Sign Up
                     </a>
                 <% } %>
             </nav>
@@ -63,39 +82,217 @@
     </div>
 
     <!-- Main Content Wrapper -->
-    <div class="main-content">
+    <div class="main-content bg-dark">
         <!-- Flash Messages -->
         <% if (typeof error !== 'undefined' && error) { %>
             <div class="container mt-3">
-                <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                    <i class="bi bi-exclamation-triangle"></i> <%= error %>
-                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                <div class="alert alert-danger alert-dismissible fade show" role="alert" aria-live="polite">
+                    <i class="bi bi-exclamation-triangle me-2" aria-hidden="true"></i> 
+                    <%- typeof error === 'string' ? error.replace(/[<>]/g, '') : 'An error occurred' %>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close error message"></button>
                 </div>
             </div>
         <% } %>
 
         <% if (typeof success !== 'undefined' && success) { %>
             <div class="container mt-3">
-                <div class="alert alert-success alert-dismissible fade show" role="alert">
-                    <i class="bi bi-check-circle"></i> <%= success %>
-                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                <div class="alert alert-success alert-dismissible fade show" role="alert" aria-live="polite">
+                    <i class="bi bi-check-circle me-2" aria-hidden="true"></i> 
+                    <%- typeof success === 'string' ? success.replace(/[<>]/g, '') : 'Operation successful' %>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close success message"></button>
                 </div>
             </div>
         <% } %>
 
-        <!-- Main Content -->
-        <main class="container mt-4">
-            <%- body %>
+        <!-- Validation Errors Display -->
+        <% if (typeof validationErrors !== 'undefined' && validationErrors && Array.isArray(validationErrors) && validationErrors.length > 0) { %>
+            <div class="container mt-3">
+                <div class="alert alert-warning alert-dismissible fade show" role="alert" aria-live="polite">
+                    <i class="bi bi-exclamation-circle me-2" aria-hidden="true"></i>
+                    <strong>Please correct the following errors:</strong>
+                    <ul class="mb-0 mt-2">
+                        <% validationErrors.forEach(function(error) { %>
+                            <li><%- error.msg ? error.msg.replace(/[<>]/g, '') : 'Validation error' %></li>
+                        <% }); %>
+                    </ul>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close validation errors"></button>
+                </div>
+            </div>
+        <% } %>
+
+        <!-- Loading indicator for AJAX operations -->
+        <div id="loading-indicator" class="d-none position-fixed top-50 start-50 translate-middle" style="z-index: 9999;">
+            <div class="spinner-border text-primary" role="status" aria-hidden="true">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+        </div>
+
+        <!-- Main Content Area -->
+        <main class="container-fluid px-3 px-md-4 py-4" id="main-content" role="main">
+            <div class="row">
+                <div class="col">
+                    <!-- Page content will be rendered here -->
+                    <%- body %>
+                </div>
+            </div>
         </main>
 
         <!-- Footer -->
-        <footer class="bg-light text-center text-muted py-4 mt-5">
+        <footer class="bg-secondary text-center text-light py-4 mt-5" role="contentinfo">
             <div class="container">
-                <p class="mb-0">&copy; 2024 Auth App. Built with Express.js & Bootstrap.</p>
+                <div class="row">
+                    <div class="col-12 col-md-6 text-md-start mb-2 mb-md-0">
+                        <p class="mb-0 opacity-75">&copy; 2024 Auth App. All rights reserved.</p>
+                    </div>
+                    <div class="col-12 col-md-6 text-md-end">
+                        <p class="mb-0 opacity-75">
+                            Built with 
+                            <i class="bi bi-heart-fill text-danger" aria-hidden="true"></i>
+                            using Express.js & Bootstrap
+                        </p>
+                    </div>
+                </div>
+                <div class="row mt-3">
+                    <div class="col-12">
+                        <div class="d-flex justify-content-center gap-3">
+                            <a href="#" class="text-light text-decoration-none opacity-75" aria-label="Privacy Policy">Privacy</a>
+                            <span class="opacity-50">|</span>
+                            <a href="#" class="text-light text-decoration-none opacity-75" aria-label="Terms of Service">Terms</a>
+                            <span class="opacity-50">|</span>
+                            <a href="#" class="text-light text-decoration-none opacity-75" aria-label="Support">Support</a>
+                        </div>
+                    </div>
+                </div>
             </div>
         </footer>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js" integrity="sha384-geWF76RCwLtnZ8qwWowPQNguL3RmwHVBC9FhGdlKrxdiJJigb/j/68SIy3Te4Bkz" crossorigin="anonymous"></script>
+    
+    <!-- Custom JavaScript for enhanced functionality -->
+    <script>
+        // XSS Prevention - Content Security Policy enforcement
+        document.addEventListener('DOMContentLoaded', function() {
+            // Auto-dismiss alerts after 5 seconds
+            const alerts = document.querySelectorAll('.alert:not(.alert-permanent)');
+            alerts.forEach(function(alert) {
+                setTimeout(function() {
+                    const bsAlert = new bootstrap.Alert(alert);
+                    if (bsAlert) {
+                        bsAlert.close();
+                    }
+                }, 5000);
+            });
+
+            // Enhanced form validation
+            const forms = document.querySelectorAll('form[novalidate]');
+            forms.forEach(function(form) {
+                form.addEventListener('submit', function(event) {
+                    if (!form.checkValidity()) {
+                        event.preventDefault();
+                        event.stopPropagation();
+                    }
+                    form.classList.add('was-validated');
+                });
+            });
+
+            // Loading indicator for AJAX operations
+            const loadingIndicator = document.getElementById('loading-indicator');
+            window.showLoading = function() {
+                if (loadingIndicator) {
+                    loadingIndicator.classList.remove('d-none');
+                }
+            };
+            window.hideLoading = function() {
+                if (loadingIndicator) {
+                    loadingIndicator.classList.add('d-none');
+                }
+            };
+
+            // Sidebar active link highlighting
+            const currentPath = window.location.pathname;
+            const navLinks = document.querySelectorAll('.sidebar-link');
+            navLinks.forEach(function(link) {
+                if (link.getAttribute('href') === currentPath) {
+                    link.classList.add('active');
+                }
+            });
+
+            // Mobile menu auto-close on link click
+            const offcanvas = document.getElementById('sidebar');
+            const navLinksInOffcanvas = offcanvas.querySelectorAll('.nav-link');
+            navLinksInOffcanvas.forEach(function(link) {
+                link.addEventListener('click', function() {
+                    if (window.innerWidth < 992) { // Bootstrap lg breakpoint
+                        const bsOffcanvas = bootstrap.Offcanvas.getInstance(offcanvas);
+                        if (bsOffcanvas) {
+                            bsOffcanvas.hide();
+                        }
+                    }
+                });
+            });
+
+            // Responsive image lazy loading
+            if ('IntersectionObserver' in window) {
+                const imageObserver = new IntersectionObserver((entries, observer) => {
+                    entries.forEach(entry => {
+                        if (entry.isIntersecting) {
+                            const img = entry.target;
+                            img.src = img.dataset.src || img.src;
+                            img.classList.remove('lazy');
+                            imageObserver.unobserve(img);
+                        }
+                    });
+                });
+
+                document.querySelectorAll('img[loading="lazy"]').forEach(img => {
+                    imageObserver.observe(img);
+                });
+            }
+
+            // Enhanced accessibility - keyboard navigation
+            document.addEventListener('keydown', function(e) {
+                // ESC key closes modals and offcanvas
+                if (e.key === 'Escape') {
+                    const openModals = document.querySelectorAll('.modal.show');
+                    openModals.forEach(modal => {
+                        const bsModal = bootstrap.Modal.getInstance(modal);
+                        if (bsModal) bsModal.hide();
+                    });
+
+                    const openOffcanvas = document.querySelectorAll('.offcanvas.show');
+                    openOffcanvas.forEach(offcanvas => {
+                        const bsOffcanvas = bootstrap.Offcanvas.getInstance(offcanvas);
+                        if (bsOffcanvas) bsOffcanvas.hide();
+                    });
+                }
+            });
+        });
+
+        // Error handling for failed resource loads
+        window.addEventListener('error', function(e) {
+            if (e.target.tagName === 'IMG') {
+                e.target.style.display = 'none';
+                console.warn('Failed to load image:', e.target.src);
+            }
+        });
+
+        // Service Worker registration for PWA features (optional)
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', function() {
+                navigator.serviceWorker.register('/sw.js').then(function(registration) {
+                    console.log('ServiceWorker registered successfully');
+                }).catch(function(error) {
+                    console.log('ServiceWorker registration failed');
+                });
+            });
+        }
+    </script>
+
+    <!-- Include page-specific scripts -->
+    <% if (typeof pageScript !== 'undefined' && pageScript) { %>
+        <script src="/js/<%- pageScript.replace(/[<>"']/g, '') %>.js"></script>
+    <% } %>
 </body>
 </html>
