@@ -3,7 +3,7 @@ const bcrypt = require('bcrypt');
 const path = require('path');
 
 // Create database connection
-const dbPath = path.join(__dirname, '..', 'database.sqlite');
+const dbPath = path.join(__dirname, '..', 'database.db');
 const db = new sqlite3.Database(dbPath);
 
 // Constants for validation
@@ -13,6 +13,15 @@ const VALIDATION_CONSTANTS = {
     BIO_MAX_LENGTH: 500,
     PHONE_MAX_LENGTH: 20,
     AVATAR_URL_MAX_LENGTH: 255
+};
+
+// Allowed fields for profile updates - prevents SQL injection
+const ALLOWED_PROFILE_FIELDS = {
+    'name': true,
+    'email': true,
+    'phone': true,
+    'bio': true,
+    'avatar_url': true
 };
 
 // Create users table if it doesn't exist
@@ -238,12 +247,17 @@ class User {
                     return;
                 }
 
-                // Build dynamic query based on provided fields
-                const allowedFields = ['name', 'email', 'phone', 'bio', 'avatar_url'];
+                // Build dynamic query based on provided fields - validate against allowlist
                 const updateFields = [];
                 const updateValues = [];
 
-                allowedFields.forEach(field => {
+                Object.keys(profileData).forEach(field => {
+                    // Validate field name against allowlist to prevent SQL injection
+                    if (!ALLOWED_PROFILE_FIELDS.hasOwnProperty(field)) {
+                        reject(new Error(`Invalid field name: ${field}`));
+                        return;
+                    }
+                    
                     if (profileData.hasOwnProperty(field)) {
                         updateFields.push(`${field} = ?`);
                         updateValues.push(field === 'name' || field === 'email' ? 
@@ -332,6 +346,14 @@ class User {
                 if (fields.length === 0) {
                     reject(new Error('No fields to update'));
                     return;
+                }
+
+                // Validate field names against allowlist to prevent SQL injection
+                for (const field of fields) {
+                    if (!ALLOWED_PROFILE_FIELDS.hasOwnProperty(field)) {
+                        reject(new Error(`Invalid field name: ${field}`));
+                        return;
+                    }
                 }
 
                 const setClause = fields.map(field => `${field} = ?`).join(', ');

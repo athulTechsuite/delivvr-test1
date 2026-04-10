@@ -1,0 +1,308 @@
+const request = require('supertest');
+const app = require('../app');
+const { User } = require('../models');
+const jwt = require('jsonwebtoken');
+
+describe('Profile Update Error Handling', () => {
+  let testUser;
+  let authToken;
+
+  beforeEach(async () => {
+    // Create test user
+    testUser = await User.create({
+      email: 'test@example.com',
+      username: 'testuser',
+      firstName: 'Test',
+      lastName: 'User',
+      passwordHash: 'hashedpassword123'
+    });
+
+    // Generate auth token
+    authToken = jwt.sign(
+      { userId: testUser.id, email: testUser.email },
+      process.env.JWT_SECRET || 'test-secret',
+      { expiresIn: '1h' }
+    );
+  });
+
+  afterEach(async () => {
+    // Clean up test data
+    await User.destroy({ where: { email: 'test@example.com' } });
+  });
+
+  describe('TC-009: Error handling for invalid profile updates', () => {
+    // Happy path test
+    it('should successfully update profile with valid data', async () => {
+      const validUpdateData = {
+        firstName: 'UpdatedFirst',
+        lastName: 'UpdatedLast',
+        bio: 'Updated bio'
+      };
+
+      const response = await request(app)
+        .put('/api/profile')
+        .set('Authorization', `Bearer ${authToken}`)
+        .send(validUpdateData)
+        .expect(200);
+
+      expect(response.body.success).toBe(true);
+      expect(response.body.data.firstName).toBe(validUpdateData.firstName);
+      expect(response.body.data.lastName).toBe(validUpdateData.lastName);
+      expect(response.body.data.bio).toBe(validUpdateData.bio);
+    });
+
+    // Error path tests
+    it('should reject update with missing authorization token', async () => {
+      const updateData = {
+        firstName: 'UpdatedFirst',
+        lastName: 'UpdatedLast'
+      };
+
+      const response = await request(app)
+        .put('/api/profile')
+        .send(updateData)
+        .expect(401);
+
+      expect(response.body.success).toBe(false);
+      expect(response.body.error).toBe('Authorization token required');
+    });
+
+    it('should reject update with invalid authorization token', async () => {
+      const updateData = {
+        firstName: 'UpdatedFirst',
+        lastName: 'UpdatedLast'
+      };
+
+      const response = await request(app)
+        .put('/api/profile')
+        .set('Authorization', 'Bearer invalid-token')
+        .send(updateData)
+        .expect(401);
+
+      expect(response.body.success).toBe(false);
+      expect(response.body.error).toBe('Invalid or expired token');
+    });
+
+    it('should reject update with empty firstName', async () => {
+      const invalidUpdateData = {
+        firstName: '',
+        lastName: 'UpdatedLast'
+      };
+
+      const response = await request(app)
+        .put('/api/profile')
+        .set('Authorization', `Bearer ${authToken}`)
+        .send(invalidUpdateData)
+        .expect(400);
+
+      expect(response.body.success).toBe(false);
+      expect(response.body.error).toBe('First name cannot be empty');
+    });
+
+    it('should reject update with empty lastName', async () => {
+      const invalidUpdateData = {
+        firstName: 'UpdatedFirst',
+        lastName: ''
+      };
+
+      const response = await request(app)
+        .put('/api/profile')
+        .set('Authorization', `Bearer ${authToken}`)
+        .send(invalidUpdateData)
+        .expect(400);
+
+      expect(response.body.success).toBe(false);
+      expect(response.body.error).toBe('Last name cannot be empty');
+    });
+
+    it('should reject update with firstName exceeding maximum length', async () => {
+      const invalidUpdateData = {
+        firstName: 'A'.repeat(101), // Assuming max length is 100
+        lastName: 'UpdatedLast'
+      };
+
+      const response = await request(app)
+        .put('/api/profile')
+        .set('Authorization', `Bearer ${authToken}`)
+        .send(invalidUpdateData)
+        .expect(400);
+
+      expect(response.body.success).toBe(false);
+      expect(response.body.error).toBe('First name exceeds maximum length of 100 characters');
+    });
+
+    it('should reject update with lastName exceeding maximum length', async () => {
+      const invalidUpdateData = {
+        firstName: 'UpdatedFirst',
+        lastName: 'A'.repeat(101) // Assuming max length is 100
+      };
+
+      const response = await request(app)
+        .put('/api/profile')
+        .set('Authorization', `Bearer ${authToken}`)
+        .send(invalidUpdateData)
+        .expect(400);
+
+      expect(response.body.success).toBe(false);
+      expect(response.body.error).toBe('Last name exceeds maximum length of 100 characters');
+    });
+
+    it('should reject update with bio exceeding maximum length', async () => {
+      const invalidUpdateData = {
+        firstName: 'UpdatedFirst',
+        lastName: 'UpdatedLast',
+        bio: 'A'.repeat(501) // Assuming max length is 500
+      };
+
+      const response = await request(app)
+        .put('/api/profile')
+        .set('Authorization', `Bearer ${authToken}`)
+        .send(invalidUpdateData)
+        .expect(400);
+
+      expect(response.body.success).toBe(false);
+      expect(response.body.error).toBe('Bio exceeds maximum length of 500 characters');
+    });
+
+    it('should reject update with invalid email format', async () => {
+      const invalidUpdateData = {
+        firstName: 'UpdatedFirst',
+        lastName: 'UpdatedLast',
+        email: 'invalid-email'
+      };
+
+      const response = await request(app)
+        .put('/api/profile')
+        .set('Authorization', `Bearer ${authToken}`)
+        .send(invalidUpdateData)
+        .expect(400);
+
+      expect(response.body.success).toBe(false);
+      expect(response.body.error).toBe('Invalid email format');
+    });
+
+    it('should reject update with duplicate email', async () => {
+      // Create another user with a different email
+      await User.create({
+        email: 'existing@example.com',
+        username: 'existinguser',
+        firstName: 'Existing',
+        lastName: 'User',
+        passwordHash: 'hashedpassword123'
+      });
+
+      const invalidUpdateData = {
+        firstName: 'UpdatedFirst',
+        lastName: 'UpdatedLast',
+        email: 'existing@example.com'
+      };
+
+      const response = await request(app)
+        .put('/api/profile')
+        .set('Authorization', `Bearer ${authToken}`)
+        .send(invalidUpdateData)
+        .expect(409);
+
+      expect(response.body.success).toBe(false);
+      expect(response.body.error).toBe('Email already exists');
+
+      // Cleanup
+      await User.destroy({ where: { email: 'existing@example.com' } });
+    });
+
+    it('should reject update with invalid data types', async () => {
+      const invalidUpdateData = {
+        firstName: 123, // Should be string
+        lastName: true, // Should be string
+        bio: null
+      };
+
+      const response = await request(app)
+        .put('/api/profile')
+        .set('Authorization', `Bearer ${authToken}`)
+        .send(invalidUpdateData)
+        .expect(400);
+
+      expect(response.body.success).toBe(false);
+      expect(response.body.error).toContain('Invalid data types');
+    });
+
+    it('should reject update with SQL injection attempt', async () => {
+      const maliciousUpdateData = {
+        firstName: "'; DROP TABLE users; --",
+        lastName: 'UpdatedLast'
+      };
+
+      const response = await request(app)
+        .put('/api/profile')
+        .set('Authorization', `Bearer ${authToken}`)
+        .send(maliciousUpdateData)
+        .expect(400);
+
+      expect(response.body.success).toBe(false);
+      expect(response.body.error).toBe('Invalid characters detected in input');
+    });
+
+    it('should reject update with XSS attempt', async () => {
+      const maliciousUpdateData = {
+        firstName: '<script>alert("xss")</script>',
+        lastName: 'UpdatedLast'
+      };
+
+      const response = await request(app)
+        .put('/api/profile')
+        .set('Authorization', `Bearer ${authToken}`)
+        .send(maliciousUpdateData)
+        .expect(400);
+
+      expect(response.body.success).toBe(false);
+      expect(response.body.error).toBe('Invalid characters detected in input');
+    });
+
+    it('should handle database connection error gracefully', async () => {
+      // Mock database error
+      const originalUpdate = User.update;
+      User.update = jest.fn().mockRejectedValue(new Error('Database connection failed'));
+
+      const updateData = {
+        firstName: 'UpdatedFirst',
+        lastName: 'UpdatedLast'
+      };
+
+      const response = await request(app)
+        .put('/api/profile')
+        .set('Authorization', `Bearer ${authToken}`)
+        .send(updateData)
+        .expect(500);
+
+      expect(response.body.success).toBe(false);
+      expect(response.body.error).toBe('Internal server error');
+
+      // Restore original method
+      User.update = originalUpdate;
+    });
+
+    it('should reject update for non-existent user', async () => {
+      // Create token for non-existent user
+      const fakeToken = jwt.sign(
+        { userId: 99999, email: 'fake@example.com' },
+        process.env.JWT_SECRET || 'test-secret',
+        { expiresIn: '1h' }
+      );
+
+      const updateData = {
+        firstName: 'UpdatedFirst',
+        lastName: 'UpdatedLast'
+      };
+
+      const response = await request(app)
+        .put('/api/profile')
+        .set('Authorization', `Bearer ${fakeToken}`)
+        .send(updateData)
+        .expect(404);
+
+      expect(response.body.success).toBe(false);
+      expect(response.body.error).toBe('User not found');
+    });
+  });
+});
