@@ -114,6 +114,42 @@ app.get('/dashboard', authenticateToken, (req, res) => {
     });
 });
 
+app.get('/profile', authenticateToken, (req, res) => {
+    // Validate user ID from JWT token
+    const userId = req.user.id;
+    
+    if (!userId || typeof userId !== 'number') {
+        console.error('Invalid user ID in JWT token:', userId);
+        return res.redirect('/login');
+    }
+    
+    // Get user information from database using parameterized query
+    db.get('SELECT name, email, created_at FROM users WHERE id = ?', [userId], (err, user) => {
+        if (err) {
+            console.error('Database error fetching user profile:', err);
+            return res.redirect('/login');
+        }
+        
+        // Handle case where user is not found
+        if (!user) {
+            console.error('User not found for ID:', userId);
+            return res.redirect('/login');
+        }
+        
+        // Validate user data before rendering
+        if (!user.name || !user.email || !user.created_at) {
+            console.error('Incomplete user data:', user);
+            return res.redirect('/login');
+        }
+        
+        // Render profile template with user data
+        res.render('profile', { 
+            user: user,
+            title: 'Profile'
+        });
+    });
+});
+
 app.post('/signup', signupValidation, async (req, res) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
@@ -135,7 +171,7 @@ app.post('/signup', signupValidation, async (req, res) => {
                     if (err.message.includes('UNIQUE constraint failed')) {
                         return res.render('signup', { error: 'Email already exists' });
                     }
-                    console.error(err);
+                    console.error('Database error during signup:', err);
                     return res.render('signup', { error: 'Registration failed' });
                 }
                 
@@ -144,7 +180,7 @@ app.post('/signup', signupValidation, async (req, res) => {
             }
         );
     } catch (error) {
-        console.error(error);
+        console.error('Signup error:', error);
         res.render('signup', { error: 'Registration failed' });
     }
 });
