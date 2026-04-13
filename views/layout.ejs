@@ -3,99 +3,229 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title><%= title %> | Auth App</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+    <title><%= title %> | Express Auth App</title>
+    <!-- Material Design Compatible Styling -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:ital,0,1;wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
     <link href="/css/style.css" rel="stylesheet">
 </head>
-<body>
+<body class="md-body">
     <!-- Sidebar Toggle Button for Mobile -->
-    <div class="d-lg-none p-3 bg-primary">
-        <button class="btn btn-primary" type="button" data-bs-toggle="offcanvas" data-bs-target="#sidebar" aria-controls="sidebar" aria-expanded="false" aria-label="Toggle navigation">
-            <i class="bi bi-list"></i> Menu
+    <div class="md-mobile-header">
+        <button class="md-btn md-btn-icon md-btn-primary md-sidebar-toggle" type="button" aria-controls="sidebar" aria-expanded="false" aria-label="Toggle navigation">
+            <i class="bi bi-list"></i>
         </button>
+        <h5 class="md-mobile-title">
+            <i class="bi bi-shield-lock"></i> Express Auth App
+        </h5>
     </div>
 
     <!-- Sidebar Navigation -->
-    <div class="offcanvas-lg offcanvas-start bg-primary" tabindex="-1" id="sidebar" aria-labelledby="sidebarLabel">
-        <div class="offcanvas-header border-bottom border-light">
-            <h5 class="offcanvas-title text-white" id="sidebarLabel">
-                <i class="bi bi-shield-lock"></i> Auth App
+    <div class="md-sidebar" id="sidebar" aria-labelledby="sidebarLabel">
+        <div class="md-sidebar-header">
+            <h5 class="md-sidebar-title" id="sidebarLabel">
+                <i class="bi bi-shield-lock"></i> Express Auth App
             </h5>
-            <button type="button" class="btn-close btn-close-white d-lg-none" data-bs-dismiss="offcanvas" data-bs-target="#sidebar" aria-label="Close"></button>
+            <button type="button" class="md-sidebar-close md-btn md-btn-icon" aria-label="Close sidebar">
+                <i class="bi bi-x"></i>
+            </button>
         </div>
-        <div class="offcanvas-body p-0">
-            <nav class="nav flex-column">
-                <a class="nav-link text-white <%= (typeof title !== 'undefined' && title === 'Home') ? 'active bg-primary-dark' : '' %>" href="/">
-                    <i class="bi bi-house"></i> Home
+        <div class="md-sidebar-body">
+            <nav class="md-nav-menu" role="navigation">
+                <a class="md-nav-link <%= (typeof title !== 'undefined' && title === 'Home') ? 'md-nav-link-active' : '' %>" href="/" role="menuitem">
+                    <i class="bi bi-house"></i>
+                    <span>Home</span>
                 </a>
                 
                 <% if (typeof user !== 'undefined' && user !== null && user) { %>
-                    <div class="px-3 py-2 border-bottom border-light">
-                        <small class="text-white-50">Signed in as:</small>
-                        <div class="text-white fw-bold">
-                            <i class="bi bi-person-circle"></i> <%= user?.username || 'Unknown User' %>
+                    <div class="md-user-info">
+                        <small class="md-user-label">Signed in as:</small>
+                        <div class="md-user-name">
+                            <i class="bi bi-person-circle"></i>
+                            <span><%= user.name || user.username || 'Unknown User' %></span>
                         </div>
                     </div>
                     
-                    <a class="nav-link text-white <%= (typeof title !== 'undefined' && title === 'Dashboard') ? 'active bg-primary-dark' : '' %>" href="/dashboard">
-                        <i class="bi bi-speedometer2"></i> Dashboard
+                    <a class="md-nav-link <%= (typeof title !== 'undefined' && title === 'Profile') ? 'md-nav-link-active' : '' %>" href="/profile" role="menuitem">
+                        <i class="bi bi-person-circle"></i>
+                        <span>Profile</span>
                     </a>
                     
-                    <form action="/auth/logout" method="POST" class="d-inline">
-                        <button type="submit" class="nav-link text-white btn btn-link text-start w-100 border-0 p-0" style="text-decoration: none;">
-                            <span class="d-block px-3 py-2">
-                                <i class="bi bi-box-arrow-right"></i> Logout
-                            </span>
+                    <a class="md-nav-link <%= (typeof title !== 'undefined' && title === 'Dashboard') ? 'md-nav-link-active' : '' %>" href="/dashboard" role="menuitem">
+                        <i class="bi bi-speedometer2"></i>
+                        <span>Dashboard</span>
+                    </a>
+                    
+                    <form action="/logout" method="POST" class="md-nav-form">
+                        <button type="submit" class="md-nav-link md-nav-button" role="menuitem">
+                            <i class="bi bi-box-arrow-right"></i>
+                            <span>Logout</span>
                         </button>
                     </form>
                 <% } else { %>
-                    <a class="nav-link text-white <%= (typeof title !== 'undefined' && title === 'Login') ? 'active bg-primary-dark' : '' %>" href="/login">
-                        <i class="bi bi-box-arrow-in-right"></i> Login
+                    <a class="md-nav-link <%= (typeof title !== 'undefined' && title === 'Login') ? 'md-nav-link-active' : '' %>" href="/login" role="menuitem">
+                        <i class="bi bi-box-arrow-in-right"></i>
+                        <span>Login</span>
                     </a>
                     
-                    <a class="nav-link text-white <%= (typeof title !== 'undefined' && title === 'Sign Up') ? 'active bg-primary-dark' : '' %>" href="/signup">
-                        <i class="bi bi-person-plus"></i> Sign Up
+                    <a class="md-nav-link <%= (typeof title !== 'undefined' && title === 'Sign Up') ? 'md-nav-link-active' : '' %>" href="/signup" role="menuitem">
+                        <i class="bi bi-person-plus"></i>
+                        <span>Sign Up</span>
                     </a>
                 <% } %>
             </nav>
         </div>
     </div>
 
+    <!-- Sidebar Overlay -->
+    <div class="md-sidebar-overlay" id="sidebar-overlay"></div>
+
     <!-- Main Content Wrapper -->
-    <div class="main-content">
+    <div class="md-main-wrapper">
         <!-- Flash Messages -->
         <% if (typeof error !== 'undefined' && error) { %>
-            <div class="container mt-3">
-                <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                    <i class="bi bi-exclamation-triangle"></i> <%= error %>
-                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            <div class="md-container md-margin-top-md">
+                <div class="md-alert md-alert-error" role="alert">
+                    <div class="md-alert-content">
+                        <i class="bi bi-exclamation-triangle md-alert-icon" aria-hidden="true"></i>
+                        <span class="md-alert-message"><%= error %></span>
+                        <button type="button" class="md-alert-close" aria-label="Close alert">
+                            <i class="bi bi-x" aria-hidden="true"></i>
+                        </button>
+                    </div>
                 </div>
             </div>
         <% } %>
 
         <% if (typeof success !== 'undefined' && success) { %>
-            <div class="container mt-3">
-                <div class="alert alert-success alert-dismissible fade show" role="alert">
-                    <i class="bi bi-check-circle"></i> <%= success %>
-                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            <div class="md-container md-margin-top-md">
+                <div class="md-alert md-alert-success" role="alert">
+                    <div class="md-alert-content">
+                        <i class="bi bi-check-circle md-alert-icon" aria-hidden="true"></i>
+                        <span class="md-alert-message"><%= success %></span>
+                        <button type="button" class="md-alert-close" aria-label="Close alert">
+                            <i class="bi bi-x" aria-hidden="true"></i>
+                        </button>
+                    </div>
                 </div>
             </div>
         <% } %>
 
         <!-- Main Content -->
-        <main class="container mt-4">
+        <main class="md-main-content" role="main">
             <%- body %>
         </main>
 
         <!-- Footer -->
-        <footer class="bg-light text-center text-muted py-4 mt-5">
-            <div class="container">
-                <p class="mb-0">&copy; 2024 Auth App. Built with Express.js & Bootstrap.</p>
+        <footer class="md-footer" role="contentinfo">
+            <div class="md-container">
+                <div class="md-footer-content">
+                    <p class="md-footer-text">&copy; 2024 Express Auth App. Built with Material Design principles.</p>
+                </div>
             </div>
         </footer>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Material Design JavaScript for Interactive Components -->
+    <script>
+        // Material Design Alert Close Functionality
+        document.addEventListener('DOMContentLoaded', function() {
+            const alertCloseButtons = document.querySelectorAll('.md-alert-close');
+            alertCloseButtons.forEach(function(button) {
+                button.addEventListener('click', function() {
+                    const alert = this.closest('.md-alert');
+                    if (alert) {
+                        alert.style.opacity = '0';
+                        alert.style.transform = 'translateY(-8px)';
+                        setTimeout(function() {
+                            alert.remove();
+                        }, 300);
+                    }
+                });
+            });
+
+            // Material Design Ripple Effect for Navigation Links
+            const navLinks = document.querySelectorAll('.md-nav-link, .md-btn');
+            navLinks.forEach(function(link) {
+                link.addEventListener('click', function(e) {
+                    const ripple = document.createElement('span');
+                    const rect = this.getBoundingClientRect();
+                    const size = Math.max(rect.width, rect.height);
+                    const x = e.clientX - rect.left - size / 2;
+                    const y = e.clientY - rect.top - size / 2;
+                    
+                    ripple.style.width = ripple.style.height = size + 'px';
+                    ripple.style.left = x + 'px';
+                    ripple.style.top = y + 'px';
+                    ripple.classList.add('md-ripple');
+                    
+                    this.appendChild(ripple);
+                    
+                    setTimeout(function() {
+                        ripple.remove();
+                    }, 600);
+                });
+            });
+
+            // Custom Material Design Sidebar Functionality
+            const sidebarToggle = document.querySelector('.md-sidebar-toggle');
+            const sidebar = document.querySelector('.md-sidebar');
+            const sidebarClose = document.querySelector('.md-sidebar-close');
+            const sidebarOverlay = document.querySelector('.md-sidebar-overlay');
+
+            function showSidebar() {
+                sidebar.classList.add('md-sidebar-open');
+                sidebarOverlay.classList.add('md-sidebar-overlay-active');
+                document.body.style.overflow = 'hidden';
+                sidebarToggle.setAttribute('aria-expanded', 'true');
+            }
+
+            function hideSidebar() {
+                sidebar.classList.remove('md-sidebar-open');
+                sidebarOverlay.classList.remove('md-sidebar-overlay-active');
+                document.body.style.overflow = '';
+                sidebarToggle.setAttribute('aria-expanded', 'false');
+            }
+
+            if (sidebarToggle) {
+                sidebarToggle.addEventListener('click', showSidebar);
+            }
+
+            if (sidebarClose) {
+                sidebarClose.addEventListener('click', hideSidebar);
+            }
+
+            if (sidebarOverlay) {
+                sidebarOverlay.addEventListener('click', hideSidebar);
+            }
+
+            // Close sidebar on escape key
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape' && sidebar.classList.contains('md-sidebar-open')) {
+                    hideSidebar();
+                }
+            });
+
+            // Close sidebar on window resize to large screen
+            window.addEventListener('resize', function() {
+                if (window.innerWidth >= 992) {
+                    hideSidebar();
+                }
+            });
+
+            // Handle navigation links accessibility
+            const navMenuLinks = document.querySelectorAll('.md-nav-link');
+            navMenuLinks.forEach(function(link) {
+                link.addEventListener('keydown', function(e) {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        this.click();
+                    }
+                });
+            });
+        });
+    </script>
 </body>
 </html>

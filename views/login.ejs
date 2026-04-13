@@ -3,58 +3,350 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login - Authentication App</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <title>Login - Express Auth App</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:ital,0,1;wght@300;400;500;700&display=swap" rel="stylesheet">
 </head>
-<body>
-    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
-        <div class="container">
-            <a class="navbar-brand" href="/">Auth App</a>
-            <div class="navbar-nav ms-auto">
-                <a class="nav-link" href="/">Home</a>
-                <a class="nav-link" href="/signup">Sign Up</a>
-                <a class="nav-link active" href="/login">Login</a>
+<body class="md-body">
+    <!-- Main Navigation -->
+    <nav class="md-navbar" role="navigation" aria-label="Main navigation">
+        <div class="md-navbar-container">
+            <div class="md-navbar-brand">
+                <a href="/" class="md-navbar-brand-link" aria-label="Express Auth App Home">
+                    <i class="bi bi-shield-lock-fill" aria-hidden="true"></i>
+                    <span>Express Auth</span>
+                </a>
+            </div>
+            
+            <!-- Mobile Menu Toggle -->
+            <button class="md-navbar-toggle" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="md-navbar-toggle-icon"></span>
+            </button>
+            
+            <!-- Navigation Links -->
+            <div class="md-navbar-nav" id="navbarNav">
+                <ul class="md-navbar-menu" role="menubar">
+                    <li class="md-navbar-item" role="none">
+                        <a class="md-navbar-link" href="/" role="menuitem">
+                            <i class="bi bi-house" aria-hidden="true"></i>
+                            Home
+                        </a>
+                    </li>
+                    <li class="md-navbar-item" role="none">
+                        <a class="md-navbar-link" href="/signup" role="menuitem">
+                            <i class="bi bi-person-plus" aria-hidden="true"></i>
+                            Sign Up
+                        </a>
+                    </li>
+                    <li class="md-navbar-item" role="none">
+                        <a class="md-navbar-link active" href="/login" role="menuitem" aria-current="page">
+                            <i class="bi bi-box-arrow-in-right" aria-hidden="true"></i>
+                            Login
+                        </a>
+                    </li>
+                </ul>
             </div>
         </div>
     </nav>
 
-    <div class="container mt-5">
-        <div class="row justify-content-center">
-            <div class="col-md-6">
-                <div class="card">
-                    <div class="card-header">
-                        <h3 class="text-center">Login</h3>
-                    </div>
-                    <div class="card-body">
-                        <% if (typeof error !== 'undefined' && error) { %>
-                            <div class="alert alert-danger" role="alert">
-                                <%= error %>
+    <!-- Main Content -->
+    <main class="md-main" role="main">
+        <div class="md-container">
+            <!-- Login Section -->
+            <section class="md-section md-padding-vertical-xl" aria-labelledby="login-heading">
+                <div class="md-row md-justify-center">
+                    <div class="md-col-12 md-col-sm-10 md-col-md-8 md-col-lg-6 md-col-xl-5">
+                        <!-- Login Card -->
+                        <div class="md-card md-elevation-2" role="region" aria-labelledby="login-heading">
+                            <!-- Card Header -->
+                            <div class="md-card-header md-text-center md-padding-lg">
+                                <div class="md-card-icon-wrapper md-margin-bottom-md">
+                                    <i class="bi bi-box-arrow-in-right md-icon-xlarge md-text-primary" aria-hidden="true"></i>
+                                </div>
+                                <h1 id="login-heading" class="md-headline-medium md-text-primary md-margin-0">
+                                    Welcome Back
+                                </h1>
+                                <p class="md-body-medium md-text-secondary md-margin-top-sm md-margin-bottom-0">
+                                    Sign in to your account to continue
+                                </p>
                             </div>
-                        <% } %>
-                        
-                        <form action="/login" method="POST">
-                            <div class="mb-3">
-                                <label for="email" class="form-label">Email</label>
-                                <input type="email" class="form-control" id="email" name="email" required>
+
+                            <!-- Card Content -->
+                            <div class="md-card-content md-padding-lg">
+                                <!-- Error Alert -->
+                                <% if (typeof error !== 'undefined' && error) { %>
+                                    <div class="md-alert md-alert-error md-margin-bottom-lg" role="alert" aria-live="polite">
+                                        <div class="md-alert-icon">
+                                            <i class="bi bi-exclamation-triangle-fill" aria-hidden="true"></i>
+                                        </div>
+                                        <div class="md-alert-content">
+                                            <span class="md-alert-message"><%= error %></span>
+                                        </div>
+                                    </div>
+                                <% } %>
+
+                                <!-- Login Form -->
+                                <form action="/login" method="POST" class="md-form" novalidate aria-labelledby="login-heading">
+                                    <!-- Email Field -->
+                                    <div class="md-form-field md-margin-bottom-lg">
+                                        <div class="md-input-container">
+                                            <input 
+                                                type="email" 
+                                                id="email" 
+                                                name="email" 
+                                                class="md-input" 
+                                                required 
+                                                autocomplete="email"
+                                                aria-describedby="email-error"
+                                                aria-invalid="false"
+                                            >
+                                            <label for="email" class="md-input-label">
+                                                <i class="bi bi-envelope md-input-icon" aria-hidden="true"></i>
+                                                Email Address
+                                            </label>
+                                            <div class="md-input-underline"></div>
+                                        </div>
+                                        <div id="email-error" class="md-form-helper-text md-form-error-text" role="alert" aria-live="polite"></div>
+                                    </div>
+
+                                    <!-- Password Field -->
+                                    <div class="md-form-field md-margin-bottom-xl">
+                                        <div class="md-input-container">
+                                            <input 
+                                                type="password" 
+                                                id="password" 
+                                                name="password" 
+                                                class="md-input" 
+                                                required 
+                                                autocomplete="current-password"
+                                                aria-describedby="password-error"
+                                                aria-invalid="false"
+                                            >
+                                            <label for="password" class="md-input-label">
+                                                <i class="bi bi-lock md-input-icon" aria-hidden="true"></i>
+                                                Password
+                                            </label>
+                                            <div class="md-input-underline"></div>
+                                            <button 
+                                                type="button" 
+                                                class="md-input-toggle-password" 
+                                                aria-label="Toggle password visibility"
+                                                tabindex="-1"
+                                            >
+                                                <i class="bi bi-eye" aria-hidden="true"></i>
+                                            </button>
+                                        </div>
+                                        <div id="password-error" class="md-form-helper-text md-form-error-text" role="alert" aria-live="polite"></div>
+                                    </div>
+
+                                    <!-- Submit Button -->
+                                    <div class="md-form-actions md-margin-bottom-lg">
+                                        <button 
+                                            type="submit" 
+                                            class="md-button md-button-primary md-button-large md-button-full-width"
+                                            aria-describedby="login-submit-description"
+                                        >
+                                            <span class="md-button-label">Sign In</span>
+                                            <div class="md-button-ripple"></div>
+                                        </button>
+                                        <div id="login-submit-description" class="md-sr-only">
+                                            Submit login form to access your account
+                                        </div>
+                                    </div>
+                                </form>
                             </div>
-                            <div class="mb-3">
-                                <label for="password" class="form-label">Password</label>
-                                <input type="password" class="form-control" id="password" name="password" required>
+
+                            <!-- Card Footer -->
+                            <div class="md-card-footer md-text-center md-padding-lg md-border-top">
+                                <p class="md-body-medium md-text-secondary md-margin-0">
+                                    Don't have an account? 
+                                    <a href="/signup" class="md-link md-text-primary md-font-weight-medium">
+                                        Create one here
+                                    </a>
+                                </p>
                             </div>
-                            <div class="d-grid">
-                                <button type="submit" class="btn btn-primary">Login</button>
-                            </div>
-                        </form>
-                        
-                        <div class="text-center mt-3">
-                            <p>Don't have an account? <a href="/signup">Sign up here</a></p>
                         </div>
                     </div>
                 </div>
-            </div>
+            </section>
         </div>
-    </div>
+    </main>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Scripts -->
+    <script>
+        // Material Design form enhancements
+        document.addEventListener('DOMContentLoaded', function() {
+            // Form validation and enhancement
+            const form = document.querySelector('.md-form');
+            const inputs = form.querySelectorAll('.md-input');
+            const submitButton = form.querySelector('button[type="submit"]');
+            
+            // Input focus and blur handling
+            inputs.forEach(input => {
+                const container = input.closest('.md-input-container');
+                const label = container.querySelector('.md-input-label');
+                const errorDiv = input.getAttribute('aria-describedby');
+                const errorElement = errorDiv ? document.getElementById(errorDiv) : null;
+                
+                // Handle input focus
+                input.addEventListener('focus', function() {
+                    container.classList.add('md-input-focused');
+                    if (errorElement) {
+                        input.setAttribute('aria-invalid', 'false');
+                        errorElement.textContent = '';
+                        container.classList.remove('md-input-error');
+                    }
+                });
+                
+                // Handle input blur
+                input.addEventListener('blur', function() {
+                    container.classList.remove('md-input-focused');
+                    validateInput(input);
+                });
+                
+                // Handle input changes
+                input.addEventListener('input', function() {
+                    if (input.value.trim()) {
+                        container.classList.add('md-input-filled');
+                    } else {
+                        container.classList.remove('md-input-filled');
+                    }
+                    
+                    // Clear errors on input
+                    if (errorElement && errorElement.textContent) {
+                        input.setAttribute('aria-invalid', 'false');
+                        errorElement.textContent = '';
+                        container.classList.remove('md-input-error');
+                    }
+                });
+                
+                // Set initial filled state
+                if (input.value.trim()) {
+                    container.classList.add('md-input-filled');
+                }
+            });
+            
+            // Password visibility toggle
+            const passwordToggle = document.querySelector('.md-input-toggle-password');
+            if (passwordToggle) {
+                const passwordInput = document.getElementById('password');
+                const toggleIcon = passwordToggle.querySelector('i');
+                
+                passwordToggle.addEventListener('click', function() {
+                    const isPassword = passwordInput.type === 'password';
+                    passwordInput.type = isPassword ? 'text' : 'password';
+                    toggleIcon.className = isPassword ? 'bi bi-eye-slash' : 'bi bi-eye';
+                    passwordToggle.setAttribute('aria-label', 
+                        isPassword ? 'Hide password' : 'Show password'
+                    );
+                });
+            }
+            
+            // Form submission handling
+            form.addEventListener('submit', function(e) {
+                let isValid = true;
+                
+                // Validate all inputs
+                inputs.forEach(input => {
+                    if (!validateInput(input)) {
+                        isValid = false;
+                    }
+                });
+                
+                if (!isValid) {
+                    e.preventDefault();
+                    return;
+                }
+                
+                // Add loading state
+                submitButton.disabled = true;
+                submitButton.classList.add('md-button-loading');
+                const buttonLabel = submitButton.querySelector('.md-button-label');
+                buttonLabel.textContent = 'Signing In...';
+            });
+            
+            // Input validation function
+            function validateInput(input) {
+                const container = input.closest('.md-input-container');
+                const errorDiv = input.getAttribute('aria-describedby');
+                const errorElement = errorDiv ? document.getElementById(errorDiv) : null;
+                let errorMessage = '';
+                
+                if (!errorElement) return true;
+                
+                // Required field validation
+                if (input.hasAttribute('required') && !input.value.trim()) {
+                    errorMessage = `${input.name.charAt(0).toUpperCase() + input.name.slice(1)} is required`;
+                } else if (input.type === 'email' && input.value.trim()) {
+                    // Email format validation
+                    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                    if (!emailRegex.test(input.value.trim())) {
+                        errorMessage = 'Please enter a valid email address';
+                    }
+                }
+                
+                // Display error
+                if (errorMessage) {
+                    errorElement.textContent = errorMessage;
+                    input.setAttribute('aria-invalid', 'true');
+                    container.classList.add('md-input-error');
+                    return false;
+                } else {
+                    errorElement.textContent = '';
+                    input.setAttribute('aria-invalid', 'false');
+                    container.classList.remove('md-input-error');
+                    return true;
+                }
+            }
+            
+            // Button ripple effect
+            const buttons = document.querySelectorAll('.md-button');
+            buttons.forEach(button => {
+                button.addEventListener('click', function(e) {
+                    const ripple = this.querySelector('.md-button-ripple');
+                    if (!ripple) return;
+                    
+                    const rect = this.getBoundingClientRect();
+                    const size = Math.max(rect.width, rect.height);
+                    const x = e.clientX - rect.left - size / 2;
+                    const y = e.clientY - rect.top - size / 2;
+                    
+                    ripple.style.width = ripple.style.height = size + 'px';
+                    ripple.style.left = x + 'px';
+                    ripple.style.top = y + 'px';
+                    ripple.classList.add('md-button-ripple-active');
+                    
+                    setTimeout(() => {
+                        ripple.classList.remove('md-button-ripple-active');
+                    }, 300);
+                });
+            });
+            
+            // Mobile menu toggle
+            const navbarToggle = document.querySelector('.md-navbar-toggle');
+            const navbarNav = document.getElementById('navbarNav');
+            
+            if (navbarToggle && navbarNav) {
+                navbarToggle.addEventListener('click', function() {
+                    const isExpanded = this.getAttribute('aria-expanded') === 'true';
+                    this.setAttribute('aria-expanded', !isExpanded);
+                    navbarNav.classList.toggle('show');
+                    this.classList.toggle('active');
+                });
+                
+                // Close mobile menu when clicking outside
+                document.addEventListener('click', function(e) {
+                    if (!navbarToggle.contains(e.target) && !navbarNav.contains(e.target)) {
+                        navbarToggle.setAttribute('aria-expanded', 'false');
+                        navbarNav.classList.remove('show');
+                        navbarToggle.classList.remove('active');
+                    }
+                });
+            }
+        });
+    </script>
 </body>
 </html>

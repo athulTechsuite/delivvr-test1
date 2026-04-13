@@ -1,0 +1,300 @@
+<% 
+// Set page title for layout.ejs integration
+const pageTitle = 'Profile';
+%>
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= pageTitle %> - Express Auth App</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:ital,0,1;wght@300;400;500;700&display=swap" rel="stylesheet">
+</head>
+<body class="md-body">
+    <!-- Main Navigation -->
+    <nav class="md-navbar" role="navigation" aria-label="Main navigation">
+        <div class="md-navbar-container">
+            <div class="md-navbar-brand">
+                <a href="/" class="md-navbar-brand-link" aria-label="Express Auth App Home">
+                    <i class="bi bi-shield-lock-fill" aria-hidden="true"></i>
+                    <span>Express Auth</span>
+                </a>
+            </div>
+            
+            <!-- Mobile Menu Toggle -->
+            <button class="md-navbar-toggle" type="button" id="navbar-toggle" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="md-navbar-toggle-icon"></span>
+                <span class="md-navbar-toggle-icon"></span>
+                <span class="md-navbar-toggle-icon"></span>
+            </button>
+            
+            <!-- Navigation Links -->
+            <div class="md-navbar-nav" id="navbarNav">
+                <ul class="md-navbar-menu" role="menubar">
+                    <li class="md-navbar-item" role="none">
+                        <a class="md-navbar-link active" href="/profile" role="menuitem" aria-current="page">
+                            <i class="bi bi-person-circle" aria-hidden="true"></i>
+                            Profile
+                        </a>
+                    </li>
+                    <li class="md-navbar-item" role="none">
+                        <a class="md-navbar-link" href="/dashboard" role="menuitem">
+                            <i class="bi bi-speedometer2" aria-hidden="true"></i>
+                            Dashboard
+                        </a>
+                    </li>
+                    <li class="md-navbar-item" role="none">
+                        <form method="POST" action="/logout" style="display: inline;">
+                            <button type="submit" class="md-navbar-link md-navbar-logout-btn" role="menuitem">
+                                <i class="bi bi-box-arrow-right" aria-hidden="true"></i>
+                                Logout
+                            </button>
+                        </form>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="md-main" role="main">
+        <div class="md-container">
+            <!-- Profile Header Section -->
+            <section class="md-section" aria-labelledby="profile-heading">
+                <div class="md-row">
+                    <div class="md-col-12">
+                        <h1 id="profile-heading" class="md-display-small md-text-primary">
+                            <i class="bi bi-person-circle md-icon-large" aria-hidden="true"></i>
+                            User Profile
+                        </h1>
+                        <p class="md-body-large md-text-secondary md-margin-bottom-lg">
+                            View your account information and profile details
+                        </p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Profile Card Section -->
+            <section class="md-section" aria-labelledby="profile-info-heading">
+                <div class="md-row md-justify-center">
+                    <div class="md-col-12 md-col-md-8 md-col-lg-6">
+                        <div class="md-card md-elevation-2" role="region" aria-labelledby="profile-info-heading">
+                            <!-- Card Header -->
+                            <div class="md-card-header">
+                                <div class="md-card-header-content">
+                                    <i class="bi bi-person-badge md-icon-medium md-text-primary" aria-hidden="true"></i>
+                                    <div class="md-card-header-text">
+                                        <h2 id="profile-info-heading" class="md-headline-small md-text-primary md-margin-bottom-none">
+                                            Profile Information
+                                        </h2>
+                                        <p class="md-body-medium md-text-secondary md-margin-bottom-none">
+                                            Your account details and membership information
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Card Body -->
+                            <div class="md-card-body">
+                                <% if (typeof user !== 'undefined' && user) { %>
+                                    <!-- User Name -->
+                                    <div class="md-profile-item" role="group" aria-labelledby="name-label">
+                                        <div class="md-profile-item-icon">
+                                            <i class="bi bi-person-fill md-text-primary" aria-hidden="true"></i>
+                                        </div>
+                                        <div class="md-profile-item-content">
+                                            <dt id="name-label" class="md-label-large md-text-secondary">
+                                                Full Name
+                                            </dt>
+                                            <dd class="md-body-large md-text-primary md-font-medium">
+                                                <%= typeof user.name === 'string' ? user.name : 'N/A' %>
+                                            </dd>
+                                        </div>
+                                    </div>
+
+                                    <!-- Email Address -->
+                                    <div class="md-profile-item" role="group" aria-labelledby="email-label">
+                                        <div class="md-profile-item-icon">
+                                            <i class="bi bi-envelope-fill md-text-primary" aria-hidden="true"></i>
+                                        </div>
+                                        <div class="md-profile-item-content">
+                                            <dt id="email-label" class="md-label-large md-text-secondary">
+                                                Email Address
+                                            </dt>
+                                            <dd class="md-body-large md-text-primary md-font-medium">
+                                                <%= typeof user.email === 'string' ? user.email : 'N/A' %>
+                                            </dd>
+                                        </div>
+                                    </div>
+
+                                    <!-- Member Since -->
+                                    <div class="md-profile-item" role="group" aria-labelledby="member-since-label">
+                                        <div class="md-profile-item-icon">
+                                            <i class="bi bi-calendar-check-fill md-text-primary" aria-hidden="true"></i>
+                                        </div>
+                                        <div class="md-profile-item-content">
+                                            <dt id="member-since-label" class="md-label-large md-text-secondary">
+                                                Member Since
+                                            </dt>
+                                            <dd class="md-body-large md-text-primary md-font-medium">
+                                                <% 
+                                                try {
+                                                    const createdAt = user.created_at;
+                                                    if (createdAt) {
+                                                        const date = new Date(createdAt);
+                                                        if (!isNaN(date.getTime())) {
+                                                            const formattedDate = date.toLocaleDateString('en-US', {
+                                                                year: 'numeric',
+                                                                month: 'long',
+                                                                day: 'numeric'
+                                                            });
+                                                %>
+                                                            <%= formattedDate %>
+                                                <% 
+                                                        } else {
+                                                %>
+                                                            N/A
+                                                <% 
+                                                        }
+                                                    } else {
+                                                %>
+                                                        N/A
+                                                <% 
+                                                    }
+                                                } catch (error) {
+                                                %>
+                                                    N/A
+                                                <% 
+                                                }
+                                                %>
+                                            </dd>
+                                        </div>
+                                    </div>
+
+                                    <!-- Account Status -->
+                                    <div class="md-profile-item" role="group" aria-labelledby="status-label">
+                                        <div class="md-profile-item-icon">
+                                            <i class="bi bi-check-circle-fill md-text-success" aria-hidden="true"></i>
+                                        </div>
+                                        <div class="md-profile-item-content">
+                                            <dt id="status-label" class="md-label-large md-text-secondary">
+                                                Account Status
+                                            </dt>
+                                            <dd class="md-body-large md-text-success md-font-medium">
+                                                Active
+                                            </dd>
+                                        </div>
+                                    </div>
+                                <% } else { %>
+                                    <!-- Error State -->
+                                    <div class="md-profile-error" role="alert" aria-live="polite">
+                                        <div class="md-profile-error-icon">
+                                            <i class="bi bi-exclamation-triangle-fill md-text-error" aria-hidden="true"></i>
+                                        </div>
+                                        <div class="md-profile-error-content">
+                                            <h3 class="md-title-medium md-text-error md-margin-bottom-sm">
+                                                Profile Information Unavailable
+                                            </h3>
+                                            <p class="md-body-medium md-text-secondary md-margin-bottom-none">
+                                                We're unable to load your profile information at this time. Please try refreshing the page or contact support if the problem persists.
+                                            </p>
+                                        </div>
+                                    </div>
+                                <% } %>
+                            </div>
+
+                            <!-- Card Actions -->
+                            <div class="md-card-actions">
+                                <a href="/dashboard" class="md-button md-button-text" role="button">
+                                    <i class="bi bi-arrow-left" aria-hidden="true"></i>
+                                    Back to Dashboard
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Additional Actions Section -->
+            <section class="md-section" aria-labelledby="actions-heading">
+                <div class="md-row md-justify-center">
+                    <div class="md-col-12 md-col-md-8 md-col-lg-6">
+                        <div class="md-card md-elevation-1" role="region" aria-labelledby="actions-heading">
+                            <div class="md-card-header">
+                                <h2 id="actions-heading" class="md-headline-small md-text-primary">
+                                    Quick Actions
+                                </h2>
+                            </div>
+                            <div class="md-card-body">
+                                <div class="md-button-group">
+                                    <a href="/dashboard" class="md-button md-button-outlined" role="button">
+                                        <i class="bi bi-speedometer2" aria-hidden="true"></i>
+                                        Go to Dashboard
+                                    </a>
+                                    <form method="POST" action="/logout" style="display: inline;">
+                                        <button type="submit" class="md-button md-button-outlined md-button-error" role="button">
+                                            <i class="bi bi-box-arrow-right" aria-hidden="true"></i>
+                                            Sign Out
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="md-footer" role="contentinfo">
+        <div class="md-container">
+            <div class="md-footer-content">
+                <p class="md-body-small md-text-secondary md-margin-bottom-none">
+                    &copy; 2024 Express Auth App. Built with Material Design principles.
+                </p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Mobile Navigation Toggle Script -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const navToggle = document.getElementById('navbar-toggle');
+            const navMenu = document.getElementById('navbarNav');
+            
+            if (navToggle && navMenu) {
+                navToggle.addEventListener('click', function() {
+                    const isExpanded = navToggle.getAttribute('aria-expanded') === 'true';
+                    navToggle.setAttribute('aria-expanded', !isExpanded);
+                    navMenu.classList.toggle('md-navbar-nav-open');
+                    navToggle.classList.toggle('md-navbar-toggle-active');
+                });
+                
+                // Close menu when clicking outside
+                document.addEventListener('click', function(event) {
+                    if (!navToggle.contains(event.target) && !navMenu.contains(event.target)) {
+                        navToggle.setAttribute('aria-expanded', 'false');
+                        navMenu.classList.remove('md-navbar-nav-open');
+                        navToggle.classList.remove('md-navbar-toggle-active');
+                    }
+                });
+                
+                // Close menu on escape key
+                document.addEventListener('keydown', function(event) {
+                    if (event.key === 'Escape') {
+                        navToggle.setAttribute('aria-expanded', 'false');
+                        navMenu.classList.remove('md-navbar-nav-open');
+                        navToggle.classList.remove('md-navbar-toggle-active');
+                    }
+                });
+            }
+        });
+    </script>
+</body>
+</html>
