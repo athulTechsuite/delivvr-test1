@@ -56,6 +56,18 @@ const pageTitle = 'Profile';
                             </button>
                         </form>
                     </li>
+                    <li class="md-navbar-item md-theme-toggle-item" role="none">
+                        <div class="md-theme-toggle" role="menuitem" aria-label="Toggle theme">
+                            <input type="checkbox" id="theme-toggle" class="md-theme-toggle-input" aria-labelledby="theme-toggle-label">
+                            <label for="theme-toggle" class="md-theme-toggle-label" id="theme-toggle-label">
+                                <span class="md-theme-toggle-slider">
+                                    <i class="bi bi-sun-fill md-theme-icon md-theme-icon-light" aria-hidden="true"></i>
+                                    <i class="bi bi-moon-fill md-theme-icon md-theme-icon-dark" aria-hidden="true"></i>
+                                </span>
+                                <span class="sr-only">Toggle between light and dark theme</span>
+                            </label>
+                        </div>
+                    </li>
                 </ul>
             </div>
         </div>
@@ -296,5 +308,8 @@ const pageTitle = 'Profile';
             }
         });
     </script>
+    
+    <!-- Theme Toggle Script -->
+    <script src="/js/theme-toggle.js"></script>
 </body>
 </html>
