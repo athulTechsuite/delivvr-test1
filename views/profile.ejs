@@ -14,8 +14,229 @@ const pageTitle = 'Profile';
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Roboto:ital,0,1;wght@300;400;500;700&display=swap" rel="stylesheet">
+    <style>
+        /* Profile-specific inline editing styles */
+        .profile-picture-container {
+            position: relative;
+            width: 150px;
+            height: 150px;
+            margin: 0 auto 24px;
+            cursor: pointer;
+        }
+        
+        .profile-picture {
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 4px solid var(--md-sys-color-outline-variant);
+            background: var(--md-sys-color-surface-variant);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .profile-picture-placeholder {
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            background: var(--md-sys-color-surface-variant);
+            border: 4px solid var(--md-sys-color-outline-variant);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--md-sys-color-on-surface-variant);
+            font-size: 48px;
+        }
+        
+        .profile-picture-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            background: rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transition: opacity 0.2s ease;
+            color: white;
+            font-size: 24px;
+        }
+        
+        .profile-picture-container:hover .profile-picture-overlay {
+            opacity: 1;
+        }
+        
+        .inline-edit-field {
+            position: relative;
+            min-height: 32px;
+            border-radius: 4px;
+            padding: 4px 8px;
+            transition: background-color 0.2s ease;
+        }
+        
+        .inline-edit-field:hover {
+            background-color: var(--md-sys-color-surface-variant);
+        }
+        
+        .inline-edit-field.editing {
+            background-color: var(--md-sys-color-surface);
+            border: 2px solid var(--md-sys-color-primary);
+        }
+        
+        .inline-edit-input {
+            width: 100%;
+            border: none;
+            background: transparent;
+            font-size: inherit;
+            font-weight: inherit;
+            color: inherit;
+            font-family: inherit;
+            outline: none;
+            padding: 0;
+        }
+        
+        .inline-edit-actions {
+            display: flex;
+            gap: 8px;
+            margin-top: 8px;
+            justify-content: flex-end;
+        }
+        
+        .inline-edit-btn {
+            padding: 4px 8px;
+            border-radius: 16px;
+            border: none;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 500;
+            transition: background-color 0.2s ease;
+        }
+        
+        .inline-edit-btn-save {
+            background-color: var(--md-sys-color-primary);
+            color: var(--md-sys-color-on-primary);
+        }
+        
+        .inline-edit-btn-cancel {
+            background-color: var(--md-sys-color-surface-variant);
+            color: var(--md-sys-color-on-surface-variant);
+        }
+        
+        .edit-icon {
+            opacity: 0;
+            margin-left: 8px;
+            font-size: 14px;
+            color: var(--md-sys-color-primary);
+            transition: opacity 0.2s ease;
+            cursor: pointer;
+        }
+        
+        .inline-edit-field:hover .edit-icon {
+            opacity: 1;
+        }
+        
+        .field-error {
+            color: var(--md-sys-color-error);
+            font-size: 12px;
+            margin-top: 4px;
+            display: none;
+        }
+        
+        .field-error.visible {
+            display: block;
+        }
+        
+        .file-upload-area {
+            border: 2px dashed var(--md-sys-color-outline);
+            border-radius: 8px;
+            padding: 24px;
+            text-align: center;
+            margin-top: 16px;
+            transition: border-color 0.2s ease;
+            cursor: pointer;
+        }
+        
+        .file-upload-area:hover,
+        .file-upload-area.dragover {
+            border-color: var(--md-sys-color-primary);
+            background-color: var(--md-sys-color-primary-container);
+        }
+        
+        .file-upload-input {
+            display: none;
+        }
+        
+        .password-form {
+            margin-top: 24px;
+        }
+        
+        .form-group {
+            margin-bottom: 16px;
+        }
+        
+        .form-label {
+            display: block;
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--md-sys-color-on-surface);
+            margin-bottom: 4px;
+        }
+        
+        .form-input {
+            width: 100%;
+            padding: 12px 16px;
+            border: 1px solid var(--md-sys-color-outline);
+            border-radius: 4px;
+            font-size: 16px;
+            transition: border-color 0.2s ease;
+        }
+        
+        .form-input:focus {
+            outline: none;
+            border-color: var(--md-sys-color-primary);
+            box-shadow: 0 0 0 2px rgba(var(--md-sys-color-primary-rgb), 0.2);
+        }
+        
+        .alert {
+            padding: 12px 16px;
+            border-radius: 4px;
+            margin-bottom: 16px;
+            display: none;
+        }
+        
+        .alert.visible {
+            display: block;
+        }
+        
+        .alert-success {
+            background-color: var(--md-sys-color-tertiary-container);
+            color: var(--md-sys-color-on-tertiary-container);
+            border: 1px solid var(--md-sys-color-tertiary);
+        }
+        
+        .alert-error {
+            background-color: var(--md-sys-color-error-container);
+            color: var(--md-sys-color-on-error-container);
+            border: 1px solid var(--md-sys-color-error);
+        }
+    </style>
 </head>
 <body class="md-body">
+    <!-- Alert Messages -->
+    <div id="success-alert" class="alert alert-success" role="alert" aria-live="polite">
+        <i class="bi bi-check-circle-fill" aria-hidden="true"></i>
+        <span id="success-message"></span>
+    </div>
+    
+    <div id="error-alert" class="alert alert-error" role="alert" aria-live="polite">
+        <i class="bi bi-exclamation-triangle-fill" aria-hidden="true"></i>
+        <span id="error-message"></span>
+    </div>
+
     <!-- Main Navigation -->
     <nav class="md-navbar" role="navigation" aria-label="Main navigation">
         <div class="md-navbar-container">
@@ -85,13 +306,59 @@ const pageTitle = 'Profile';
                             User Profile
                         </h1>
                         <p class="md-body-large md-text-secondary md-margin-bottom-lg">
-                            View your account information and profile details
+                            Manage your account information and profile settings
                         </p>
                     </div>
                 </div>
             </section>
 
-            <!-- Profile Card Section -->
+            <!-- Profile Picture Section -->
+            <section class="md-section" aria-labelledby="profile-picture-heading">
+                <div class="md-row md-justify-center">
+                    <div class="md-col-12 md-col-md-8 md-col-lg-6">
+                        <div class="md-card md-elevation-2" role="region" aria-labelledby="profile-picture-heading">
+                            <div class="md-card-header">
+                                <h2 id="profile-picture-heading" class="md-headline-small md-text-primary">
+                                    Profile Picture
+                                </h2>
+                            </div>
+                            <div class="md-card-body">
+                                <% if (typeof user !== 'undefined' && user) { %>
+                                    <div class="profile-picture-container" onclick="openFileUpload()">
+                                        <% if (user.profile_picture) { %>
+                                            <img src="/<%= user.profile_picture %>" alt="Profile picture" class="profile-picture" id="profile-picture-img">
+                                        <% } else { %>
+                                            <div class="profile-picture-placeholder" id="profile-picture-placeholder">
+                                                <i class="bi bi-person-fill"></i>
+                                            </div>
+                                        <% } %>
+                                        <div class="profile-picture-overlay">
+                                            <i class="bi bi-camera-fill"></i>
+                                        </div>
+                                    </div>
+                                    
+                                    <form id="profile-picture-form" enctype="multipart/form-data" style="display: none;">
+                                        <input type="file" id="profile-picture-input" name="profile_picture" accept="image/jpeg,image/png" class="file-upload-input">
+                                    </form>
+                                    
+                                    <div class="file-upload-area" id="file-upload-area" onclick="openFileUpload()" ondrop="handleFileDrop(event)" ondragover="handleDragOver(event)" ondragenter="handleDragEnter(event)" ondragleave="handleDragLeave(event)">
+                                        <i class="bi bi-cloud-upload" style="font-size: 32px; color: var(--md-sys-color-primary); margin-bottom: 8px;"></i>
+                                        <p class="md-body-large md-text-primary md-margin-bottom-sm">
+                                            Click to upload or drag and drop
+                                        </p>
+                                        <p class="md-body-small md-text-secondary md-margin-bottom-none">
+                                            JPG or PNG files only, max 2MB
+                                        </p>
+                                    </div>
+                                    <div id="profile-picture-error" class="field-error"></div>
+                                <% } %>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Profile Information Section -->
             <section class="md-section" aria-labelledby="profile-info-heading">
                 <div class="md-row md-justify-center">
                     <div class="md-col-12 md-col-md-8 md-col-lg-6">
@@ -105,7 +372,7 @@ const pageTitle = 'Profile';
                                             Profile Information
                                         </h2>
                                         <p class="md-body-medium md-text-secondary md-margin-bottom-none">
-                                            Your account details and membership information
+                                            Click any field to edit your information
                                         </p>
                                     </div>
                                 </div>
@@ -124,7 +391,18 @@ const pageTitle = 'Profile';
                                                 Full Name
                                             </dt>
                                             <dd class="md-body-large md-text-primary md-font-medium">
-                                                <%= typeof user.name === 'string' ? user.name : 'N/A' %>
+                                                <div class="inline-edit-field" id="name-field" onclick="startEdit('name')" data-original="<%= typeof user.name === 'string' ? user.name : '' %>">
+                                                    <span id="name-display"><%= typeof user.name === 'string' ? user.name : 'N/A' %></span>
+                                                    <i class="bi bi-pencil-square edit-icon"></i>
+                                                    <div id="name-edit" style="display: none;">
+                                                        <input type="text" class="inline-edit-input" id="name-input" value="<%= typeof user.name === 'string' ? user.name : '' %>">
+                                                        <div class="inline-edit-actions">
+                                                            <button type="button" class="inline-edit-btn inline-edit-btn-save" onclick="saveField('name')">Save</button>
+                                                            <button type="button" class="inline-edit-btn inline-edit-btn-cancel" onclick="cancelEdit('name')">Cancel</button>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div id="name-error" class="field-error"></div>
                                             </dd>
                                         </div>
                                     </div>
@@ -139,7 +417,18 @@ const pageTitle = 'Profile';
                                                 Email Address
                                             </dt>
                                             <dd class="md-body-large md-text-primary md-font-medium">
-                                                <%= typeof user.email === 'string' ? user.email : 'N/A' %>
+                                                <div class="inline-edit-field" id="email-field" onclick="startEdit('email')" data-original="<%= typeof user.email === 'string' ? user.email : '' %>">
+                                                    <span id="email-display"><%= typeof user.email === 'string' ? user.email : 'N/A' %></span>
+                                                    <i class="bi bi-pencil-square edit-icon"></i>
+                                                    <div id="email-edit" style="display: none;">
+                                                        <input type="email" class="inline-edit-input" id="email-input" value="<%= typeof user.email === 'string' ? user.email : '' %>">
+                                                        <div class="inline-edit-actions">
+                                                            <button type="button" class="inline-edit-btn inline-edit-btn-save" onclick="saveField('email')">Save</button>
+                                                            <button type="button" class="inline-edit-btn inline-edit-btn-cancel" onclick="cancelEdit('email')">Cancel</button>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div id="email-error" class="field-error"></div>
                                             </dd>
                                         </div>
                                     </div>
@@ -219,13 +508,63 @@ const pageTitle = 'Profile';
                                     </div>
                                 <% } %>
                             </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
 
-                            <!-- Card Actions -->
-                            <div class="md-card-actions">
-                                <a href="/dashboard" class="md-button md-button-text" role="button">
-                                    <i class="bi bi-arrow-left" aria-hidden="true"></i>
-                                    Back to Dashboard
-                                </a>
+            <!-- Password Change Section -->
+            <section class="md-section" aria-labelledby="password-heading">
+                <div class="md-row md-justify-center">
+                    <div class="md-col-12 md-col-md-8 md-col-lg-6">
+                        <div class="md-card md-elevation-2" role="region" aria-labelledby="password-heading">
+                            <div class="md-card-header">
+                                <div class="md-card-header-content">
+                                    <i class="bi bi-shield-lock md-icon-medium md-text-primary" aria-hidden="true"></i>
+                                    <div class="md-card-header-text">
+                                        <h2 id="password-heading" class="md-headline-small md-text-primary md-margin-bottom-none">
+                                            Change Password
+                                        </h2>
+                                        <p class="md-body-medium md-text-secondary md-margin-bottom-none">
+                                            Update your account password for better security
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="md-card-body">
+                                <form id="password-form" class="password-form">
+                                    <div class="form-group">
+                                        <label for="current-password" class="form-label">Current Password</label>
+                                        <input type="password" id="current-password" name="currentPassword" class="form-input" required>
+                                        <div id="current-password-error" class="field-error"></div>
+                                    </div>
+                                    
+                                    <div class="form-group">
+                                        <label for="new-password" class="form-label">New Password</label>
+                                        <input type="password" id="new-password" name="newPassword" class="form-input" required>
+                                        <div id="new-password-error" class="field-error"></div>
+                                        <p class="md-body-small md-text-secondary" style="margin-top: 4px;">
+                                            Must be 6-128 characters with uppercase, lowercase, and number
+                                        </p>
+                                    </div>
+                                    
+                                    <div class="form-group">
+                                        <label for="confirm-password" class="form-label">Confirm New Password</label>
+                                        <input type="password" id="confirm-password" name="confirmPassword" class="form-input" required>
+                                        <div id="confirm-password-error" class="field-error"></div>
+                                    </div>
+                                    
+                                    <div class="md-card-actions">
+                                        <button type="submit" class="md-button md-button-filled">
+                                            <i class="bi bi-shield-check" aria-hidden="true"></i>
+                                            Update Password
+                                        </button>
+                                        <button type="button" class="md-button md-button-text" onclick="clearPasswordForm()">
+                                            <i class="bi bi-x-circle" aria-hidden="true"></i>
+                                            Clear
+                                        </button>
+                                    </div>
+                                </form>
                             </div>
                         </div>
                     </div>
@@ -274,39 +613,468 @@ const pageTitle = 'Profile';
         </div>
     </footer>
 
-    <!-- Mobile Navigation Toggle Script -->
+    <!-- Scripts -->
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const navToggle = document.getElementById('navbar-toggle');
-            const navMenu = document.getElementById('navbarNav');
+        // Constants for validation
+        const MAX_FILE_SIZE = 2097152; // 2MB in bytes
+        const ALLOWED_FILE_TYPES = ['image/jpeg', 'image/png'];
+        const ALLOWED_FILE_EXTENSIONS = ['jpg', 'jpeg', 'png'];
+        const PASSWORD_MIN_LENGTH = 6;
+        const PASSWORD_MAX_LENGTH = 128;
+        const NAME_MIN_LENGTH = 2;
+        const NAME_MAX_LENGTH = 50;
+        
+        // Global state
+        let currentEditingField = null;
+        
+        // Show alert messages
+        function showAlert(type, message, duration = 3000) {
+            const alertElement = document.getElementById(type + '-alert');
+            const messageElement = document.getElementById(type + '-message');
             
-            if (navToggle && navMenu) {
-                navToggle.addEventListener('click', function() {
-                    const isExpanded = navToggle.getAttribute('aria-expanded') === 'true';
-                    navToggle.setAttribute('aria-expanded', !isExpanded);
-                    navMenu.classList.toggle('md-navbar-nav-open');
-                    navToggle.classList.toggle('md-navbar-toggle-active');
+            if (alertElement && messageElement) {
+                messageElement.textContent = message;
+                alertElement.classList.add('visible');
+                
+                setTimeout(() => {
+                    alertElement.classList.remove('visible');
+                }, duration);
+            }
+        }
+        
+        // Show field error
+        function showFieldError(fieldId, message) {
+            const errorElement = document.getElementById(fieldId + '-error');
+            if (errorElement) {
+                errorElement.textContent = message;
+                errorElement.classList.add('visible');
+            }
+        }
+        
+        // Clear field error
+        function clearFieldError(fieldId) {
+            const errorElement = document.getElementById(fieldId + '-error');
+            if (errorElement) {
+                errorElement.textContent = '';
+                errorElement.classList.remove('visible');
+            }
+        }
+        
+        // Validate name field
+        function validateName(name) {
+            const trimmedName = name.trim();
+            
+            if (trimmedName.length < NAME_MIN_LENGTH || trimmedName.length > NAME_MAX_LENGTH) {
+                return 'Name must be between 2 and 50 characters';
+            }
+            
+            if (!/^[a-zA-Z\s]+$/.test(trimmedName)) {
+                return 'Name must contain only letters and spaces';
+            }
+            
+            return null;
+        }
+        
+        // Validate email field
+        function validateEmail(email) {
+            const trimmedEmail = email.trim();
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            
+            if (!emailRegex.test(trimmedEmail)) {
+                return 'Please enter a valid email address';
+            }
+            
+            return null;
+        }
+        
+        // Validate password
+        function validatePassword(password) {
+            if (password.length < PASSWORD_MIN_LENGTH || password.length > PASSWORD_MAX_LENGTH) {
+                return `Password must be between ${PASSWORD_MIN_LENGTH} and ${PASSWORD_MAX_LENGTH} characters`;
+            }
+            
+            if (!/(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/.test(password)) {
+                return 'Password must contain uppercase, lowercase, and number';
+            }
+            
+            return null;
+        }
+        
+        // Start inline editing
+        function startEdit(fieldName) {
+            // Exit if already editing another field
+            if (currentEditingField && currentEditingField !== fieldName) {
+                return;
+            }
+            
+            currentEditingField = fieldName;
+            
+            const fieldElement = document.getElementById(fieldName + '-field');
+            const displayElement = document.getElementById(fieldName + '-display');
+            const editElement = document.getElementById(fieldName + '-edit');
+            const inputElement = document.getElementById(fieldName + '-input');
+            
+            if (fieldElement && displayElement && editElement && inputElement) {
+                fieldElement.classList.add('editing');
+                displayElement.style.display = 'none';
+                editElement.style.display = 'block';
+                inputElement.focus();
+                inputElement.select();
+                
+                clearFieldError(fieldName);
+            }
+        }
+        
+        // Cancel inline editing
+        function cancelEdit(fieldName) {
+            const fieldElement = document.getElementById(fieldName + '-field');
+            const displayElement = document.getElementById(fieldName + '-display');
+            const editElement = document.getElementById(fieldName + '-edit');
+            const inputElement = document.getElementById(fieldName + '-input');
+            const originalValue = fieldElement.getAttribute('data-original');
+            
+            if (fieldElement && displayElement && editElement && inputElement) {
+                inputElement.value = originalValue;
+                fieldElement.classList.remove('editing');
+                displayElement.style.display = 'inline';
+                editElement.style.display = 'none';
+                
+                clearFieldError(fieldName);
+                currentEditingField = null;
+            }
+        }
+        
+        // Save field value
+        async function saveField(fieldName) {
+            const inputElement = document.getElementById(fieldName + '-input');
+            const fieldElement = document.getElementById(fieldName + '-field');
+            const originalValue = fieldElement.getAttribute('data-original');
+            
+            if (!inputElement || !fieldElement) return;
+            
+            const newValue = inputElement.value.trim();
+            
+            // Check if value actually changed
+            if (newValue === originalValue) {
+                cancelEdit(fieldName);
+                return;
+            }
+            
+            // Validate input
+            let errorMessage = null;
+            if (fieldName === 'name') {
+                errorMessage = validateName(newValue);
+            } else if (fieldName === 'email') {
+                errorMessage = validateEmail(newValue);
+            }
+            
+            if (errorMessage) {
+                showFieldError(fieldName, errorMessage);
+                return;
+            }
+            
+            try {
+                const response = await fetch('/profile', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        [fieldName]: newValue
+                    })
                 });
                 
-                // Close menu when clicking outside
-                document.addEventListener('click', function(event) {
-                    if (!navToggle.contains(event.target) && !navMenu.contains(event.target)) {
-                        navToggle.setAttribute('aria-expanded', 'false');
-                        navMenu.classList.remove('md-navbar-nav-open');
-                        navToggle.classList.remove('md-navbar-toggle-active');
+                const result = await response.json();
+                
+                if (response.ok && result.success) {
+                    // Update display
+                    const displayElement = document.getElementById(fieldName + '-display');
+                    if (displayElement) {
+                        displayElement.textContent = newValue;
                     }
+                    
+                    // Update original value
+                    fieldElement.setAttribute('data-original', newValue);
+                    
+                    // Exit edit mode
+                    cancelEdit(fieldName);
+                    
+                    // Show success message
+                    showAlert('success', result.message || 'Profile updated successfully');
+                } else {
+                    showFieldError(fieldName, result.message || 'Unable to update profile. Please try again.');
+                }
+            } catch (error) {
+                console.error('Error updating profile:', error);
+                showFieldError(fieldName, 'Unable to update profile. Please try again.');
+            }
+        }
+        
+        // File upload functions
+        function openFileUpload() {
+            const fileInput = document.getElementById('profile-picture-input');
+            if (fileInput) {
+                fileInput.click();
+            }
+        }
+        
+        function validateFile(file) {
+            if (!file) {
+                return 'No file selected';
+            }
+            
+            if (file.size > MAX_FILE_SIZE) {
+                return 'File too large (max 2MB)';
+            }
+            
+            if (!ALLOWED_FILE_TYPES.includes(file.type)) {
+                return 'Invalid file type (JPG/PNG only)';
+            }
+            
+            const extension = file.name.split('.').pop().toLowerCase();
+            if (!ALLOWED_FILE_EXTENSIONS.includes(extension)) {
+                return 'Invalid file type (JPG/PNG only)';
+            }
+            
+            return null;
+        }
+        
+        async function uploadProfilePicture(file) {
+            const errorMessage = validateFile(file);
+            if (errorMessage) {
+                showFieldError('profile-picture', errorMessage);
+                return;
+            }
+            
+            clearFieldError('profile-picture');
+            
+            const formData = new FormData();
+            formData.append('profile_picture', file);
+            
+            try {
+                const response = await fetch('/profile', {
+                    method: 'POST',
+                    body: formData
                 });
                 
-                // Close menu on escape key
-                document.addEventListener('keydown', function(event) {
-                    if (event.key === 'Escape') {
-                        navToggle.setAttribute('aria-expanded', 'false');
-                        navMenu.classList.remove('md-navbar-nav-open');
-                        navToggle.classList.remove('md-navbar-toggle-active');
+                const result = await response.json();
+                
+                if (response.ok && result.success) {
+                    // Update profile picture display
+                    const profileImg = document.getElementById('profile-picture-img');
+                    const profilePlaceholder = document.getElementById('profile-picture-placeholder');
+                    const pictureContainer = document.querySelector('.profile-picture-container');
+                    
+                    if (result.profile_picture) {
+                        if (profileImg) {
+                            profileImg.src = '/' + result.profile_picture;
+                            profileImg.style.display = 'block';
+                        } else {
+                            // Create new img element
+                            const newImg = document.createElement('img');
+                            newImg.src = '/' + result.profile_picture;
+                            newImg.alt = 'Profile picture';
+                            newImg.className = 'profile-picture';
+                            newImg.id = 'profile-picture-img';
+                            pictureContainer.insertBefore(newImg, pictureContainer.firstChild);
+                        }
+                        
+                        if (profilePlaceholder) {
+                            profilePlaceholder.style.display = 'none';
+                        }
+                    }
+                    
+                    showAlert('success', result.message || 'Profile picture updated successfully');
+                } else {
+                    showFieldError('profile-picture', result.message || 'Unable to update profile picture. Please try again.');
+                }
+            } catch (error) {
+                console.error('Error uploading file:', error);
+                showFieldError('profile-picture', 'Unable to update profile picture. Please try again.');
+            }
+        }
+        
+        // File drag and drop handlers
+        function handleDragOver(event) {
+            event.preventDefault();
+        }
+        
+        function handleDragEnter(event) {
+            event.preventDefault();
+            const uploadArea = document.getElementById('file-upload-area');
+            if (uploadArea) {
+                uploadArea.classList.add('dragover');
+            }
+        }
+        
+        function handleDragLeave(event) {
+            event.preventDefault();
+            const uploadArea = document.getElementById('file-upload-area');
+            if (uploadArea && !uploadArea.contains(event.relatedTarget)) {
+                uploadArea.classList.remove('dragover');
+            }
+        }
+        
+        function handleFileDrop(event) {
+            event.preventDefault();
+            const uploadArea = document.getElementById('file-upload-area');
+            if (uploadArea) {
+                uploadArea.classList.remove('dragover');
+            }
+            
+            const files = event.dataTransfer.files;
+            if (files.length > 0) {
+                uploadProfilePicture(files[0]);
+            }
+        }
+        
+        // Password form functions
+        function clearPasswordForm() {
+            const form = document.getElementById('password-form');
+            if (form) {
+                form.reset();
+                clearFieldError('current-password');
+                clearFieldError('new-password');
+                clearFieldError('confirm-password');
+            }
+        }
+        
+        // Event listeners
+        document.addEventListener('DOMContentLoaded', function() {
+            // File input change handler
+            const fileInput = document.getElementById('profile-picture-input');
+            if (fileInput) {
+                fileInput.addEventListener('change', function(event) {
+                    const file = event.target.files[0];
+                    if (file) {
+                        uploadProfilePicture(file);
                     }
                 });
             }
+            
+            // Password form submission
+            const passwordForm = document.getElementById('password-form');
+            if (passwordForm) {
+                passwordForm.addEventListener('submit', async function(event) {
+                    event.preventDefault();
+                    
+                    const currentPassword = document.getElementById('current-password').value;
+                    const newPassword = document.getElementById('new-password').value;
+                    const confirmPassword = document.getElementById('confirm-password').value;
+                    
+                    // Clear previous errors
+                    clearFieldError('current-password');
+                    clearFieldError('new-password');
+                    clearFieldError('confirm-password');
+                    
+                    // Validate inputs
+                    let hasErrors = false;
+                    
+                    if (!currentPassword.trim()) {
+                        showFieldError('current-password', 'Current password is required');
+                        hasErrors = true;
+                    }
+                    
+                    const passwordError = validatePassword(newPassword);
+                    if (passwordError) {
+                        showFieldError('new-password', passwordError);
+                        hasErrors = true;
+                    }
+                    
+                    if (newPassword !== confirmPassword) {
+                        showFieldError('confirm-password', 'Passwords do not match');
+                        hasErrors = true;
+                    }
+                    
+                    if (hasErrors) {
+                        return;
+                    }
+                    
+                    try {
+                        const response = await fetch('/profile/password', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                            },
+                            body: JSON.stringify({
+                                currentPassword: currentPassword,
+                                newPassword: newPassword,
+                                confirmPassword: confirmPassword
+                            })
+                        });
+                        
+                        const result = await response.json();
+                        
+                        if (response.ok && result.success) {
+                            clearPasswordForm();
+                            showAlert('success', result.message || 'Password updated successfully');
+                        } else {
+                            if (result.field && result.message) {
+                                showFieldError(result.field, result.message);
+                            } else {
+                                showAlert('error', result.message || 'Unable to update password. Please try again.');
+                            }
+                        }
+                    } catch (error) {
+                        console.error('Error updating password:', error);
+                        showAlert('error', 'Unable to update password. Please try again.');
+                    }
+                });
+            }
+            
+            // Keyboard event handlers for inline editing
+            document.addEventListener('keydown', function(event) {
+                if (currentEditingField) {
+                    if (event.key === 'Escape') {
+                        cancelEdit(currentEditingField);
+                    } else if (event.key === 'Enter') {
+                        event.preventDefault();
+                        saveField(currentEditingField);
+                    }
+                }
+            });
+            
+            // Click outside to cancel edit
+            document.addEventListener('click', function(event) {
+                if (currentEditingField) {
+                    const editField = document.getElementById(currentEditingField + '-field');
+                    if (editField && !editField.contains(event.target)) {
+                        cancelEdit(currentEditingField);
+                    }
+                }
+            });
         });
+
+        // Mobile navigation toggle
+        const navToggle = document.getElementById('navbar-toggle');
+        const navMenu = document.getElementById('navbarNav');
+        
+        if (navToggle && navMenu) {
+            navToggle.addEventListener('click', function() {
+                const isExpanded = navToggle.getAttribute('aria-expanded') === 'true';
+                navToggle.setAttribute('aria-expanded', !isExpanded);
+                navMenu.classList.toggle('md-navbar-nav-open');
+                navToggle.classList.toggle('md-navbar-toggle-active');
+            });
+            
+            // Close menu when clicking outside
+            document.addEventListener('click', function(event) {
+                if (!navToggle.contains(event.target) && !navMenu.contains(event.target)) {
+                    navToggle.setAttribute('aria-expanded', 'false');
+                    navMenu.classList.remove('md-navbar-nav-open');
+                    navToggle.classList.remove('md-navbar-toggle-active');
+                }
+            });
+            
+            // Close menu on escape key
+            document.addEventListener('keydown', function(event) {
+                if (event.key === 'Escape') {
+                    navToggle.setAttribute('aria-expanded', 'false');
+                    navMenu.classList.remove('md-navbar-nav-open');
+                    navToggle.classList.remove('md-navbar-toggle-active');
+                }
+            });
+        }
     </script>
     
     <!-- Theme Toggle Script -->
