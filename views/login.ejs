@@ -131,7 +131,7 @@
                                                 class="md-input" 
                                                 required 
                                                 autocomplete="current-password"
-                                                aria-describedby="password-error"
+                                                aria-describedby="password-error password-toggle-description"
                                                 aria-invalid="false"
                                             >
                                             <label for="password" class="md-input-label">
@@ -142,13 +142,18 @@
                                             <button 
                                                 type="button" 
                                                 class="md-input-toggle-password" 
-                                                aria-label="Toggle password visibility"
-                                                tabindex="-1"
+                                                aria-label="Show password"
+                                                aria-pressed="false"
+                                                tabindex="0"
+                                                role="button"
                                             >
                                                 <i class="bi bi-eye" aria-hidden="true"></i>
                                             </button>
                                         </div>
                                         <div id="password-error" class="md-form-helper-text md-form-error-text" role="alert" aria-live="polite"></div>
+                                        <div id="password-toggle-description" class="md-sr-only">
+                                            Use the toggle button to show or hide your password
+                                        </div>
                                     </div>
 
                                     <!-- Submit Button -->
@@ -358,5 +363,6 @@
         });
     </script>
     <script src="/js/theme-toggle.js"></script>
+    <script src="/js/password-toggle.js"></script>
 </body>
 </html>

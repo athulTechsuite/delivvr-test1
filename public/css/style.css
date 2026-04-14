@@ -1802,4 +1802,120 @@ h6, .md-h6 {
 
 .md-p-4 { padding: var(--md-spacing-xl) !important; }
 .md-pt-4 { padding-top: var(--md-spacing-xl) !important; }
-.md-pr-4 { padding-right: var(--md-spacing-xl) !
+.md-pr-4 { padding-right: var(--md-spacing-xl) !important; }
+.md-pb-4 { padding-bottom: var(--md-spacing-xl) !important; }
+.md-pl-4 { padding-left: var(--md-spacing-xl) !important; }
+.md-px-4 { padding-left: var(--md-spacing-xl) !important; padding-right: var(--md-spacing-xl) !important; }
+.md-py-4 { padding-top: var(--md-spacing-xl) !important; padding-bottom: var(--md-spacing-xl) !important; }
+
+/* Material Design Password Toggle Components */
+.md-input-container {
+  position: relative;
+}
+
+.md-input-toggle-password {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: none;
+  cursor: pointer;
+  z-index: 2;
+  border-radius: var(--md-border-radius-sm);
+  transition: all var(--md-transition-standard);
+  padding: 2px;
+}
+
+.md-input-toggle-password:hover {
+  background-color: rgba(0, 0, 0, 0.04);
+}
+
+.md-input-toggle-password:focus {
+  outline: 2px solid var(--md-primary);
+  outline-offset: 2px;
+  background-color: rgba(0, 0, 0, 0.04);
+}
+
+.md-input-toggle-password:active {
+  opacity: 0.7;
+  transform: translateY(-50%) scale(0.95);
+}
+
+.md-input-toggle-password i {
+  font-size: 16px;
+  color: var(--md-text-secondary);
+  transition: color var(--md-transition-standard);
+  line-height: 1;
+}
+
+.md-input-toggle-password:hover i {
+  color: var(--md-text-primary);
+}
+
+.md-input-toggle-password:focus i {
+  color: var(--md-primary);
+}
+
+.md-input.md-input--with-toggle {
+  padding-right: 48px;
+}
+
+/* Dark Theme Password Toggle Overrides */
+.dark-theme .md-input-toggle-password:hover {
+  background-color: rgba(255, 255, 255, 0.08);
+}
+
+.dark-theme .md-input-toggle-password:focus {
+  outline-color: var(--md-primary);
+  background-color: rgba(255, 255, 255, 0.08);
+}
+
+.dark-theme .md-input-toggle-password i {
+  color: var(--md-text-secondary);
+}
+
+.dark-theme .md-input-toggle-password:hover i {
+  color: var(--md-text-primary);
+}
+
+.dark-theme .md-input-toggle-password:focus i {
+  color: var(--md-primary);
+}
+
+/* Mobile responsive adjustments for password toggle */
+@media (max-width: 767.98px) {
+  .md-input-toggle-password {
+    width: 32px;
+    height: 32px;
+    right: 8px;
+  }
+  
+  .md-input-toggle-password i {
+    font-size: 18px;
+  }
+  
+  .md-input.md-input--with-toggle {
+    padding-right: 52px;
+  }
+}
+
+/* Screen reader only text for accessibility */
+.md-sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* Material Design CSS Framework - End of File */

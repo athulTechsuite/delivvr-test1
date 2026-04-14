@@ -168,12 +168,12 @@
                                                 type="password" 
                                                 id="password" 
                                                 name="password" 
-                                                class="md-input" 
+                                                class="md-input md-input-with-toggle" 
                                                 required 
                                                 minlength="6"
                                                 maxlength="128"
                                                 autocomplete="new-password"
-                                                aria-describedby="password-helper password-requirements"
+                                                aria-describedby="password-helper password-requirements password-toggle-desc"
                                             >
                                             <label for="password" class="md-label">
                                                 <i class="bi bi-lock" aria-hidden="true"></i>
@@ -181,15 +181,17 @@
                                             </label>
                                             <button 
                                                 type="button" 
-                                                class="md-input-action" 
-                                                id="togglePassword"
+                                                class="md-input-toggle-password"
                                                 aria-label="Show password"
-                                                tabindex="-1"
+                                                aria-pressed="false"
+                                                tabindex="0"
+                                                data-target="password"
                                             >
                                                 <i class="bi bi-eye" aria-hidden="true"></i>
                                             </button>
                                             <div class="md-input-underline"></div>
                                         </div>
+                                        <div id="password-toggle-desc" class="md-visually-hidden" aria-live="polite"></div>
                                         <div id="password-helper" class="md-helper-text">
                                             Password must be at least 6 characters long
                                         </div>
@@ -206,10 +208,10 @@
                                                 type="password" 
                                                 id="confirmPassword" 
                                                 name="confirmPassword" 
-                                                class="md-input" 
+                                                class="md-input md-input-with-toggle" 
                                                 required 
                                                 autocomplete="new-password"
-                                                aria-describedby="confirm-password-helper"
+                                                aria-describedby="confirm-password-helper confirm-password-toggle-desc"
                                             >
                                             <label for="confirmPassword" class="md-label">
                                                 <i class="bi bi-shield-check" aria-hidden="true"></i>
@@ -217,15 +219,17 @@
                                             </label>
                                             <button 
                                                 type="button" 
-                                                class="md-input-action" 
-                                                id="toggleConfirmPassword"
+                                                class="md-input-toggle-password"
                                                 aria-label="Show confirm password"
-                                                tabindex="-1"
+                                                aria-pressed="false"
+                                                tabindex="0"
+                                                data-target="confirmPassword"
                                             >
                                                 <i class="bi bi-eye" aria-hidden="true"></i>
                                             </button>
                                             <div class="md-input-underline"></div>
                                         </div>
+                                        <div id="confirm-password-toggle-desc" class="md-visually-hidden" aria-live="polite"></div>
                                         <div id="confirm-password-helper" class="md-helper-text">
                                             Re-enter your password to confirm
                                         </div>
@@ -288,8 +292,6 @@
         const passwordField = document.getElementById('password');
         const confirmPasswordField = document.getElementById('confirmPassword');
         const submitButton = document.getElementById('submitButton');
-        const togglePasswordButton = document.getElementById('togglePassword');
-        const toggleConfirmPasswordButton = document.getElementById('toggleConfirmPassword');
 
         // Validation state
         const fieldValidation = {
@@ -451,22 +453,6 @@
             return true;
         }
 
-        // Password toggle functionality
-        function togglePasswordVisibility(inputField, toggleButton) {
-            const isPassword = inputField.type === 'password';
-            const icon = toggleButton.querySelector('i');
-            
-            if (isPassword) {
-                inputField.type = 'text';
-                icon.className = 'bi bi-eye-slash';
-                toggleButton.setAttribute('aria-label', 'Hide password');
-            } else {
-                inputField.type = 'password';
-                icon.className = 'bi bi-eye';
-                toggleButton.setAttribute('aria-label', 'Show password');
-            }
-        }
-
         // Event listeners
         nameField.addEventListener('blur', () => {
             validateName();
@@ -514,14 +500,6 @@
                 clearFieldError(confirmPasswordField);
                 clearFieldSuccess(confirmPasswordField);
             }
-        });
-
-        togglePasswordButton.addEventListener('click', () => {
-            togglePasswordVisibility(passwordField, togglePasswordButton);
-        });
-
-        toggleConfirmPasswordButton.addEventListener('click', () => {
-            togglePasswordVisibility(confirmPasswordField, toggleConfirmPasswordButton);
         });
 
         // Form submission
@@ -619,5 +597,6 @@
         }
     </script>
     <script src="/js/theme-toggle.js"></script>
+    <script src="/js/password-toggle.js"></script>
 </body>
 </html>
