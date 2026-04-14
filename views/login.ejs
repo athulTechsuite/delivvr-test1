@@ -122,7 +122,7 @@
                                     </div>
 
                                     <!-- Password Field -->
-                                    <div class="md-form-field md-margin-bottom-xl">
+                                    <div class="md-form-field md-margin-bottom-lg">
                                         <div class="md-input-container">
                                             <input 
                                                 type="password" 
@@ -149,6 +149,29 @@
                                             </button>
                                         </div>
                                         <div id="password-error" class="md-form-helper-text md-form-error-text" role="alert" aria-live="polite"></div>
+                                    </div>
+
+                                    <!-- Remember Me Checkbox -->
+                                    <div class="md-form-field md-margin-bottom-lg">
+                                        <div class="md-checkbox-container">
+                                            <input 
+                                                type="checkbox" 
+                                                id="rememberMe" 
+                                                name="rememberMe" 
+                                                class="md-checkbox" 
+                                                value="true"
+                                                aria-describedby="remember-description"
+                                            >
+                                            <label for="rememberMe" class="md-checkbox-label">
+                                                <span class="md-checkbox-icon">
+                                                    <i class="bi bi-check" aria-hidden="true"></i>
+                                                </span>
+                                                <span class="md-checkbox-text">Remember me for 7 days</span>
+                                            </label>
+                                        </div>
+                                        <div id="remember-description" class="md-form-helper-text">
+                                            Keep me signed in for 7 days on this device. You won't need to enter your password again.
+                                        </div>
                                     </div>
 
                                     <!-- Submit Button -->
@@ -192,6 +215,7 @@
             const form = document.querySelector('.md-form');
             const inputs = form.querySelectorAll('.md-input');
             const submitButton = form.querySelector('button[type="submit"]');
+            const checkbox = document.getElementById('rememberMe');
             
             // Input focus and blur handling
             inputs.forEach(input => {
@@ -238,6 +262,40 @@
                 }
             });
             
+            // Checkbox handling
+            if (checkbox) {
+                const checkboxContainer = checkbox.closest('.md-checkbox-container');
+                const checkboxLabel = checkboxContainer.querySelector('.md-checkbox-label');
+                
+                // Handle checkbox change
+                checkbox.addEventListener('change', function() {
+                    if (this.checked) {
+                        checkboxContainer.classList.add('md-checkbox-checked');
+                        checkboxLabel.setAttribute('aria-checked', 'true');
+                    } else {
+                        checkboxContainer.classList.remove('md-checkbox-checked');
+                        checkboxLabel.setAttribute('aria-checked', 'false');
+                    }
+                });
+                
+                // Handle checkbox keyboard interaction
+                checkbox.addEventListener('keydown', function(e) {
+                    if (e.key === ' ' || e.key === 'Enter') {
+                        e.preventDefault();
+                        this.checked = !this.checked;
+                        this.dispatchEvent(new Event('change', { bubbles: true }));
+                    }
+                });
+                
+                // Initialize checkbox state
+                if (checkbox.checked) {
+                    checkboxContainer.classList.add('md-checkbox-checked');
+                    checkboxLabel.setAttribute('aria-checked', 'true');
+                } else {
+                    checkboxLabel.setAttribute('aria-checked', 'false');
+                }
+            }
+            
             // Password visibility toggle
             const passwordToggle = document.querySelector('.md-input-toggle-password');
             if (passwordToggle) {
@@ -268,6 +326,18 @@
                 if (!isValid) {
                     e.preventDefault();
                     return;
+                }
+                
+                // Ensure checkbox value is properly submitted
+                if (checkbox) {
+                    if (checkbox.checked) {
+                        // Create hidden input to ensure checkbox value is submitted
+                        const hiddenInput = document.createElement('input');
+                        hiddenInput.type = 'hidden';
+                        hiddenInput.name = 'rememberMe';
+                        hiddenInput.value = 'true';
+                        form.appendChild(hiddenInput);
+                    }
                 }
                 
                 // Add loading state
