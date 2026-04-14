@@ -221,7 +221,209 @@ const dbHelpers = {
     }
 };
 
+// Frontend token refresh utilities
+const tokenRefreshUtils = {
+    // Client-side token storage utilities for transparent refresh
+    getTokenStorageScript: () => {
+        return `
+<script>
+// Token storage and refresh management for transparent authentication
+class TokenManager {
+    static ACCESS_TOKEN_KEY = 'access_token';
+    static REFRESH_TOKEN_KEY = 'refresh_token';
+    static TOKEN_EXPIRY_KEY = 'token_expiry';
+    static REFRESH_THRESHOLD_MS = 60000; // 1 minute before expiry
+    
+    static getAccessToken() {
+        return localStorage.getItem(this.ACCESS_TOKEN_KEY);
+    }
+    
+    static getRefreshToken() {
+        return localStorage.getItem(this.REFRESH_TOKEN_KEY);
+    }
+    
+    static getTokenExpiry() {
+        const expiry = localStorage.getItem(this.TOKEN_EXPIRY_KEY);
+        return expiry ? new Date(expiry) : null;
+    }
+    
+    static setTokens(accessToken, refreshToken, expiresIn) {
+        if (!accessToken || !refreshToken || !expiresIn) {
+            throw new Error('All token parameters are required');
+        }
+        
+        const expiryTime = new Date(Date.now() + expiresIn * 1000);
+        
+        localStorage.setItem(this.ACCESS_TOKEN_KEY, accessToken);
+        localStorage.setItem(this.REFRESH_TOKEN_KEY, refreshToken);
+        localStorage.setItem(this.TOKEN_EXPIRY_KEY, expiryTime.toISOString());
+    }
+    
+    static clearTokens() {
+        localStorage.removeItem(this.ACCESS_TOKEN_KEY);
+        localStorage.removeItem(this.REFRESH_TOKEN_KEY);
+        localStorage.removeItem(this.TOKEN_EXPIRY_KEY);
+    }
+    
+    static isTokenExpired() {
+        const expiry = this.getTokenExpiry();
+        if (!expiry) return true;
+        
+        return Date.now() >= expiry.getTime();
+    }
+    
+    static shouldRefreshToken() {
+        const expiry = this.getTokenExpiry();
+        if (!expiry) return false;
+        
+        return Date.now() >= (expiry.getTime() - this.REFRESH_THRESHOLD_MS);
+    }
+    
+    static async refreshTokens() {
+        const refreshToken = this.getRefreshToken();
+        if (!refreshToken) {
+            throw new Error('No refresh token available');
+        }
+        
+        try {
+            const response = await fetch('/api/auth/refresh', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ refresh_token: refreshToken })
+            });
+            
+            if (!response.ok) {
+                if (response.status === 401) {
+                    this.clearTokens();
+                    window.location.href = '/login';
+                    return null;
+                }
+                throw new Error('Token refresh failed');
+            }
+            
+            const data = await response.json();
+            this.setTokens(data.access_token, data.refresh_token, data.expires_in);
+            return data.access_token;
+        } catch (error) {
+            console.error('Token refresh error:', error);
+            this.clearTokens();
+            window.location.href = '/login';
+            return null;
+        }
+    }
+}
+
+// HTTP interceptor for transparent token refresh
+class AuthenticatedFetch {
+    static async fetch(url, options = {}) {
+        // Check if token needs refresh before making request
+        if (TokenManager.shouldRefreshToken()) {
+            await TokenManager.refreshTokens();
+        }
+        
+        const accessToken = TokenManager.getAccessToken();
+        if (!accessToken) {
+            window.location.href = '/login';
+            return;
+        }
+        
+        // Add authorization header
+        const headers = {
+            ...options.headers,
+            'Authorization': 'Bearer ' + accessToken
+        };
+        
+        const response = await fetch(url, {
+            ...options,
+            headers
+        });
+        
+        // Handle 401 responses by attempting token refresh
+        if (response.status === 401) {
+            const newToken = await TokenManager.refreshTokens();
+            if (newToken) {
+                // Retry original request with new token
+                const retryHeaders = {
+                    ...options.headers,
+                    'Authorization': 'Bearer ' + newToken
+                };
+                
+                return fetch(url, {
+                    ...options,
+                    headers: retryHeaders
+                });
+            }
+        }
+        
+        return response;
+    }
+}
+
+// Auto-refresh timer setup
+class TokenRefreshTimer {
+    static timer = null;
+    static CHECK_INTERVAL_MS = 30000; // Check every 30 seconds
+    
+    static start() {
+        this.stop(); // Clear any existing timer
+        
+        this.timer = setInterval(() => {
+            if (TokenManager.shouldRefreshToken()) {
+                TokenManager.refreshTokens().catch(error => {
+                    console.error('Automatic token refresh failed:', error);
+                });
+            }
+        }, this.CHECK_INTERVAL_MS);
+    }
+    
+    static stop() {
+        if (this.timer) {
+            clearInterval(this.timer);
+            this.timer = null;
+        }
+    }
+}
+
+// Initialize token refresh timer when page loads
+document.addEventListener('DOMContentLoaded', function() {
+    if (TokenManager.getAccessToken()) {
+        TokenRefreshTimer.start();
+    }
+});
+
+// Export utilities for use in other scripts
+window.TokenManager = TokenManager;
+window.AuthenticatedFetch = AuthenticatedFetch;
+window.TokenRefreshTimer = TokenRefreshTimer;
+</script>
+        `;
+    },
+
+    // Generate middleware response headers for token refresh
+    generateRefreshHeaders: (newAccessToken, newRefreshToken, expiresIn) => {
+        if (!newAccessToken || typeof newAccessToken !== 'string') {
+            throw new Error('New access token is required and must be a string');
+        }
+        if (!newRefreshToken || typeof newRefreshToken !== 'string') {
+            throw new Error('New refresh token is required and must be a string');
+        }
+        if (!expiresIn || typeof expiresIn !== 'number') {
+            throw new Error('Expires in is required and must be a number');
+        }
+        
+        return {
+            'X-New-Access-Token': newAccessToken,
+            'X-New-Refresh-Token': newRefreshToken,
+            'X-Token-Expires-In': expiresIn.toString(),
+            'Access-Control-Expose-Headers': 'X-New-Access-Token,X-New-Refresh-Token,X-Token-Expires-In'
+        };
+    }
+};
+
 module.exports = {
     db,
-    dbHelpers
+    dbHelpers,
+    tokenRefreshUtils
 };

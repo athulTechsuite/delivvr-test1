@@ -343,25 +343,6 @@ describe('Authentication Middleware - Token Refresh', () => {
       expect(clearedRefreshCookie).toBeDefined();
     });
     
-    // TC-F-015
-    test('should trigger logout when refresh token is expired', async () => {
-      // Create expired refresh token
-      const expiredRefreshToken = MockUser.generateRefreshToken();
-      const expiredDate = new Date(Date.now() - 1000).toISOString(); // 1 second ago
-      await MockUser.updateRefreshToken(TEST_USER.id, expiredRefreshToken, expiredDate);
-      
-      // Create token that needs refresh
-      const { token } = createTokens(TEST_USER, '30m', false);
-      
-      const response = await request(app)
-        .get('/protected')
-        .set('Cookie', `token=${token}; refresh_token=${expiredRefreshToken}`)
-        .expect(401);
-      
-      expect(response.body.error).toBe('Please log in again');
-      expect(response.body.redirectTo).toBe('/login');
-    });
-    
     test('should handle expired JWT with valid refresh token', async () => {
       // Create expired token
       const expiredToken = jwt.sign({ user: TEST_USER }, JWT_SECRET, { expiresIn: '-1h' }); // Expired 1 hour ago
@@ -386,6 +367,198 @@ describe('Authentication Middleware - Token Refresh', () => {
       
       expect(newTokenCookie).toBeDefined();
       expect(newRefreshTokenCookie).toBeDefined();
+    });
+  });
+
+  // TC-F-015: Invalid refresh tokens trigger logout - comprehensive test coverage
+  describe('TC-F-015: Invalid Refresh Token Logout Scenarios', () => {
+    test('TC-F-015: should trigger logout when refresh token is expired - happy path validation', async () => {
+      // Happy path: Create valid token and expired refresh token
+      const { token } = createTokens(TEST_USER, '30m', false); // Token needs refresh in 30 minutes
+      const expiredRefreshToken = MockUser.generateRefreshToken();
+      const expiredDate = new Date(Date.now() - 1000).toISOString(); // Expired 1 second ago
+      await MockUser.updateRefreshToken(TEST_USER.id, expiredRefreshToken, expiredDate);
+      
+      const response = await request(app)
+        .get('/protected')
+        .set('Cookie', `token=${token}; refresh_token=${expiredRefreshToken}`)
+        .expect(401);
+      
+      // Verify logout response
+      expect(response.body.error).toBe('Please log in again');
+      expect(response.body.redirectTo).toBe('/login');
+      
+      // Verify cookies are cleared
+      const cookies = response.headers['set-cookie'];
+      const clearedTokenCookie = cookies?.find((cookie: string) => cookie.includes('token=;'));
+      const clearedRefreshCookie = cookies?.find((cookie: string) => cookie.includes('refresh_token=;'));
+      
+      expect(clearedTokenCookie).toBeDefined();
+      expect(clearedRefreshCookie).toBeDefined();
+    });
+
+    test('TC-F-015: should trigger logout when refresh token does not exist in database - error path', async () => {
+      // Error path: Token needs refresh but refresh token not in database
+      const { token } = createTokens(TEST_USER, '30m', false);
+      const nonExistentRefreshToken = MockUser.generateRefreshToken();
+      // Don't store refresh token in database
+      
+      const response = await request(app)
+        .get('/protected')
+        .set('Cookie', `token=${token}; refresh_token=${nonExistentRefreshToken}`)
+        .expect(401);
+      
+      expect(response.body.error).toBe('Please log in again');
+      expect(response.body.redirectTo).toBe('/login');
+      
+      // Verify cookies are cleared
+      const cookies = response.headers['set-cookie'];
+      expect(cookies?.some((cookie: string) => cookie.includes('token=;'))).toBe(true);
+      expect(cookies?.some((cookie: string) => cookie.includes('refresh_token=;'))).toBe(true);
+    });
+
+    test('TC-F-015: should trigger logout when refresh token hash does not match - error path', async () => {
+      // Error path: Refresh token exists but hash doesn\'t match
+      const { token } = createTokens(TEST_USER, '30m', false);
+      const wrongRefreshToken = MockUser.generateRefreshToken();
+      const storedRefreshToken = MockUser.generateRefreshToken(); // Different token
+      const refreshExpiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString();
+      
+      // Store different token than what we send
+      await MockUser.updateRefreshToken(TEST_USER.id, storedRefreshToken, refreshExpiresAt);
+      
+      const response = await request(app)
+        .get('/protected')
+        .set('Cookie', `token=${token}; refresh_token=${wrongRefreshToken}`)
+        .expect(401);
+      
+      expect(response.body.error).toBe('Please log in again');
+      expect(response.body.redirectTo).toBe('/login');
+    });
+
+    test('TC-F-015: should trigger logout when refresh token is null in database - error path', async () => {
+      // Error path: User has null refresh token in database
+      const { token } = createTokens(TEST_USER, '30m', false);
+      const refreshToken = MockUser.generateRefreshToken();
+      
+      // Set refresh token to null in database
+      await MockUser.updateRefreshToken(TEST_USER.id, null, null);
+      
+      const response = await request(app)
+        .get('/protected')
+        .set('Cookie', `token=${token}; refresh_token=${refreshToken}`)
+        .expect(401);
+      
+      expect(response.body.error).toBe('Please log in again');
+      expect(response.body.redirectTo).toBe('/login');
+    });
+
+    test('TC-F-015: should trigger logout when user does not exist for refresh token validation - error path', async () => {
+      // Error path: User doesn\'t exist in database
+      const nonExistentUser = { id: 999, email: 'nonexistent@example.com', name: 'Non Existent' };
+      const { token } = createTokens(nonExistentUser, '30m', false);
+      const refreshToken = MockUser.generateRefreshToken();
+      
+      const response = await request(app)
+        .get('/protected')
+        .set('Cookie', `token=${token}; refresh_token=${refreshToken}`)
+        .expect(401);
+      
+      expect(response.body.error).toBe('Please log in again');
+      expect(response.body.redirectTo).toBe('/login');
+    });
+
+    test('TC-F-015: should trigger logout when JWT is expired and refresh token is invalid - error path', async () => {
+      // Error path: Both JWT and refresh token are invalid
+      const expiredToken = jwt.sign({ user: TEST_USER }, JWT_SECRET, { expiresIn: '-2h' });
+      const invalidRefreshToken = 'completely-invalid-refresh-token';
+      
+      const response = await request(app)
+        .get('/protected')
+        .set('Cookie', `token=${expiredToken}; refresh_token=${invalidRefreshToken}`)
+        .expect(401);
+      
+      expect(response.body.error).toBe('Please log in again');
+      expect(response.body.redirectTo).toBe('/login');
+      
+      // Verify both cookies are cleared
+      const cookies = response.headers['set-cookie'];
+      expect(cookies?.some((cookie: string) => cookie.includes('token=;'))).toBe(true);
+      expect(cookies?.some((cookie: string) => cookie.includes('refresh_token=;'))).toBe(true);
+    });
+
+    test('TC-F-015: should trigger logout when refresh token is malformed - error path', async () => {
+      // Error path: Malformed refresh token
+      const { token } = createTokens(TEST_USER, '30m', false);
+      const malformedRefreshToken = ''; // Empty string
+      
+      const response = await request(app)
+        .get('/protected')
+        .set('Cookie', `token=${token}; refresh_token=${malformedRefreshToken}`)
+        .expect(401);
+      
+      expect(response.body.error).toBe('Please log in again');
+      expect(response.body.redirectTo).toBe('/login');
+    });
+
+    test('TC-F-015: should successfully refresh when refresh token is valid - happy path', async () => {
+      // Happy path: Valid refresh token should work correctly
+      const { token, refreshToken } = createTokens(TEST_USER, '30m', true);
+      
+      const response = await request(app)
+        .get('/protected')
+        .set('Cookie', `token=${token}; refresh_token=${refreshToken}`)
+        .expect(200);
+      
+      expect(response.body.user).toEqual(TEST_USER);
+      expect(response.body.message).toBe('Access granted');
+      
+      // Verify new tokens are issued
+      const cookies = response.headers['set-cookie'];
+      expect(cookies?.some((cookie: string) => cookie.startsWith('token='))).toBe(true);
+      expect(cookies?.some((cookie: string) => cookie.startsWith('refresh_token='))).toBe(true);
+    });
+
+    test('TC-F-015: should handle concurrent invalid refresh token requests - error path', async () => {
+      // Error path: Multiple concurrent requests with invalid refresh tokens
+      const { token } = createTokens(TEST_USER, '30m', false);
+      const invalidRefreshToken = 'invalid-concurrent-token';
+      
+      const requests = Array(3).fill(null).map(() => 
+        request(app)
+          .get('/protected')
+          .set('Cookie', `token=${token}; refresh_token=${invalidRefreshToken}`)
+      );
+      
+      const responses = await Promise.all(requests);
+      
+      // All requests should fail with logout
+      responses.forEach(response => {
+        expect(response.status).toBe(401);
+        expect(response.body.error).toBe('Please log in again');
+        expect(response.body.redirectTo).toBe('/login');
+      });
+    });
+
+    test('TC-F-015: should trigger logout when refresh token validation throws exception - error path', async () => {
+      // Error path: Database error during refresh token validation
+      const { token } = createTokens(TEST_USER, '30m', false);
+      const refreshToken = MockUser.generateRefreshToken();
+      
+      // Mock validateRefreshToken to throw error by corrupting the stored hash
+      const originalUser = MockUser.users[0];
+      MockUser.users[0].refresh_token = 'invalid-bcrypt-hash';
+      
+      const response = await request(app)
+        .get('/protected')
+        .set('Cookie', `token=${token}; refresh_token=${refreshToken}`)
+        .expect(401);
+      
+      expect(response.body.error).toBe('Please log in again');
+      expect(response.body.redirectTo).toBe('/login');
+      
+      // Restore original user
+      MockUser.users[0] = originalUser;
     });
   });
   

@@ -34,6 +34,9 @@ describe('Authentication Middleware Integration Tests', () => {
   const TEST_USER_ID_1 = '64f8b1234567890123456789';
   const TEST_USER_ID_2 = '64f8b1234567890123456790';
   const VALID_REFRESH_TOKEN = 'a'.repeat(64);
+  const INVALID_REFRESH_TOKEN = 'invalid-token';
+  const REFRESH_TOKEN_EXPIRY_DAYS = 7;
+  const JWT_SOON_EXPIRE_MINUTES = 30;
   let app: express.Application;
   
   const createTestApp = () => {
@@ -71,7 +74,7 @@ describe('Authentication Middleware Integration Tests', () => {
   };
   
   const createSoonToExpireJWT = (payload: any) => {
-    const expiryTime = Math.floor(Date.now() / 1000) + 1800; // 30 minutes
+    const expiryTime = Math.floor(Date.now() / 1000) + (JWT_SOON_EXPIRE_MINUTES * 60);
     return jwt.sign({ ...payload, exp: expiryTime }, JWT_SECRET);
   };
   
@@ -82,7 +85,7 @@ describe('Authentication Middleware Integration Tests', () => {
     
     // Reset user mock states
     Object.values(mockUsers).forEach(user => {
-      user.token_expires_at = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString();
+      user.token_expires_at = new Date(Date.now() + REFRESH_TOKEN_EXPIRY_DAYS * 24 * 60 * 60 * 1000).toISOString();
       user.validateRefreshToken.mockReset();
       user.generateRefreshToken.mockReset();
       user.clearRefreshToken.mockReset();
@@ -95,45 +98,168 @@ describe('Authentication Middleware Integration Tests', () => {
   
   describe('End-to-End Authentication Flow', () => {
     // TC-F-019: Token refresh maintains user session without requiring re-authentication
-    test('should maintain user session through automatic token refresh', async () => {
-      const user = mockUsers[TEST_USER_ID_1];
-      const soonToExpireToken = createSoonToExpireJWT({
-        userId: TEST_USER_ID_1,
-        email: 'test@example.com'
+    describe('TC-F-019: Token refresh maintains user session', () => {
+      test('should maintain user session through automatic token refresh - happy path', async () => {
+        const user = mockUsers[TEST_USER_ID_1];
+        const soonToExpireToken = createSoonToExpireJWT({
+          userId: TEST_USER_ID_1,
+          email: 'test@example.com'
+        });
+        
+        mockUserFindById.mockResolvedValue(user);
+        user.validateRefreshToken.mockResolvedValue(true);
+        user.generateRefreshToken.mockResolvedValue({
+          refreshToken: 'new-refresh-token-64-chars-long-aaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
+          expiresAt: new Date(Date.now() + REFRESH_TOKEN_EXPIRY_DAYS * 24 * 60 * 60 * 1000)
+        });
+        
+        // First request to dashboard with soon-to-expire token
+        const dashboardResponse = await request(app)
+          .get('/dashboard')
+          .set('Cookie', [`token=${soonToExpireToken}`, `refresh_token=${VALID_REFRESH_TOKEN}`]);
+        
+        expect(dashboardResponse.status).toBe(200);
+        expect(dashboardResponse.body.page).toBe('dashboard');
+        expect(dashboardResponse.body.user.userId).toBe(TEST_USER_ID_1);
+        
+        // Verify new tokens were set
+        const cookies = dashboardResponse.headers['set-cookie'];
+        expect(cookies).toBeDefined();
+        
+        // Extract new token from response
+        const newTokenCookie = cookies.find((cookie: string) => cookie.startsWith('token='));
+        expect(newTokenCookie).toBeDefined();
+        const newToken = newTokenCookie.split(';')[0].split('=')[1];
+        
+        // Subsequent request with new token should work seamlessly
+        const profileResponse = await request(app)
+          .get('/profile')
+          .set('Cookie', [`token=${newToken}`]);
+        
+        expect(profileResponse.status).toBe(200);
+        expect(profileResponse.body.page).toBe('profile');
+        expect(profileResponse.body.user.userId).toBe(TEST_USER_ID_1);
+        
+        // Verify refresh token validation was called
+        expect(user.validateRefreshToken).toHaveBeenCalledWith(VALID_REFRESH_TOKEN);
+        expect(user.generateRefreshToken).toHaveBeenCalled();
       });
       
-      mockUserFindById.mockResolvedValue(user);
-      user.validateRefreshToken.mockResolvedValue(true);
-      user.generateRefreshToken.mockResolvedValue({
-        refreshToken: 'new-refresh-token-64-chars-long-aaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
-        expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)
+      test('should fail token refresh when user not found - error path', async () => {
+        const soonToExpireToken = createSoonToExpireJWT({
+          userId: TEST_USER_ID_1,
+          email: 'test@example.com'
+        });
+        
+        mockUserFindById.mockResolvedValue(null);
+        
+        const response = await request(app)
+          .get('/dashboard')
+          .set('Cookie', [`token=${soonToExpireToken}`, `refresh_token=${VALID_REFRESH_TOKEN}`]);
+        
+        expect(response.status).toBe(302);
+        expect(response.headers.location).toBe('/login');
+        
+        // Verify cookies are cleared on failed refresh
+        const cookies = response.headers['set-cookie'];
+        if (cookies) {
+          expect(cookies.some((cookie: string) => 
+            cookie.includes('token=; Path=/')
+          )).toBe(true);
+          expect(cookies.some((cookie: string) => 
+            cookie.includes('refresh_token=; Path=/')
+          )).toBe(true);
+        }
       });
       
-      // First request to dashboard with soon-to-expire token
-      const dashboardResponse = await request(app)
-        .get('/dashboard')
-        .set('Cookie', [`token=${soonToExpireToken}`, `refresh_token=${VALID_REFRESH_TOKEN}`]);
+      test('should fail token refresh when refresh token is invalid - error path', async () => {
+        const user = mockUsers[TEST_USER_ID_1];
+        const soonToExpireToken = createSoonToExpireJWT({
+          userId: TEST_USER_ID_1,
+          email: 'test@example.com'
+        });
+        
+        mockUserFindById.mockResolvedValue(user);
+        user.validateRefreshToken.mockResolvedValue(false);
+        
+        const response = await request(app)
+          .get('/dashboard')
+          .set('Cookie', [`token=${soonToExpireToken}`, `refresh_token=${INVALID_REFRESH_TOKEN}`]);
+        
+        expect(response.status).toBe(302);
+        expect(response.headers.location).toBe('/login');
+        
+        expect(user.validateRefreshToken).toHaveBeenCalledWith(INVALID_REFRESH_TOKEN);
+        expect(user.generateRefreshToken).not.toHaveBeenCalled();
+      });
       
-      expect(dashboardResponse.status).toBe(200);
-      expect(dashboardResponse.body.page).toBe('dashboard');
-      expect(dashboardResponse.body.user.userId).toBe(TEST_USER_ID_1);
+      test('should fail token refresh when refresh token generation fails - error path', async () => {
+        const user = mockUsers[TEST_USER_ID_1];
+        const soonToExpireToken = createSoonToExpireJWT({
+          userId: TEST_USER_ID_1,
+          email: 'test@example.com'
+        });
+        
+        mockUserFindById.mockResolvedValue(user);
+        user.validateRefreshToken.mockResolvedValue(true);
+        user.generateRefreshToken.mockRejectedValue(new Error('Token generation failed'));
+        
+        // Mock console.error to suppress error output
+        const consoleSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
+        
+        const response = await request(app)
+          .get('/dashboard')
+          .set('Cookie', [`token=${soonToExpireToken}`, `refresh_token=${VALID_REFRESH_TOKEN}`]);
+        
+        expect(response.status).toBe(302);
+        expect(response.headers.location).toBe('/login');
+        
+        expect(user.validateRefreshToken).toHaveBeenCalledWith(VALID_REFRESH_TOKEN);
+        expect(user.generateRefreshToken).toHaveBeenCalled();
+        
+        consoleSpy.mockRestore();
+      });
       
-      // Verify new tokens were set
-      const cookies = dashboardResponse.headers['set-cookie'];
-      expect(cookies).toBeDefined();
+      test('should fail token refresh when no refresh token provided - error path', async () => {
+        const soonToExpireToken = createSoonToExpireJWT({
+          userId: TEST_USER_ID_1,
+          email: 'test@example.com'
+        });
+        
+        const response = await request(app)
+          .get('/dashboard')
+          .set('Cookie', [`token=${soonToExpireToken}`]); // No refresh token
+        
+        expect(response.status).toBe(302);
+        expect(response.headers.location).toBe('/login');
+        
+        // Verify user lookup wasn't attempted
+        expect(mockUserFindById).not.toHaveBeenCalled();
+      });
       
-      // Extract new token from response
-      const newTokenCookie = cookies.find((cookie: string) => cookie.startsWith('token='));
-      const newToken = newTokenCookie.split(';')[0].split('=')[1];
-      
-      // Subsequent request with new token should work seamlessly
-      const profileResponse = await request(app)
-        .get('/profile')
-        .set('Cookie', [`token=${newToken}`]);
-      
-      expect(profileResponse.status).toBe(200);
-      expect(profileResponse.body.page).toBe('profile');
-      expect(profileResponse.body.user.userId).toBe(TEST_USER_ID_1);
+      test('should fail token refresh when refresh token is expired - error path', async () => {
+        const user = mockUsers[TEST_USER_ID_1];
+        const soonToExpireToken = createSoonToExpireJWT({
+          userId: TEST_USER_ID_1,
+          email: 'test@example.com'
+        });
+        
+        // Set refresh token as expired
+        user.token_expires_at = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(); // Yesterday
+        
+        mockUserFindById.mockResolvedValue(user);
+        
+        const response = await request(app)
+          .get('/dashboard')
+          .set('Cookie', [`token=${soonToExpireToken}`, `refresh_token=${VALID_REFRESH_TOKEN}`]);
+        
+        expect(response.status).toBe(302);
+        expect(response.headers.location).toBe('/login');
+        
+        // Verify refresh token validation wasn't attempted for expired token
+        expect(user.validateRefreshToken).not.toHaveBeenCalled();
+        expect(user.generateRefreshToken).not.toHaveBeenCalled();
+      });
     });
     
     // TC-F-018: Remember me state is per-login session, not persistent user preference
@@ -329,6 +455,37 @@ describe('Authentication Middleware Integration Tests', () => {
       expect(response.status).toBe(500);
       expect(response.body.error).toBe('Server configuration error');
     });
+    
+    test('should handle concurrent token refresh attempts gracefully', async () => {
+      const user = mockUsers[TEST_USER_ID_1];
+      const soonToExpireToken = createSoonToExpireJWT({
+        userId: TEST_USER_ID_1,
+        email: 'test@example.com'
+      });
+      
+      mockUserFindById.mockResolvedValue(user);
+      user.validateRefreshToken.mockResolvedValue(true);
+      user.generateRefreshToken.mockResolvedValue({
+        refreshToken: 'new-refresh-token-64-chars-long-aaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
+        expiresAt: new Date(Date.now() + REFRESH_TOKEN_EXPIRY_DAYS * 24 * 60 * 60 * 1000)
+      });
+      
+      // Simulate concurrent requests with same soon-to-expire token
+      const requests = [
+        request(app).get('/dashboard').set('Cookie', [`token=${soonToExpireToken}`, `refresh_token=${VALID_REFRESH_TOKEN}`]),
+        request(app).get('/profile').set('Cookie', [`token=${soonToExpireToken}`, `refresh_token=${VALID_REFRESH_TOKEN}`])
+      ];
+      
+      const responses = await Promise.all(requests);
+      
+      // Both requests should succeed (or at least one should succeed)
+      const successfulResponses = responses.filter(r => r.status === 200);
+      expect(successfulResponses.length).toBeGreaterThan(0);
+      
+      successfulResponses.forEach(response => {
+        expect(response.body.user.userId).toBe(TEST_USER_ID_1);
+      });
+    });
   });
   
   describe('Security and Performance', () => {
@@ -341,14 +498,14 @@ describe('Authentication Middleware Integration Tests', () => {
       });
       
       // Set expiration in UTC ISO format
-      const futureDate = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
+      const futureDate = new Date(Date.now() + REFRESH_TOKEN_EXPIRY_DAYS * 24 * 60 * 60 * 1000);
       user.token_expires_at = futureDate.toISOString();
       
       mockUserFindById.mockResolvedValue(user);
       user.validateRefreshToken.mockResolvedValue(true);
       user.generateRefreshToken.mockResolvedValue({
         refreshToken: 'new-refresh-token-64-chars-long-aaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
-        expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)
+        expiresAt: new Date(Date.now() + REFRESH_TOKEN_EXPIRY_DAYS * 24 * 60 * 60 * 1000)
       });
       
       const response = await request(app)
@@ -391,6 +548,52 @@ describe('Authentication Middleware Integration Tests', () => {
         expect(response.status).toBe(200);
         expect(response.body.user.userId).toBe(TEST_USER_ID_1);
       });
+    });
+    
+    test('should validate refresh token format before database lookup', async () => {
+      const soonToExpireToken = createSoonToExpireJWT({
+        userId: TEST_USER_ID_1,
+        email: 'test@example.com'
+      });
+      
+      const invalidFormatTokens = [
+        '', // Empty string
+        'short', // Too short
+        'a'.repeat(32), // Wrong length (32 chars instead of 64)
+        'a'.repeat(128), // Too long
+        null, // Null value
+        undefined // Undefined value
+      ];
+      
+      for (const invalidToken of invalidFormatTokens) {
+        const response = await request(app)
+          .get('/dashboard')
+          .set('Cookie', [`token=${soonToExpireToken}`, `refresh_token=${invalidToken || ''}`]);
+        
+        expect(response.status).toBe(302);
+        expect(response.headers.location).toBe('/login');
+      }
+      
+      // Verify database lookup wasn't attempted for invalid tokens
+      expect(mockUserFindById).not.toHaveBeenCalled();
+    });
+    
+    test('should handle token refresh with expired JWT gracefully', async () => {
+      const expiredToken = jwt.sign(
+        { userId: TEST_USER_ID_1, email: 'test@example.com' },
+        JWT_SECRET,
+        { expiresIn: '-1h' } // Already expired
+      );
+      
+      const response = await request(app)
+        .get('/dashboard')
+        .set('Cookie', [`token=${expiredToken}`, `refresh_token=${VALID_REFRESH_TOKEN}`]);
+      
+      expect(response.status).toBe(302);
+      expect(response.headers.location).toBe('/login');
+      
+      // Verify refresh mechanism wasn't triggered for expired token
+      expect(mockUserFindById).not.toHaveBeenCalled();
     });
   });
 });

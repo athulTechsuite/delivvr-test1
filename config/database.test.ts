@@ -1,7 +1,7 @@
-import { dbHelpers, db } from '../config/database';
-import bcrypt from 'bcrypt';
-import crypto from 'crypto';
-import sqlite3 from 'sqlite3';
+const { dbHelpers, db } = require('../config/database');
+const bcrypt = require('bcrypt');
+const crypto = require('crypto');
+const sqlite3 = require('sqlite3');
 
 // Mock dependencies
 jest.mock('bcrypt');
@@ -9,14 +9,14 @@ jest.mock('crypto');
 jest.mock('sqlite3');
 jest.mock('dotenv', () => ({ config: jest.fn() }));
 
-const mockedBcrypt = bcrypt as jest.Mocked<typeof bcrypt>;
-const mockedCrypto = crypto as jest.Mocked<typeof crypto>;
+const mockedBcrypt = bcrypt;
+const mockedCrypto = crypto;
 
 describe('Database Configuration and Helpers', () => {
-  let mockDb: any;
-  let mockGet: jest.Mock;
-  let mockRun: jest.Mock;
-  let mockSerialize: jest.Mock;
+  let mockDb;
+  let mockGet;
+  let mockRun;
+  let mockSerialize;
 
   beforeEach(() => {
     // Setup database mocks
@@ -83,10 +83,10 @@ describe('Database Configuration and Helpers', () => {
     });
 
     it('should reject with error for invalid email parameter', async () => {
-      await expect(dbHelpers.getUserByEmail(null as any))
+      await expect(dbHelpers.getUserByEmail(null))
         .rejects.toThrow('Email is required and must be a string');
       
-      await expect(dbHelpers.getUserByEmail(123 as any))
+      await expect(dbHelpers.getUserByEmail(123))
         .rejects.toThrow('Email is required and must be a string');
     });
 
@@ -119,7 +119,7 @@ describe('Database Configuration and Helpers', () => {
     });
 
     it('should reject with error for invalid user ID parameter', async () => {
-      await expect(dbHelpers.getUserById(null as any))
+      await expect(dbHelpers.getUserById(null))
         .rejects.toThrow('User ID is required and must be a number or string');
     });
   });
@@ -192,7 +192,7 @@ describe('Database Configuration and Helpers', () => {
       await expect(dbHelpers.hashRefreshToken(''))
         .rejects.toThrow('Failed to hash refresh token: Token is required and must be a string');
       
-      await expect(dbHelpers.hashRefreshToken(null as any))
+      await expect(dbHelpers.hashRefreshToken(null))
         .rejects.toThrow('Failed to hash refresh token: Token is required and must be a string');
     });
 
@@ -289,13 +289,13 @@ describe('Database Configuration and Helpers', () => {
       const validToken = '$2b$10$token';
       const validDate = new Date();
       
-      await expect(dbHelpers.setUserRefreshToken(null as any, validToken, validDate))
+      await expect(dbHelpers.setUserRefreshToken(null, validToken, validDate))
         .rejects.toThrow('User ID is required and must be a number or string');
       
       await expect(dbHelpers.setUserRefreshToken(1, '', validDate))
         .rejects.toThrow('Hashed token is required and must be a string');
       
-      await expect(dbHelpers.setUserRefreshToken(1, validToken, null as any))
+      await expect(dbHelpers.setUserRefreshToken(1, validToken, null))
         .rejects.toThrow('Expires at is required and must be a date string or Date object');
     });
   });
@@ -331,7 +331,7 @@ describe('Database Configuration and Helpers', () => {
     });
 
     it('should validate user ID parameter', async () => {
-      await expect(dbHelpers.clearUserRefreshToken(null as any))
+      await expect(dbHelpers.clearUserRefreshToken(null))
         .rejects.toThrow('User ID is required and must be a number or string');
     });
   });
@@ -378,7 +378,7 @@ describe('Database Configuration and Helpers', () => {
       await expect(dbHelpers.getUserByRefreshToken(''))
         .rejects.toThrow('Hashed token is required and must be a string');
       
-      await expect(dbHelpers.getUserByRefreshToken(null as any))
+      await expect(dbHelpers.getUserByRefreshToken(null))
         .rejects.toThrow('Hashed token is required and must be a string');
     });
 
