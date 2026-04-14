@@ -39,6 +39,32 @@
                     <span>Home</span>
                 </a>
                 
+                <!-- Theme Toggle Switch -->
+                <div class="md-nav-item md-theme-toggle-container">
+                    <div class="md-theme-toggle-wrapper">
+                        <label class="md-theme-toggle-label" for="theme-toggle">
+                            <i class="bi bi-sun-fill md-theme-icon md-theme-icon-light" aria-hidden="true"></i>
+                            <span class="md-theme-label-text">Dark Mode</span>
+                        </label>
+                        <div class="md-switch-container">
+                            <input 
+                                type="checkbox" 
+                                id="theme-toggle" 
+                                class="md-switch md-theme-toggle"
+                                role="switch"
+                                aria-label="Toggle dark mode"
+                                aria-pressed="false"
+                                aria-describedby="theme-toggle-description"
+                            >
+                            <label for="theme-toggle" class="md-switch-slider" aria-hidden="true">
+                                <span class="md-switch-thumb"></span>
+                            </label>
+                        </div>
+                        <i class="bi bi-moon-fill md-theme-icon md-theme-icon-dark" aria-hidden="true"></i>
+                    </div>
+                    <div id="theme-toggle-description" class="sr-only">Toggle between light and dark theme</div>
+                </div>
+                
                 <% if (typeof user !== 'undefined' && user !== null && user) { %>
                     <div class="md-user-info">
                         <small class="md-user-label">Signed in as:</small>
@@ -227,5 +253,8 @@
             });
         });
     </script>
+    
+    <!-- Theme Toggle JavaScript -->
+    <script src="/js/theme-toggle.js"></script>
 </body>
 </html>

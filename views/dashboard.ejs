@@ -56,6 +56,19 @@ const pageTitle = 'Dashboard';
                             </button>
                         </form>
                     </li>
+                    <li class="md-navbar-item md-theme-toggle-container" role="none">
+                        <div class="md-theme-toggle" role="menuitem" aria-label="Toggle between light and dark theme" aria-pressed="false" tabindex="0">
+                            <input type="checkbox" id="theme-toggle-switch" class="md-theme-toggle-input" aria-hidden="true" tabindex="-1">
+                            <label for="theme-toggle-switch" class="md-theme-toggle-label" aria-hidden="true">
+                                <span class="md-theme-toggle-slider">
+                                    <span class="md-theme-toggle-thumb">
+                                        <i class="bi bi-sun-fill md-theme-toggle-icon md-theme-toggle-icon-light" aria-hidden="true"></i>
+                                        <i class="bi bi-moon-fill md-theme-toggle-icon md-theme-toggle-icon-dark" aria-hidden="true"></i>
+                                    </span>
+                                </span>
+                            </label>
+                        </div>
+                    </li>
                 </ul>
             </div>
         </div>
@@ -345,6 +358,9 @@ const pageTitle = 'Dashboard';
             </section>
         </div>
     </main>
+
+    <!-- Theme Toggle Script -->
+    <script src="/js/theme-toggle.js"></script>
 
     <!-- Material Design Ripple Effect Script -->
     <script>
