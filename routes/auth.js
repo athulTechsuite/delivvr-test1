@@ -2,9 +2,14 @@ const express = require('express');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const db = require('../config/database');
+const User = require('../models/User');
 const router = express.Router();
 
 const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key-change-in-production';
+const TOKEN_EXPIRY_24H = '24h';
+const TOKEN_EXPIRY_7D = '168h';
+const COOKIE_MAX_AGE_24H = 24 * 60 * 60 * 1000; // 24 hours in milliseconds
+const COOKIE_MAX_AGE_7D = 7 * 24 * 60 * 60 * 1000; // 7 days in milliseconds
 
 // GET /signup - Show signup form
 router.get('/signup', (req, res) => {
@@ -69,11 +74,23 @@ router.get('/login', (req, res) => {
 
 // POST /login - Handle user login
 router.post('/login', async (req, res) => {
-  const { email, password } = req.body;
+  const { email, password, rememberMe } = req.body;
 
   // Basic validation
   if (!email || !password) {
     return res.render('login', { error: 'Email and password are required', message: null });
+  }
+
+  // Validate rememberMe field
+  let rememberMeChecked = false;
+  if (rememberMe !== undefined) {
+    if (typeof rememberMe === 'boolean') {
+      rememberMeChecked = rememberMe;
+    } else if (typeof rememberMe === 'string') {
+      rememberMeChecked = rememberMe === 'true' || rememberMe === 'on';
+    } else {
+      return res.render('login', { error: 'Invalid remember me value', message: null });
+    }
   }
 
   try {
@@ -96,19 +113,48 @@ router.post('/login', async (req, res) => {
       return res.render('login', { error: 'Invalid email or password', message: null });
     }
 
+    // Determine token expiration based on rememberMe
+    const tokenExpiry = rememberMeChecked ? TOKEN_EXPIRY_7D : TOKEN_EXPIRY_24H;
+    const cookieMaxAge = rememberMeChecked ? COOKIE_MAX_AGE_7D : COOKIE_MAX_AGE_24H;
+
     // Generate JWT token
     const token = jwt.sign(
       { userId: user.id, email: user.email },
       JWT_SECRET,
-      { expiresIn: '24h' }
+      { expiresIn: tokenExpiry }
     );
 
     // Set token as HTTP-only cookie
     res.cookie('token', token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
-      maxAge: 24 * 60 * 60 * 1000 // 24 hours
+      sameSite: 'strict',
+      maxAge: cookieMaxAge
     });
+
+    // Handle refresh token if Remember me is checked
+    if (rememberMeChecked) {
+      try {
+        // Generate refresh token pair
+        const { refreshToken, hashedRefreshToken } = User.generateRefreshTokenPair();
+        
+        // Store hashed refresh token in database
+        await User.setRefreshToken(user.id, hashedRefreshToken);
+        
+        // Set refresh token cookie
+        res.cookie('refresh_token', refreshToken, {
+          httpOnly: true,
+          secure: process.env.NODE_ENV === 'production',
+          sameSite: 'strict',
+          maxAge: COOKIE_MAX_AGE_7D
+        });
+      } catch (refreshTokenError) {
+        // Log error but don't prevent login
+        console.error('Refresh token generation error:', refreshTokenError);
+        // Continue with standard 24-hour session fallback
+        console.warn('Falling back to 24-hour session for user:', user.id);
+      }
+    }
 
     // Redirect to dashboard
     res.redirect('/dashboard');
@@ -119,8 +165,33 @@ router.post('/login', async (req, res) => {
 });
 
 // POST /logout - Handle user logout
-router.post('/logout', (req, res) => {
+router.post('/logout', async (req, res) => {
+  try {
+    // Extract userId from JWT if available
+    const token = req.cookies.token;
+    if (token) {
+      try {
+        const decoded = jwt.verify(token, JWT_SECRET);
+        const userId = decoded.userId;
+        
+        if (userId) {
+          // Clear refresh token from database
+          await User.clearRefreshToken(userId);
+        }
+      } catch (jwtError) {
+        // Invalid token - continue with cookie clearing
+        console.warn('Invalid JWT during logout:', jwtError.message);
+      }
+    }
+  } catch (error) {
+    // Log error but continue with logout process
+    console.error('Error during logout refresh token cleanup:', error);
+  }
+
+  // Clear both token and refresh_token cookies
   res.clearCookie('token');
+  res.clearCookie('refresh_token');
+  
   res.redirect('/?message=Logged out successfully');
 });
 
