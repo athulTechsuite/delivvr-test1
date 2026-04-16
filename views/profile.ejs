@@ -85,8 +85,24 @@ const pageTitle = 'Profile';
                             User Profile
                         </h1>
                         <p class="md-body-large md-text-secondary md-margin-bottom-lg">
-                            View your account information and profile details
+                            View and edit your account information and profile details
                         </p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Success/Error Message Display -->
+            <section class="md-section" id="message-section" style="display: none;" aria-live="polite">
+                <div class="md-row md-justify-center">
+                    <div class="md-col-12 md-col-md-8 md-col-lg-6">
+                        <div id="success-message" class="md-alert md-alert-success" role="alert" style="display: none;">
+                            <i class="bi bi-check-circle-fill" aria-hidden="true"></i>
+                            <span id="success-text">Profile updated successfully</span>
+                        </div>
+                        <div id="error-message" class="md-alert md-alert-error" role="alert" style="display: none;">
+                            <i class="bi bi-exclamation-triangle-fill" aria-hidden="true"></i>
+                            <span id="error-text"></span>
+                        </div>
                     </div>
                 </div>
             </section>
@@ -114,6 +130,48 @@ const pageTitle = 'Profile';
                             <!-- Card Body -->
                             <div class="md-card-body">
                                 <% if (typeof user !== 'undefined' && user) { %>
+                                    <!-- Profile Picture Section -->
+                                    <div class="md-profile-item" role="group" aria-labelledby="profile-picture-label">
+                                        <div class="md-profile-item-icon">
+                                            <i class="bi bi-image-fill md-text-primary" aria-hidden="true"></i>
+                                        </div>
+                                        <div class="md-profile-item-content">
+                                            <dt id="profile-picture-label" class="md-label-large md-text-secondary">
+                                                Profile Picture
+                                            </dt>
+                                            <dd class="md-profile-picture-container">
+                                                <!-- View Mode Profile Picture -->
+                                                <div id="profile-picture-view" class="md-profile-picture-view">
+                                                    <% if (user.profile_picture) { %>
+                                                        <img id="profile-picture-display" src="/<%= user.profile_picture %>" alt="Profile picture" class="md-profile-picture" />
+                                                    <% } else { %>
+                                                        <div id="profile-picture-placeholder" class="md-profile-picture-placeholder">
+                                                            <i class="bi bi-person-fill" aria-hidden="true"></i>
+                                                        </div>
+                                                    <% } %>
+                                                </div>
+                                                
+                                                <!-- Edit Mode Profile Picture Upload -->
+                                                <div id="profile-picture-edit" class="md-profile-picture-edit" style="display: none;">
+                                                    <div class="md-file-upload-container">
+                                                        <input type="file" id="profile-picture-input" name="profilePicture" accept="image/jpeg,image/jpg,image/png,image/gif" class="md-file-input" aria-describedby="profile-picture-help" />
+                                                        <label for="profile-picture-input" class="md-file-upload-label" role="button" aria-describedby="profile-picture-help">
+                                                            <i class="bi bi-cloud-upload-fill" aria-hidden="true"></i>
+                                                            Choose New Picture
+                                                        </label>
+                                                        <div id="profile-picture-preview" class="md-profile-picture-preview" style="display: none;">
+                                                            <img id="profile-picture-preview-img" src="" alt="Preview" class="md-profile-picture" />
+                                                        </div>
+                                                        <p id="profile-picture-help" class="md-body-small md-text-secondary">
+                                                            Max file size: 5MB. Formats: JPG, PNG, GIF
+                                                        </p>
+                                                        <div id="profile-picture-error" class="md-field-error" style="display: none;" role="alert" aria-live="polite"></div>
+                                                    </div>
+                                                </div>
+                                            </dd>
+                                        </div>
+                                    </div>
+
                                     <!-- User Name -->
                                     <div class="md-profile-item" role="group" aria-labelledby="name-label">
                                         <div class="md-profile-item-icon">
@@ -123,8 +181,22 @@ const pageTitle = 'Profile';
                                             <dt id="name-label" class="md-label-large md-text-secondary">
                                                 Full Name
                                             </dt>
-                                            <dd class="md-body-large md-text-primary md-font-medium">
-                                                <%= typeof user.name === 'string' ? user.name : 'N/A' %>
+                                            <dd class="md-profile-field-container">
+                                                <!-- View Mode -->
+                                                <span id="name-view" class="md-body-large md-text-primary md-font-medium">
+                                                    <%= typeof user.name === 'string' ? user.name : 'N/A' %>
+                                                </span>
+                                                
+                                                <!-- Edit Mode -->
+                                                <div id="name-edit" class="md-field-group" style="display: none;">
+                                                    <input type="text" id="name-input" name="name" value="<%= typeof user.name === 'string' ? user.name : '' %>" 
+                                                           class="md-text-field" placeholder="Enter your full name" 
+                                                           aria-describedby="name-help name-error" maxlength="50" />
+                                                    <p id="name-help" class="md-body-small md-text-secondary">
+                                                        2-50 characters, letters and spaces only
+                                                    </p>
+                                                    <div id="name-error" class="md-field-error" style="display: none;" role="alert" aria-live="polite"></div>
+                                                </div>
                                             </dd>
                                         </div>
                                     </div>
@@ -138,8 +210,22 @@ const pageTitle = 'Profile';
                                             <dt id="email-label" class="md-label-large md-text-secondary">
                                                 Email Address
                                             </dt>
-                                            <dd class="md-body-large md-text-primary md-font-medium">
-                                                <%= typeof user.email === 'string' ? user.email : 'N/A' %>
+                                            <dd class="md-profile-field-container">
+                                                <!-- View Mode -->
+                                                <span id="email-view" class="md-body-large md-text-primary md-font-medium">
+                                                    <%= typeof user.email === 'string' ? user.email : 'N/A' %>
+                                                </span>
+                                                
+                                                <!-- Edit Mode -->
+                                                <div id="email-edit" class="md-field-group" style="display: none;">
+                                                    <input type="email" id="email-input" name="email" value="<%= typeof user.email === 'string' ? user.email : '' %>" 
+                                                           class="md-text-field" placeholder="Enter your email address" 
+                                                           aria-describedby="email-help email-error" />
+                                                    <p id="email-help" class="md-body-small md-text-secondary">
+                                                        Valid email format required
+                                                    </p>
+                                                    <div id="email-error" class="md-field-error" style="display: none;" role="alert" aria-live="polite"></div>
+                                                </div>
                                             </dd>
                                         </div>
                                     </div>
@@ -222,10 +308,35 @@ const pageTitle = 'Profile';
 
                             <!-- Card Actions -->
                             <div class="md-card-actions">
-                                <a href="/dashboard" class="md-button md-button-text" role="button">
-                                    <i class="bi bi-arrow-left" aria-hidden="true"></i>
-                                    Back to Dashboard
-                                </a>
+                                <!-- View Mode Actions -->
+                                <div id="view-actions" class="md-button-group">
+                                    <button id="edit-profile-btn" type="button" class="md-button md-button-filled" aria-describedby="edit-profile-help">
+                                        <i class="bi bi-pencil-square" aria-hidden="true"></i>
+                                        Edit Profile
+                                    </button>
+                                    <a href="/dashboard" class="md-button md-button-text" role="button">
+                                        <i class="bi bi-arrow-left" aria-hidden="true"></i>
+                                        Back to Dashboard
+                                    </a>
+                                </div>
+
+                                <!-- Edit Mode Actions -->
+                                <div id="edit-actions" class="md-button-group" style="display: none;">
+                                    <button id="save-profile-btn" type="button" class="md-button md-button-filled" aria-describedby="save-profile-help">
+                                        <span id="save-btn-text">
+                                            <i class="bi bi-check-lg" aria-hidden="true"></i>
+                                            Save Changes
+                                        </span>
+                                        <span id="save-btn-loading" style="display: none;">
+                                            <i class="bi bi-hourglass-split" aria-hidden="true"></i>
+                                            Saving...
+                                        </span>
+                                    </button>
+                                    <button id="cancel-profile-btn" type="button" class="md-button md-button-outlined">
+                                        <i class="bi bi-x-lg" aria-hidden="true"></i>
+                                        Cancel
+                                    </button>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -306,6 +417,431 @@ const pageTitle = 'Profile';
                     }
                 });
             }
+        });
+    </script>
+
+    <!-- Profile Editing Script -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Constants
+            const MAX_FILE_SIZE = 5242880; // 5MB
+            const ALLOWED_TYPES = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif'];
+            const NAME_PATTERN = /^[a-zA-Z\s]+$/;
+            const MIN_NAME_LENGTH = 2;
+            const MAX_NAME_LENGTH = 50;
+            const MESSAGE_DISPLAY_DURATION = 3000;
+
+            // Elements
+            const editProfileBtn = document.getElementById('edit-profile-btn');
+            const saveProfileBtn = document.getElementById('save-profile-btn');
+            const cancelProfileBtn = document.getElementById('cancel-profile-btn');
+            const viewActions = document.getElementById('view-actions');
+            const editActions = document.getElementById('edit-actions');
+            const messageSection = document.getElementById('message-section');
+            const successMessage = document.getElementById('success-message');
+            const errorMessage = document.getElementById('error-message');
+            const successText = document.getElementById('success-text');
+            const errorText = document.getElementById('error-text');
+            const saveBtnText = document.getElementById('save-btn-text');
+            const saveBtnLoading = document.getElementById('save-btn-loading');
+
+            // Profile Picture Elements
+            const profilePictureView = document.getElementById('profile-picture-view');
+            const profilePictureEdit = document.getElementById('profile-picture-edit');
+            const profilePictureInput = document.getElementById('profile-picture-input');
+            const profilePicturePreview = document.getElementById('profile-picture-preview');
+            const profilePicturePreviewImg = document.getElementById('profile-picture-preview-img');
+            const profilePictureError = document.getElementById('profile-picture-error');
+
+            // Field Elements
+            const nameView = document.getElementById('name-view');
+            const nameEdit = document.getElementById('name-edit');
+            const nameInput = document.getElementById('name-input');
+            const nameError = document.getElementById('name-error');
+            const emailView = document.getElementById('email-view');
+            const emailEdit = document.getElementById('email-edit');
+            const emailInput = document.getElementById('email-input');
+            const emailError = document.getElementById('email-error');
+
+            // Store original values
+            let originalName = nameInput ? nameInput.value : '';
+            let originalEmail = emailInput ? emailInput.value : '';
+            let selectedFile = null;
+
+            // Toggle between view and edit modes
+            function toggleEditMode(isEditing) {
+                if (isEditing) {
+                    // Switch to edit mode
+                    viewActions.style.display = 'none';
+                    editActions.style.display = 'block';
+                    profilePictureView.style.display = 'none';
+                    profilePictureEdit.style.display = 'block';
+                    nameView.style.display = 'none';
+                    nameEdit.style.display = 'block';
+                    emailView.style.display = 'none';
+                    emailEdit.style.display = 'block';
+                    
+                    // Focus first input
+                    if (nameInput) {
+                        nameInput.focus();
+                    }
+                } else {
+                    // Switch to view mode
+                    viewActions.style.display = 'block';
+                    editActions.style.display = 'none';
+                    profilePictureView.style.display = 'block';
+                    profilePictureEdit.style.display = 'none';
+                    nameView.style.display = 'block';
+                    nameEdit.style.display = 'none';
+                    emailView.style.display = 'block';
+                    emailEdit.style.display = 'none';
+                    
+                    // Clear validation errors
+                    clearFieldError('name');
+                    clearFieldError('email');
+                    clearFieldError('profile-picture');
+                }
+            }
+
+            // Validation functions
+            function validateName(name) {
+                if (!name || typeof name !== 'string') {
+                    return 'Name is required';
+                }
+                
+                const trimmedName = name.trim();
+                if (trimmedName.length < MIN_NAME_LENGTH || trimmedName.length > MAX_NAME_LENGTH) {
+                    return `Name must be between ${MIN_NAME_LENGTH} and ${MAX_NAME_LENGTH} characters`;
+                }
+                
+                if (!NAME_PATTERN.test(trimmedName)) {
+                    return 'Name can only contain letters and spaces';
+                }
+                
+                return null;
+            }
+
+            function validateEmail(email) {
+                if (!email || typeof email !== 'string') {
+                    return 'Email is required';
+                }
+                
+                const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                if (!emailPattern.test(email.trim())) {
+                    return 'Please enter a valid email address';
+                }
+                
+                return null;
+            }
+
+            function validateProfilePicture(file) {
+                if (!file) {
+                    return null; // Optional field
+                }
+                
+                if (file.size > MAX_FILE_SIZE) {
+                    return 'File size must be less than 5MB';
+                }
+                
+                if (!ALLOWED_TYPES.includes(file.type)) {
+                    return 'Please select a valid image file (JPG, PNG, GIF)';
+                }
+                
+                return null;
+            }
+
+            // Display field error
+            function showFieldError(fieldName, message) {
+                const errorElement = document.getElementById(`${fieldName}-error`);
+                const inputElement = document.getElementById(`${fieldName}-input`);
+                
+                if (errorElement && message) {
+                    errorElement.textContent = message;
+                    errorElement.style.display = 'block';
+                    errorElement.setAttribute('aria-live', 'polite');
+                }
+                
+                if (inputElement) {
+                    inputElement.classList.add('md-text-field-error');
+                    inputElement.setAttribute('aria-invalid', 'true');
+                }
+            }
+
+            // Clear field error
+            function clearFieldError(fieldName) {
+                const errorElement = document.getElementById(`${fieldName}-error`);
+                const inputElement = document.getElementById(`${fieldName}-input`);
+                
+                if (errorElement) {
+                    errorElement.style.display = 'none';
+                    errorElement.textContent = '';
+                }
+                
+                if (inputElement) {
+                    inputElement.classList.remove('md-text-field-error');
+                    inputElement.removeAttribute('aria-invalid');
+                }
+            }
+
+            // Show message
+            function showMessage(type, message) {
+                messageSection.style.display = 'block';
+                
+                if (type === 'success') {
+                    successMessage.style.display = 'block';
+                    errorMessage.style.display = 'none';
+                    successText.textContent = message;
+                } else {
+                    errorMessage.style.display = 'block';
+                    successMessage.style.display = 'none';
+                    errorText.textContent = message;
+                }
+                
+                // Auto-hide after duration
+                setTimeout(() => {
+                    hideMessage();
+                }, MESSAGE_DISPLAY_DURATION);
+                
+                // Scroll to message
+                messageSection.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+
+            // Hide message
+            function hideMessage() {
+                messageSection.style.display = 'none';
+                successMessage.style.display = 'none';
+                errorMessage.style.display = 'none';
+            }
+
+            // Set loading state
+            function setLoadingState(isLoading) {
+                if (isLoading) {
+                    saveBtnText.style.display = 'none';
+                    saveBtnLoading.style.display = 'inline-flex';
+                    saveProfileBtn.disabled = true;
+                    cancelProfileBtn.disabled = true;
+                } else {
+                    saveBtnText.style.display = 'inline-flex';
+                    saveBtnLoading.style.display = 'none';
+                    saveProfileBtn.disabled = false;
+                    cancelProfileBtn.disabled = false;
+                }
+            }
+
+            // Handle profile picture change
+            if (profilePictureInput) {
+                profilePictureInput.addEventListener('change', function(event) {
+                    const file = event.target.files[0];
+                    clearFieldError('profile-picture');
+                    
+                    if (file) {
+                        const error = validateProfilePicture(file);
+                        if (error) {
+                            showFieldError('profile-picture', error);
+                            profilePicturePreview.style.display = 'none';
+                            selectedFile = null;
+                            return;
+                        }
+                        
+                        selectedFile = file;
+                        
+                        // Show preview
+                        const reader = new FileReader();
+                        reader.onload = function(e) {
+                            profilePicturePreviewImg.src = e.target.result;
+                            profilePicturePreview.style.display = 'block';
+                        };
+                        reader.readAsDataURL(file);
+                    } else {
+                        profilePicturePreview.style.display = 'none';
+                        selectedFile = null;
+                    }
+                });
+            }
+
+            // Input validation on blur
+            if (nameInput) {
+                nameInput.addEventListener('blur', function() {
+                    const error = validateName(this.value);
+                    if (error) {
+                        showFieldError('name', error);
+                    } else {
+                        clearFieldError('name');
+                    }
+                });
+            }
+
+            if (emailInput) {
+                emailInput.addEventListener('blur', function() {
+                    const error = validateEmail(this.value);
+                    if (error) {
+                        showFieldError('email', error);
+                    } else {
+                        clearFieldError('email');
+                    }
+                });
+            }
+
+            // Edit button handler
+            if (editProfileBtn) {
+                editProfileBtn.addEventListener('click', function() {
+                    toggleEditMode(true);
+                });
+            }
+
+            // Cancel button handler
+            if (cancelProfileBtn) {
+                cancelProfileBtn.addEventListener('click', function() {
+                    // Reset values
+                    if (nameInput) {
+                        nameInput.value = originalName;
+                    }
+                    if (emailInput) {
+                        emailInput.value = originalEmail;
+                    }
+                    if (profilePictureInput) {
+                        profilePictureInput.value = '';
+                    }
+                    
+                    selectedFile = null;
+                    profilePicturePreview.style.display = 'none';
+                    hideMessage();
+                    toggleEditMode(false);
+                });
+            }
+
+            // Save button handler
+            if (saveProfileBtn) {
+                saveProfileBtn.addEventListener('click', async function() {
+                    // Validate all fields
+                    let hasErrors = false;
+                    
+                    const nameError = validateName(nameInput?.value);
+                    const emailError = validateEmail(emailInput?.value);
+                    const pictureError = validateProfilePicture(selectedFile);
+                    
+                    if (nameError) {
+                        showFieldError('name', nameError);
+                        hasErrors = true;
+                    } else {
+                        clearFieldError('name');
+                    }
+                    
+                    if (emailError) {
+                        showFieldError('email', emailError);
+                        hasErrors = true;
+                    } else {
+                        clearFieldError('email');
+                    }
+                    
+                    if (pictureError) {
+                        showFieldError('profile-picture', pictureError);
+                        hasErrors = true;
+                    } else {
+                        clearFieldError('profile-picture');
+                    }
+                    
+                    if (hasErrors) {
+                        return;
+                    }
+                    
+                    // Prepare form data
+                    const formData = new FormData();
+                    formData.append('name', nameInput?.value?.trim() || '');
+                    formData.append('email', emailInput?.value?.trim() || '');
+                    
+                    if (selectedFile) {
+                        formData.append('profilePicture', selectedFile);
+                    }
+                    
+                    try {
+                        setLoadingState(true);
+                        hideMessage();
+                        
+                        const response = await fetch('/profile', {
+                            method: 'POST',
+                            body: formData,
+                            credentials: 'include'
+                        });
+                        
+                        const data = await response.json();
+                        
+                        if (response.ok && data.success) {
+                            // Update view with new data
+                            if (nameView && data.user?.name) {
+                                nameView.textContent = data.user.name;
+                                originalName = data.user.name;
+                            }
+                            
+                            if (emailView && data.user?.email) {
+                                emailView.textContent = data.user.email;
+                                originalEmail = data.user.email;
+                            }
+                            
+                            // Update profile picture display
+                            if (data.user?.profile_picture) {
+                                const profilePictureDisplay = document.getElementById('profile-picture-display');
+                                const profilePicturePlaceholder = document.getElementById('profile-picture-placeholder');
+                                
+                                if (profilePicturePlaceholder) {
+                                    profilePicturePlaceholder.style.display = 'none';
+                                }
+                                
+                                if (profilePictureDisplay) {
+                                    profilePictureDisplay.src = '/' + data.user.profile_picture;
+                                    profilePictureDisplay.style.display = 'block';
+                                } else {
+                                    // Create image element if it doesn't exist
+                                    const img = document.createElement('img');
+                                    img.id = 'profile-picture-display';
+                                    img.src = '/' + data.user.profile_picture;
+                                    img.alt = 'Profile picture';
+                                    img.className = 'md-profile-picture';
+                                    profilePictureView.appendChild(img);
+                                }
+                            }
+                            
+                            // Reset form state
+                            selectedFile = null;
+                            if (profilePictureInput) {
+                                profilePictureInput.value = '';
+                            }
+                            profilePicturePreview.style.display = 'none';
+                            
+                            showMessage('success', 'Profile updated successfully');
+                            
+                            // Switch to view mode after message
+                            setTimeout(() => {
+                                toggleEditMode(false);
+                            }, MESSAGE_DISPLAY_DURATION);
+                            
+                        } else {
+                            const errorMessage = data.message || 'Failed to update profile';
+                            showMessage('error', errorMessage);
+                            
+                            // Handle field-specific errors
+                            if (data.errors) {
+                                Object.keys(data.errors).forEach(field => {
+                                    showFieldError(field, data.errors[field]);
+                                });
+                            }
+                        }
+                        
+                    } catch (error) {
+                        console.error('Profile update error:', error);
+                        showMessage('error', 'An error occurred while updating your profile. Please try again.');
+                    } finally {
+                        setLoadingState(false);
+                    }
+                });
+            }
+
+            // Handle keyboard navigation
+            document.addEventListener('keydown', function(event) {
+                if (event.key === 'Escape' && editActions.style.display === 'block') {
+                    cancelProfileBtn?.click();
+                }
+            });
         });
     </script>
     

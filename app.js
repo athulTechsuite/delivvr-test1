@@ -6,9 +6,16 @@ const sqlite3 = require('sqlite3').verbose();
 const path = require('path');
 const cookieParser = require('cookie-parser');
 const { body, validationResult } = require('express-validator');
+const fs = require('fs');
+const multer = require('multer');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
+
+// Constants
+const MAX_FILE_SIZE = 5242880; // 5MB in bytes
+const ALLOWED_EXTENSIONS = ['.jpg', '.jpeg', '.png', '.gif'];
+const UPLOADS_DIR = path.join(__dirname, 'public', 'uploads');
 
 // Ensure JWT_SECRET is provided - fail if not set
 if (!process.env.JWT_SECRET) {
@@ -16,6 +23,41 @@ if (!process.env.JWT_SECRET) {
     process.exit(1);
 }
 const JWT_SECRET = process.env.JWT_SECRET;
+
+// Create uploads directory if it doesn't exist
+if (!fs.existsSync(UPLOADS_DIR)) {
+    fs.mkdirSync(UPLOADS_DIR, { recursive: true });
+}
+
+// Multer configuration for profile picture upload
+const storage = multer.diskStorage({
+    destination: function (req, file, cb) {
+        cb(null, UPLOADS_DIR);
+    },
+    filename: function (req, file, cb) {
+        const ext = path.extname(file.originalname).toLowerCase();
+        const userId = req.user.id;
+        const timestamp = Date.now();
+        cb(null, `${userId}-${timestamp}${ext}`);
+    }
+});
+
+const fileFilter = (req, file, cb) => {
+    const ext = path.extname(file.originalname).toLowerCase();
+    if (ALLOWED_EXTENSIONS.includes(ext)) {
+        cb(null, true);
+    } else {
+        cb(new Error('Only image files (jpg, jpeg, png, gif) are allowed'));
+    }
+};
+
+const uploadProfilePicture = multer({
+    storage: storage,
+    limits: {
+        fileSize: MAX_FILE_SIZE
+    },
+    fileFilter: fileFilter
+});
 
 // Database setup - use environment variable or fallback to default
 const DB_PATH = process.env.DB_PATH || path.join(__dirname, 'database.sqlite');
@@ -30,6 +72,13 @@ db.serialize(() => {
         password TEXT NOT NULL,
         created_at DATETIME DEFAULT CURRENT_TIMESTAMP
     )`);
+    
+    // Add profile_picture column if it doesn't exist
+    db.run(`ALTER TABLE users ADD COLUMN profile_picture TEXT`, (err) => {
+        if (err && !err.message.includes('duplicate column name')) {
+            console.error('Error adding profile_picture column:', err);
+        }
+    });
 });
 
 // Middleware
@@ -37,6 +86,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(cookieParser());
 app.use(express.static('public'));
+app.use('/uploads', express.static(UPLOADS_DIR));
 
 // View engine setup
 app.set('view engine', 'ejs');
@@ -90,6 +140,32 @@ const loginValidation = [
         .withMessage('Password is required')
 ];
 
+const profileUpdateValidation = [
+    body('name')
+        .trim()
+        .isLength({ min: 2, max: 50 })
+        .withMessage('Name must be between 2 and 50 characters')
+        .matches(/^[a-zA-Z\s]+$/)
+        .withMessage('Name can only contain letters and spaces'),
+    body('email')
+        .trim()
+        .isEmail()
+        .normalizeEmail()
+        .withMessage('Please provide a valid email address')
+];
+
+// Helper function to delete old profile picture
+const deleteOldProfilePicture = (profilePicturePath) => {
+    if (profilePicturePath) {
+        const fullPath = path.join(__dirname, 'public', profilePicturePath);
+        fs.unlink(fullPath, (err) => {
+            if (err && err.code !== 'ENOENT') {
+                console.error('Error deleting old profile picture:', err);
+            }
+        });
+    }
+};
+
 // Routes
 app.get('/', (req, res) => {
     res.render('index');
@@ -123,8 +199,8 @@ app.get('/profile', authenticateToken, (req, res) => {
         return res.redirect('/login');
     }
     
-    // Get user information from database using parameterized query
-    db.get('SELECT name, email, created_at FROM users WHERE id = ?', [userId], (err, user) => {
+    // Get user information from database including profile picture
+    db.get('SELECT name, email, created_at, profile_picture FROM users WHERE id = ?', [userId], (err, user) => {
         if (err) {
             console.error('Database error fetching user profile:', err);
             return res.redirect('/login');
@@ -145,8 +221,154 @@ app.get('/profile', authenticateToken, (req, res) => {
         // Render profile template with user data
         res.render('profile', { 
             user: user,
-            title: 'Profile'
+            title: 'Profile',
+            success: null,
+            errors: null
         });
+    });
+});
+
+app.post('/profile', authenticateToken, uploadProfilePicture.single('profilePicture'), profileUpdateValidation, (req, res) => {
+    const errors = validationResult(req);
+    const userId = req.user.id;
+    
+    // Validate user ID
+    if (!userId || typeof userId !== 'number') {
+        return res.status(401).redirect('/login');
+    }
+    
+    // Check for validation errors
+    if (!errors.isEmpty()) {
+        // Get current user data to re-render form
+        db.get('SELECT name, email, created_at, profile_picture FROM users WHERE id = ?', [userId], (err, user) => {
+            if (err || !user) {
+                return res.redirect('/login');
+            }
+            return res.render('profile', {
+                user: user,
+                title: 'Profile',
+                success: null,
+                errors: errors.array()
+            });
+        });
+        return;
+    }
+    
+    const { name, email } = req.body;
+    
+    // Get current user data to check for existing profile picture
+    db.get('SELECT email, profile_picture FROM users WHERE id = ?', [userId], (err, currentUser) => {
+        if (err) {
+            console.error('Database error fetching current user data:', err);
+            return res.status(500).json({ error: 'Database error' });
+        }
+        
+        if (!currentUser) {
+            return res.status(404).json({ error: 'User not found' });
+        }
+        
+        // Check if email is being changed and if it's already taken by another user
+        if (email !== currentUser.email) {
+            db.get('SELECT id FROM users WHERE email = ? AND id != ?', [email, userId], (err, existingUser) => {
+                if (err) {
+                    console.error('Database error checking email uniqueness:', err);
+                    return res.status(500).json({ error: 'Database error' });
+                }
+                
+                if (existingUser) {
+                    // Get current user data to re-render form
+                    db.get('SELECT name, email, created_at, profile_picture FROM users WHERE id = ?', [userId], (err, user) => {
+                        if (err || !user) {
+                            return res.redirect('/login');
+                        }
+                        return res.render('profile', {
+                            user: user,
+                            title: 'Profile',
+                            success: null,
+                            errors: [{ msg: 'Email address is already in use' }]
+                        });
+                    });
+                    return;
+                }
+                
+                // Email is unique, proceed with update
+                updateUserProfile();
+            });
+        } else {
+            // Email not changed, proceed with update
+            updateUserProfile();
+        }
+        
+        function updateUserProfile() {
+            let profilePicturePath = currentUser.profile_picture;
+            let query = 'UPDATE users SET name = ?, email = ?';
+            let params = [name, email];
+            
+            // Handle profile picture upload
+            if (req.file) {
+                profilePicturePath = `uploads/${req.file.filename}`;
+                query += ', profile_picture = ?';
+                params.push(profilePicturePath);
+                
+                // Delete old profile picture if it exists
+                if (currentUser.profile_picture) {
+                    deleteOldProfilePicture(currentUser.profile_picture);
+                }
+            }
+            
+            query += ' WHERE id = ?';
+            params.push(userId);
+            
+            // Update user in database
+            db.run(query, params, function(err) {
+                if (err) {
+                    console.error('Database error updating profile:', err);
+                    
+                    // Delete uploaded file if database update fails
+                    if (req.file) {
+                        fs.unlink(req.file.path, (unlinkErr) => {
+                            if (unlinkErr) {
+                                console.error('Error deleting uploaded file after database error:', unlinkErr);
+                            }
+                        });
+                    }
+                    
+                    // Get current user data to re-render form
+                    db.get('SELECT name, email, created_at, profile_picture FROM users WHERE id = ?', [userId], (err, user) => {
+                        if (err || !user) {
+                            return res.redirect('/login');
+                        }
+                        return res.render('profile', {
+                            user: user,
+                            title: 'Profile',
+                            success: null,
+                            errors: [{ msg: 'Failed to update profile' }]
+                        });
+                    });
+                    return;
+                }
+                
+                // Get updated user data
+                db.get('SELECT name, email, created_at, profile_picture FROM users WHERE id = ?', [userId], (err, updatedUser) => {
+                    if (err) {
+                        console.error('Database error fetching updated user data:', err);
+                        return res.redirect('/login');
+                    }
+                    
+                    if (!updatedUser) {
+                        return res.redirect('/login');
+                    }
+                    
+                    // Render profile with success message
+                    res.render('profile', {
+                        user: updatedUser,
+                        title: 'Profile',
+                        success: 'Profile updated successfully',
+                        errors: null
+                    });
+                });
+            });
+        }
     });
 });
 
@@ -246,6 +468,46 @@ app.use((req, res) => {
 
 app.use((err, req, res, next) => {
     console.error(err.stack);
+    
+    // Handle multer errors
+    if (err instanceof multer.MulterError) {
+        if (err.code === 'LIMIT_FILE_SIZE') {
+            // Get current user data to re-render form
+            if (req.user && req.user.id) {
+                db.get('SELECT name, email, created_at, profile_picture FROM users WHERE id = ?', [req.user.id], (dbErr, user) => {
+                    if (dbErr || !user) {
+                        return res.redirect('/login');
+                    }
+                    return res.render('profile', {
+                        user: user,
+                        title: 'Profile',
+                        success: null,
+                        errors: [{ msg: 'File size too large. Maximum size is 5MB.' }]
+                    });
+                });
+                return;
+            }
+        }
+    }
+    
+    // Handle file filter errors
+    if (err.message.includes('Only image files')) {
+        if (req.user && req.user.id) {
+            db.get('SELECT name, email, created_at, profile_picture FROM users WHERE id = ?', [req.user.id], (dbErr, user) => {
+                if (dbErr || !user) {
+                    return res.redirect('/login');
+                }
+                return res.render('profile', {
+                    user: user,
+                    title: 'Profile',
+                    success: null,
+                    errors: [{ msg: err.message }]
+                });
+            });
+            return;
+        }
+    }
+    
     res.status(500).send('Something broke!');
 });
 
