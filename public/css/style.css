@@ -1655,6 +1655,478 @@ h6, .md-h6 {
   border-bottom-color: rgba(255, 255, 255, 0.12);
 }
 
+/* Material Design Profile Page Components */
+.md-profile-card {
+  background-color: var(--md-surface);
+  border-radius: var(--md-border-radius-lg);
+  box-shadow: var(--md-elevation-3);
+  overflow: hidden;
+  margin-bottom: var(--md-spacing-xl);
+  transition: all var(--md-transition-standard);
+  position: relative;
+  isolation: isolate;
+}
+
+.md-profile-card:hover {
+  box-shadow: var(--md-elevation-6);
+  transform: translateY(-2px);
+}
+
+/* Profile Section Container */
+.md-profile-section {
+  padding: var(--md-spacing-xl);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.12);
+  transition: border-color var(--md-transition-standard);
+}
+
+.md-profile-section:last-child {
+  border-bottom: none;
+}
+
+.md-profile-section-title {
+  font-size: var(--md-font-size-h6);
+  font-weight: var(--md-font-weight-medium);
+  margin: 0 0 var(--md-spacing-lg) 0;
+  color: var(--md-text-primary);
+  display: flex;
+  align-items: center;
+  gap: var(--md-spacing-sm);
+}
+
+.md-profile-section-title i {
+  color: var(--md-primary);
+  font-size: 20px;
+}
+
+/* Editable Field Components */
+.md-editable-field {
+  position: relative;
+  margin-bottom: var(--md-spacing-lg);
+  min-height: 72px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  transition: all var(--md-transition-standard);
+}
+
+.md-editable-field:last-child {
+  margin-bottom: 0;
+}
+
+.md-editable-field-label {
+  font-size: var(--md-font-size-caption);
+  font-weight: var(--md-font-weight-medium);
+  color: var(--md-text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: var(--md-spacing-xs);
+  transition: color var(--md-transition-standard);
+}
+
+.md-editable-field-value {
+  font-size: var(--md-font-size-body1);
+  color: var(--md-text-primary);
+  padding: var(--md-spacing-sm) 0;
+  min-height: 40px;
+  display: flex;
+  align-items: center;
+  border-radius: var(--md-border-radius-sm);
+  transition: all var(--md-transition-standard);
+  position: relative;
+  cursor: text;
+}
+
+.md-editable-field-value:hover {
+  background-color: rgba(0, 0, 0, 0.04);
+  padding-left: var(--md-spacing-md);
+  padding-right: var(--md-spacing-md);
+}
+
+.md-editable-field-value:focus-within {
+  background-color: transparent;
+  outline: 2px solid var(--md-primary);
+  outline-offset: 2px;
+  padding-left: var(--md-spacing-md);
+  padding-right: var(--md-spacing-md);
+}
+
+.md-editable-field--editing .md-editable-field-value {
+  background-color: var(--md-surface);
+  border: 2px solid var(--md-primary);
+  box-shadow: var(--md-elevation-2);
+  padding: var(--md-spacing-md);
+}
+
+.md-editable-field--readonly .md-editable-field-value {
+  cursor: default;
+  color: var(--md-text-secondary);
+}
+
+.md-editable-field--readonly .md-editable-field-value:hover {
+  background-color: transparent;
+  padding: var(--md-spacing-sm) 0;
+}
+
+.md-editable-field-input {
+  width: 100%;
+  border: none;
+  outline: none;
+  background: transparent;
+  font-size: var(--md-font-size-body1);
+  font-family: var(--md-font-family);
+  color: var(--md-text-primary);
+  padding: 0;
+}
+
+.md-editable-field-input::placeholder {
+  color: var(--md-text-hint);
+}
+
+/* Profile Avatar Placeholder */
+.md-profile-avatar {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--md-primary) 0%, var(--md-primary-dark) 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto var(--md-spacing-lg);
+  position: relative;
+  overflow: hidden;
+  box-shadow: var(--md-elevation-4);
+  transition: all var(--md-transition-standard);
+}
+
+.md-profile-avatar:hover {
+  transform: scale(1.02);
+  box-shadow: var(--md-elevation-6);
+}
+
+.md-profile-avatar-icon {
+  font-size: 48px;
+  color: var(--md-text-primary-on-primary);
+  transition: transform var(--md-transition-standard);
+}
+
+.md-profile-avatar:hover .md-profile-avatar-icon {
+  transform: scale(1.1);
+}
+
+.md-profile-avatar-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity var(--md-transition-standard);
+  cursor: pointer;
+}
+
+.md-profile-avatar:hover .md-profile-avatar-overlay {
+  opacity: 1;
+}
+
+.md-profile-avatar-overlay i {
+  font-size: 24px;
+  color: white;
+}
+
+/* Profile Actions */
+.md-profile-actions {
+  display: flex;
+  gap: var(--md-spacing-md);
+  justify-content: flex-end;
+  margin-top: var(--md-spacing-lg);
+  padding-top: var(--md-spacing-lg);
+  border-top: 1px solid rgba(0, 0, 0, 0.12);
+  transition: border-color var(--md-transition-standard);
+}
+
+.md-profile-actions--full-width {
+  justify-content: space-between;
+}
+
+.md-profile-actions--center {
+  justify-content: center;
+}
+
+/* Password Change Section */
+.md-password-section {
+  background: linear-gradient(135deg, rgba(255, 152, 0, 0.05) 0%, rgba(255, 152, 0, 0.02) 100%);
+  border-left: 4px solid var(--md-warning);
+  border-radius: var(--md-border-radius-md);
+  position: relative;
+}
+
+.md-password-section::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -4px;
+  bottom: 0;
+  width: 4px;
+  background: linear-gradient(to bottom, var(--md-warning) 0%, var(--md-warning-light) 100%);
+  border-radius: 2px;
+}
+
+.md-password-section .md-profile-section-title {
+  color: var(--md-warning-dark);
+}
+
+.md-password-section .md-profile-section-title i {
+  color: var(--md-warning);
+}
+
+.md-password-field {
+  position: relative;
+}
+
+.md-password-field .md-form-control {
+  padding-right: var(--md-spacing-xxl);
+}
+
+.md-password-toggle {
+  position: absolute;
+  right: var(--md-spacing-md);
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  color: var(--md-text-secondary);
+  cursor: pointer;
+  padding: var(--md-spacing-xs);
+  border-radius: var(--md-border-radius-sm);
+  transition: all var(--md-transition-standard);
+  z-index: 2;
+}
+
+.md-password-toggle:hover {
+  background-color: rgba(0, 0, 0, 0.04);
+  color: var(--md-text-primary);
+}
+
+.md-password-strength {
+  margin-top: var(--md-spacing-sm);
+  display: flex;
+  align-items: center;
+  gap: var(--md-spacing-sm);
+}
+
+.md-password-strength-bar {
+  flex: 1;
+  height: 4px;
+  background-color: rgba(0, 0, 0, 0.12);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.md-password-strength-fill {
+  height: 100%;
+  border-radius: 2px;
+  transition: all var(--md-transition-standard);
+  transform-origin: left;
+}
+
+.md-password-strength--weak .md-password-strength-fill {
+  width: 25%;
+  background-color: var(--md-error);
+}
+
+.md-password-strength--fair .md-password-strength-fill {
+  width: 50%;
+  background-color: var(--md-warning);
+}
+
+.md-password-strength--good .md-password-strength-fill {
+  width: 75%;
+  background-color: var(--md-info);
+}
+
+.md-password-strength--strong .md-password-strength-fill {
+  width: 100%;
+  background-color: var(--md-success);
+}
+
+.md-password-strength-text {
+  font-size: var(--md-font-size-caption);
+  font-weight: var(--md-font-weight-medium);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  min-width: 60px;
+}
+
+.md-password-strength--weak .md-password-strength-text {
+  color: var(--md-error);
+}
+
+.md-password-strength--fair .md-password-strength-text {
+  color: var(--md-warning);
+}
+
+.md-password-strength--good .md-password-strength-text {
+  color: var(--md-info);
+}
+
+.md-password-strength--strong .md-password-strength-text {
+  color: var(--md-success);
+}
+
+/* Dark Theme Profile Overrides */
+.dark-theme .md-profile-card {
+  background-color: var(--md-surface-2dp);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.dark-theme .md-profile-section {
+  border-bottom-color: rgba(255, 255, 255, 0.12);
+}
+
+.dark-theme .md-editable-field-value:hover {
+  background-color: rgba(255, 255, 255, 0.04);
+}
+
+.dark-theme .md-editable-field--editing .md-editable-field-value {
+  background-color: var(--md-surface-4dp);
+}
+
+.dark-theme .md-profile-actions {
+  border-top-color: rgba(255, 255, 255, 0.12);
+}
+
+.dark-theme .md-password-section {
+  background: linear-gradient(135deg, rgba(255, 183, 77, 0.08) 0%, rgba(255, 183, 77, 0.04) 100%);
+  border-left-color: var(--md-warning);
+}
+
+.dark-theme .md-password-toggle:hover {
+  background-color: rgba(255, 255, 255, 0.04);
+}
+
+.dark-theme .md-password-strength-bar {
+  background-color: rgba(255, 255, 255, 0.12);
+}
+
+/* Profile Responsive Design */
+@media (max-width: 575.98px) {
+  .md-profile-card {
+    margin: 0 -var(--md-spacing-md) var(--md-spacing-xl);
+    border-radius: 0;
+  }
+  
+  .md-profile-section {
+    padding: var(--md-spacing-lg) var(--md-spacing-md);
+  }
+  
+  .md-profile-actions {
+    flex-direction: column;
+    gap: var(--md-spacing-sm);
+  }
+  
+  .md-profile-actions .md-button {
+    width: 100%;
+    justify-content: center;
+  }
+  
+  .md-profile-avatar {
+    width: 100px;
+    height: 100px;
+    margin-bottom: var(--md-spacing-md);
+  }
+  
+  .md-profile-avatar-icon {
+    font-size: 40px;
+  }
+}
+
+@media (min-width: 576px) and (max-width: 767.98px) {
+  .md-profile-section {
+    padding: var(--md-spacing-xl) var(--md-spacing-lg);
+  }
+  
+  .md-profile-actions {
+    flex-wrap: wrap;
+  }
+}
+
+@media (min-width: 768px) {
+  .md-profile-card {
+    margin-bottom: var(--md-spacing-xl);
+  }
+  
+  .md-editable-field {
+    min-height: 80px;
+  }
+  
+  .md-profile-actions {
+    flex-direction: row;
+    justify-content: flex-end;
+  }
+}
+
+@media (min-width: 992px) {
+  .md-profile-section {
+    padding: var(--md-spacing-xxl);
+  }
+  
+  .md-profile-avatar {
+    width: 140px;
+    height: 140px;
+  }
+  
+  .md-profile-avatar-icon {
+    font-size: 56px;
+  }
+}
+
+/* Profile Animation Enhancements */
+@keyframes md-profile-fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.md-profile-card {
+  animation: md-profile-fade-in 0.6s ease-out;
+}
+
+.md-profile-section:nth-child(1) {
+  animation-delay: 0.1s;
+}
+
+.md-profile-section:nth-child(2) {
+  animation-delay: 0.2s;
+}
+
+.md-profile-section:nth-child(3) {
+  animation-delay: 0.3s;
+}
+
+.md-editable-field--editing {
+  animation: md-profile-edit-focus 0.3s ease-out;
+}
+
+@keyframes md-profile-edit-focus {
+  from {
+    transform: scale(0.98);
+    box-shadow: none;
+  }
+  to {
+    transform: scale(1);
+    box-shadow: 0 0 0 3px rgba(25, 118, 210, 0.1);
+  }
+}
+
 /* Footer */
 .md-footer {
   background-color: var(--md-primary-dark);
@@ -1798,8 +2270,4 @@ h6, .md-h6 {
 .md-pb-3 { padding-bottom: var(--md-spacing-lg) !important; }
 .md-pl-3 { padding-left: var(--md-spacing-lg) !important; }
 .md-px-3 { padding-left: var(--md-spacing-lg) !important; padding-right: var(--md-spacing-lg) !important; }
-.md-py-3 { padding-top: var(--md-spacing-lg) !important; padding-bottom: var(--md-spacing-lg) !important; }
-
-.md-p-4 { padding: var(--md-spacing-xl) !important; }
-.md-pt-4 { padding-top: var(--md-spacing-xl) !important; }
-.md-pr-4 { padding-right: var(--md-spacing-xl) !
+.md-

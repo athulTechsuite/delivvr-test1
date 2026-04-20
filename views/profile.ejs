@@ -16,6 +16,9 @@ const pageTitle = 'Profile';
     <link href="https://fonts.googleapis.com/css2?family=Roboto:ital,0,1;wght@300;400;500;700&display=swap" rel="stylesheet">
 </head>
 <body class="md-body">
+    <!-- Toast Notifications Container -->
+    <div id="toast-container" class="md-toast-container" aria-live="polite" aria-atomic="true"></div>
+
     <!-- Main Navigation -->
     <nav class="md-navbar" role="navigation" aria-label="Main navigation">
         <div class="md-navbar-container">
@@ -85,154 +88,349 @@ const pageTitle = 'Profile';
                             User Profile
                         </h1>
                         <p class="md-body-large md-text-secondary md-margin-bottom-lg">
-                            View your account information and profile details
+                            Manage your account information and security settings
                         </p>
                     </div>
                 </div>
             </section>
 
-            <!-- Profile Card Section -->
-            <section class="md-section" aria-labelledby="profile-info-heading">
-                <div class="md-row md-justify-center">
-                    <div class="md-col-12 md-col-md-8 md-col-lg-6">
-                        <div class="md-card md-elevation-2" role="region" aria-labelledby="profile-info-heading">
-                            <!-- Card Header -->
-                            <div class="md-card-header">
-                                <div class="md-card-header-content">
-                                    <i class="bi bi-person-badge md-icon-medium md-text-primary" aria-hidden="true"></i>
-                                    <div class="md-card-header-text">
-                                        <h2 id="profile-info-heading" class="md-headline-small md-text-primary md-margin-bottom-none">
-                                            Profile Information
-                                        </h2>
-                                        <p class="md-body-medium md-text-secondary md-margin-bottom-none">
-                                            Your account details and membership information
-                                        </p>
+            <% if (typeof user !== 'undefined' && user) { %>
+                <!-- Profile Information Form -->
+                <section class="md-section" aria-labelledby="profile-info-heading">
+                    <div class="md-row md-justify-center">
+                        <div class="md-col-12 md-col-md-8 md-col-lg-6">
+                            <div class="md-card md-elevation-2" role="region" aria-labelledby="profile-info-heading">
+                                <!-- Card Header -->
+                                <div class="md-card-header">
+                                    <div class="md-card-header-content">
+                                        <i class="bi bi-person-badge md-icon-medium md-text-primary" aria-hidden="true"></i>
+                                        <div class="md-card-header-text">
+                                            <h2 id="profile-info-heading" class="md-headline-small md-text-primary md-margin-bottom-none">
+                                                Profile Information
+                                            </h2>
+                                            <p class="md-body-medium md-text-secondary md-margin-bottom-none">
+                                                Update your personal information
+                                            </p>
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
 
-                            <!-- Card Body -->
-                            <div class="md-card-body">
-                                <% if (typeof user !== 'undefined' && user) { %>
-                                    <!-- User Name -->
-                                    <div class="md-profile-item" role="group" aria-labelledby="name-label">
-                                        <div class="md-profile-item-icon">
-                                            <i class="bi bi-person-fill md-text-primary" aria-hidden="true"></i>
+                                <!-- Card Body -->
+                                <div class="md-card-body">
+                                    <form id="profile-form" novalidate>
+                                        <!-- User Name Field -->
+                                        <div class="md-field-group">
+                                            <div class="md-input-field">
+                                                <input 
+                                                    type="text" 
+                                                    id="profile-name" 
+                                                    name="name" 
+                                                    class="md-input-field-input" 
+                                                    value="<%= typeof user.name === 'string' ? user.name : '' %>" 
+                                                    required 
+                                                    minlength="2" 
+                                                    maxlength="50"
+                                                    pattern="^[A-Za-z\s]+$"
+                                                    autocomplete="name"
+                                                    aria-describedby="profile-name-error profile-name-help"
+                                                >
+                                                <label for="profile-name" class="md-input-field-label">
+                                                    <i class="bi bi-person-fill md-input-icon" aria-hidden="true"></i>
+                                                    Full Name
+                                                </label>
+                                                <div class="md-input-field-underline"></div>
+                                            </div>
+                                            <div id="profile-name-help" class="md-field-help-text">
+                                                Enter your full name (2-50 characters, letters and spaces only)
+                                            </div>
+                                            <div id="profile-name-error" class="md-field-error" role="alert" aria-live="polite"></div>
                                         </div>
-                                        <div class="md-profile-item-content">
-                                            <dt id="name-label" class="md-label-large md-text-secondary">
-                                                Full Name
-                                            </dt>
-                                            <dd class="md-body-large md-text-primary md-font-medium">
-                                                <%= typeof user.name === 'string' ? user.name : 'N/A' %>
-                                            </dd>
-                                        </div>
-                                    </div>
 
-                                    <!-- Email Address -->
-                                    <div class="md-profile-item" role="group" aria-labelledby="email-label">
-                                        <div class="md-profile-item-icon">
-                                            <i class="bi bi-envelope-fill md-text-primary" aria-hidden="true"></i>
+                                        <!-- Email Address (Read-only) -->
+                                        <div class="md-field-group">
+                                            <div class="md-input-field md-input-field-readonly">
+                                                <input 
+                                                    type="email" 
+                                                    id="profile-email" 
+                                                    name="email" 
+                                                    class="md-input-field-input" 
+                                                    value="<%= typeof user.email === 'string' ? user.email : '' %>" 
+                                                    readonly 
+                                                    tabindex="-1"
+                                                    aria-describedby="profile-email-help"
+                                                >
+                                                <label for="profile-email" class="md-input-field-label md-input-field-label-filled">
+                                                    <i class="bi bi-envelope-fill md-input-icon" aria-hidden="true"></i>
+                                                    Email Address
+                                                </label>
+                                                <div class="md-input-field-underline"></div>
+                                            </div>
+                                            <div id="profile-email-help" class="md-field-help-text">
+                                                Email address cannot be changed
+                                            </div>
                                         </div>
-                                        <div class="md-profile-item-content">
-                                            <dt id="email-label" class="md-label-large md-text-secondary">
-                                                Email Address
-                                            </dt>
-                                            <dd class="md-body-large md-text-primary md-font-medium">
-                                                <%= typeof user.email === 'string' ? user.email : 'N/A' %>
-                                            </dd>
-                                        </div>
-                                    </div>
 
-                                    <!-- Member Since -->
-                                    <div class="md-profile-item" role="group" aria-labelledby="member-since-label">
-                                        <div class="md-profile-item-icon">
-                                            <i class="bi bi-calendar-check-fill md-text-primary" aria-hidden="true"></i>
-                                        </div>
-                                        <div class="md-profile-item-content">
-                                            <dt id="member-since-label" class="md-label-large md-text-secondary">
-                                                Member Since
-                                            </dt>
-                                            <dd class="md-body-large md-text-primary md-font-medium">
-                                                <% 
-                                                try {
-                                                    const createdAt = user.created_at;
-                                                    if (createdAt) {
-                                                        const date = new Date(createdAt);
-                                                        if (!isNaN(date.getTime())) {
-                                                            const formattedDate = date.toLocaleDateString('en-US', {
-                                                                year: 'numeric',
-                                                                month: 'long',
-                                                                day: 'numeric'
-                                                            });
-                                                %>
-                                                            <%= formattedDate %>
-                                                <% 
+                                        <!-- Join Date (Read-only) -->
+                                        <div class="md-field-group">
+                                            <div class="md-input-field md-input-field-readonly">
+                                                <input 
+                                                    type="text" 
+                                                    id="profile-join-date" 
+                                                    name="join_date" 
+                                                    class="md-input-field-input" 
+                                                    value="<% 
+                                                    try {
+                                                        const createdAt = user.created_at;
+                                                        if (createdAt) {
+                                                            const date = new Date(createdAt);
+                                                            if (!isNaN(date.getTime())) {
+                                                                const formattedDate = date.toLocaleDateString('en-US', {
+                                                                    year: 'numeric',
+                                                                    month: 'long',
+                                                                    day: 'numeric'
+                                                                });
+                                                    %><%= formattedDate %><% 
+                                                            } else {
+                                                    %>N/A<% 
+                                                            }
                                                         } else {
-                                                %>
-                                                            N/A
-                                                <% 
+                                                    %>N/A<% 
                                                         }
-                                                    } else {
-                                                %>
-                                                        N/A
-                                                <% 
+                                                    } catch (error) {
+                                                    %>N/A<% 
                                                     }
-                                                } catch (error) {
-                                                %>
-                                                    N/A
-                                                <% 
-                                                }
-                                                %>
-                                            </dd>
+                                                    %>" 
+                                                    readonly 
+                                                    tabindex="-1"
+                                                    aria-describedby="profile-join-date-help"
+                                                >
+                                                <label for="profile-join-date" class="md-input-field-label md-input-field-label-filled">
+                                                    <i class="bi bi-calendar-check-fill md-input-icon" aria-hidden="true"></i>
+                                                    Member Since
+                                                </label>
+                                                <div class="md-input-field-underline"></div>
+                                            </div>
+                                            <div id="profile-join-date-help" class="md-field-help-text">
+                                                The date you joined our service
+                                            </div>
                                         </div>
-                                    </div>
 
-                                    <!-- Account Status -->
-                                    <div class="md-profile-item" role="group" aria-labelledby="status-label">
-                                        <div class="md-profile-item-icon">
-                                            <i class="bi bi-check-circle-fill md-text-success" aria-hidden="true"></i>
+                                        <!-- Hidden fields to track original values -->
+                                        <input type="hidden" id="original-name" value="<%= typeof user.name === 'string' ? user.name : '' %>">
+
+                                        <!-- Success Message Container -->
+                                        <div id="profile-success" class="md-field-success" role="alert" aria-live="polite"></div>
+
+                                        <!-- Action Buttons -->
+                                        <div class="md-button-group md-margin-top-lg">
+                                            <button 
+                                                type="submit" 
+                                                id="save-profile-btn" 
+                                                class="md-button md-button-filled" 
+                                                disabled
+                                                aria-describedby="save-profile-help"
+                                            >
+                                                <i class="bi bi-check-lg" aria-hidden="true"></i>
+                                                Save Changes
+                                            </button>
+                                            <button 
+                                                type="button" 
+                                                id="cancel-profile-btn" 
+                                                class="md-button md-button-outlined" 
+                                                disabled
+                                                aria-describedby="cancel-profile-help"
+                                            >
+                                                <i class="bi bi-x-lg" aria-hidden="true"></i>
+                                                Cancel
+                                            </button>
+                                            <div id="save-profile-help" class="sr-only">Save your profile changes</div>
+                                            <div id="cancel-profile-help" class="sr-only">Cancel changes and revert to original values</div>
                                         </div>
-                                        <div class="md-profile-item-content">
-                                            <dt id="status-label" class="md-label-large md-text-secondary">
-                                                Account Status
-                                            </dt>
-                                            <dd class="md-body-large md-text-success md-font-medium">
-                                                Active
-                                            </dd>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Password Change Section -->
+                <section class="md-section" aria-labelledby="password-change-heading">
+                    <div class="md-row md-justify-center">
+                        <div class="md-col-12 md-col-md-8 md-col-lg-6">
+                            <div class="md-card md-elevation-2" role="region" aria-labelledby="password-change-heading">
+                                <!-- Card Header -->
+                                <div class="md-card-header">
+                                    <div class="md-card-header-content">
+                                        <i class="bi bi-shield-lock-fill md-icon-medium md-text-primary" aria-hidden="true"></i>
+                                        <div class="md-card-header-text">
+                                            <h2 id="password-change-heading" class="md-headline-small md-text-primary md-margin-bottom-none">
+                                                Change Password
+                                            </h2>
+                                            <p class="md-body-medium md-text-secondary md-margin-bottom-none">
+                                                Update your account password for security
+                                            </p>
                                         </div>
                                     </div>
-                                <% } else { %>
-                                    <!-- Error State -->
+                                </div>
+
+                                <!-- Card Body -->
+                                <div class="md-card-body">
+                                    <form id="password-form" novalidate>
+                                        <!-- Current Password Field -->
+                                        <div class="md-field-group">
+                                            <div class="md-input-field">
+                                                <input 
+                                                    type="password" 
+                                                    id="current-password" 
+                                                    name="current_password" 
+                                                    class="md-input-field-input" 
+                                                    required 
+                                                    autocomplete="current-password"
+                                                    aria-describedby="current-password-error current-password-help"
+                                                >
+                                                <label for="current-password" class="md-input-field-label">
+                                                    <i class="bi bi-key-fill md-input-icon" aria-hidden="true"></i>
+                                                    Current Password
+                                                </label>
+                                                <button 
+                                                    type="button" 
+                                                    class="md-input-toggle-password" 
+                                                    aria-label="Toggle current password visibility"
+                                                    data-target="current-password"
+                                                >
+                                                    <i class="bi bi-eye-fill" aria-hidden="true"></i>
+                                                </button>
+                                                <div class="md-input-field-underline"></div>
+                                            </div>
+                                            <div id="current-password-help" class="md-field-help-text">
+                                                Enter your current password to verify your identity
+                                            </div>
+                                            <div id="current-password-error" class="md-field-error" role="alert" aria-live="polite"></div>
+                                        </div>
+
+                                        <!-- New Password Field -->
+                                        <div class="md-field-group">
+                                            <div class="md-input-field">
+                                                <input 
+                                                    type="password" 
+                                                    id="new-password" 
+                                                    name="new_password" 
+                                                    class="md-input-field-input" 
+                                                    required 
+                                                    minlength="6"
+                                                    pattern="^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{6,}$"
+                                                    autocomplete="new-password"
+                                                    aria-describedby="new-password-error new-password-help"
+                                                >
+                                                <label for="new-password" class="md-input-field-label">
+                                                    <i class="bi bi-shield-plus md-input-icon" aria-hidden="true"></i>
+                                                    New Password
+                                                </label>
+                                                <button 
+                                                    type="button" 
+                                                    class="md-input-toggle-password" 
+                                                    aria-label="Toggle new password visibility"
+                                                    data-target="new-password"
+                                                >
+                                                    <i class="bi bi-eye-fill" aria-hidden="true"></i>
+                                                </button>
+                                                <div class="md-input-field-underline"></div>
+                                            </div>
+                                            <div id="new-password-help" class="md-field-help-text">
+                                                Minimum 6 characters with at least one lowercase, one uppercase, and one number
+                                            </div>
+                                            <div id="new-password-error" class="md-field-error" role="alert" aria-live="polite"></div>
+                                        </div>
+
+                                        <!-- Confirm New Password Field -->
+                                        <div class="md-field-group">
+                                            <div class="md-input-field">
+                                                <input 
+                                                    type="password" 
+                                                    id="confirm-new-password" 
+                                                    name="confirm_new_password" 
+                                                    class="md-input-field-input" 
+                                                    required 
+                                                    autocomplete="new-password"
+                                                    aria-describedby="confirm-new-password-error confirm-new-password-help"
+                                                >
+                                                <label for="confirm-new-password" class="md-input-field-label">
+                                                    <i class="bi bi-shield-check md-input-icon" aria-hidden="true"></i>
+                                                    Confirm New Password
+                                                </label>
+                                                <button 
+                                                    type="button" 
+                                                    class="md-input-toggle-password" 
+                                                    aria-label="Toggle confirm password visibility"
+                                                    data-target="confirm-new-password"
+                                                >
+                                                    <i class="bi bi-eye-fill" aria-hidden="true"></i>
+                                                </button>
+                                                <div class="md-input-field-underline"></div>
+                                            </div>
+                                            <div id="confirm-new-password-help" class="md-field-help-text">
+                                                Re-enter your new password to confirm
+                                            </div>
+                                            <div id="confirm-new-password-error" class="md-field-error" role="alert" aria-live="polite"></div>
+                                        </div>
+
+                                        <!-- Success Message Container -->
+                                        <div id="password-success" class="md-field-success" role="alert" aria-live="polite"></div>
+
+                                        <!-- Action Button -->
+                                        <div class="md-button-group md-margin-top-lg">
+                                            <button 
+                                                type="submit" 
+                                                id="change-password-btn" 
+                                                class="md-button md-button-filled" 
+                                                disabled
+                                                aria-describedby="change-password-help"
+                                            >
+                                                <i class="bi bi-shield-plus" aria-hidden="true"></i>
+                                                Change Password
+                                            </button>
+                                            <div id="change-password-help" class="sr-only">Update your account password</div>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            <% } else { %>
+                <!-- Error State -->
+                <section class="md-section" aria-labelledby="error-heading">
+                    <div class="md-row md-justify-center">
+                        <div class="md-col-12 md-col-md-8 md-col-lg-6">
+                            <div class="md-card md-elevation-1" role="region" aria-labelledby="error-heading">
+                                <div class="md-card-body">
                                     <div class="md-profile-error" role="alert" aria-live="polite">
                                         <div class="md-profile-error-icon">
                                             <i class="bi bi-exclamation-triangle-fill md-text-error" aria-hidden="true"></i>
                                         </div>
                                         <div class="md-profile-error-content">
-                                            <h3 class="md-title-medium md-text-error md-margin-bottom-sm">
+                                            <h2 id="error-heading" class="md-title-medium md-text-error md-margin-bottom-sm">
                                                 Profile Information Unavailable
-                                            </h3>
+                                            </h2>
                                             <p class="md-body-medium md-text-secondary md-margin-bottom-none">
                                                 We're unable to load your profile information at this time. Please try refreshing the page or contact support if the problem persists.
                                             </p>
                                         </div>
                                     </div>
-                                <% } %>
-                            </div>
-
-                            <!-- Card Actions -->
-                            <div class="md-card-actions">
-                                <a href="/dashboard" class="md-button md-button-text" role="button">
-                                    <i class="bi bi-arrow-left" aria-hidden="true"></i>
-                                    Back to Dashboard
-                                </a>
+                                </div>
+                                <div class="md-card-actions">
+                                    <a href="/dashboard" class="md-button md-button-text" role="button">
+                                        <i class="bi bi-arrow-left" aria-hidden="true"></i>
+                                        Back to Dashboard
+                                    </a>
+                                </div>
                             </div>
                         </div>
                     </div>
-                </div>
-            </section>
+                </section>
+            <% } %>
 
-            <!-- Additional Actions Section -->
+            <!-- Quick Actions Section -->
             <section class="md-section" aria-labelledby="actions-heading">
                 <div class="md-row md-justify-center">
                     <div class="md-col-12 md-col-md-8 md-col-lg-6">
@@ -311,5 +509,8 @@ const pageTitle = 'Profile';
     
     <!-- Theme Toggle Script -->
     <script src="/js/theme-toggle.js"></script>
+    
+    <!-- Profile Page Script -->
+    <script src="/js/profile.js"></script>
 </body>
 </html>

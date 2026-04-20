@@ -70,6 +70,81 @@ const dbHelpers = {
                 }
             );
         });
+    },
+
+    // Update user name
+    updateUserName: (id, name) => {
+        return new Promise((resolve, reject) => {
+            if (!id || typeof id !== 'number') {
+                reject(new Error('Invalid user ID'));
+                return;
+            }
+            if (!name || typeof name !== 'string' || name.trim().length < 2 || name.trim().length > 50) {
+                reject(new Error('Invalid name'));
+                return;
+            }
+            
+            const trimmedName = name.trim();
+            db.run('UPDATE users SET name = ? WHERE id = ?', 
+                [trimmedName, id], 
+                function(err) {
+                    if (err) {
+                        reject(err);
+                    } else if (this.changes === 0) {
+                        reject(new Error('User not found'));
+                    } else {
+                        resolve({ success: true, changes: this.changes });
+                    }
+                }
+            );
+        });
+    },
+
+    // Update user password
+    updateUserPassword: (id, hashedPassword) => {
+        return new Promise((resolve, reject) => {
+            if (!id || typeof id !== 'number') {
+                reject(new Error('Invalid user ID'));
+                return;
+            }
+            if (!hashedPassword || typeof hashedPassword !== 'string') {
+                reject(new Error('Invalid password hash'));
+                return;
+            }
+
+            db.run('UPDATE users SET password = ? WHERE id = ?', 
+                [hashedPassword, id], 
+                function(err) {
+                    if (err) {
+                        reject(err);
+                    } else if (this.changes === 0) {
+                        reject(new Error('User not found'));
+                    } else {
+                        resolve({ success: true, changes: this.changes });
+                    }
+                }
+            );
+        });
+    },
+
+    // Get user for password update (includes password field for verification)
+    getUserForPasswordUpdate: (id) => {
+        return new Promise((resolve, reject) => {
+            if (!id || typeof id !== 'number') {
+                reject(new Error('Invalid user ID'));
+                return;
+            }
+
+            db.get('SELECT id, name, email, password FROM users WHERE id = ?', [id], (err, row) => {
+                if (err) {
+                    reject(err);
+                } else if (!row) {
+                    reject(new Error('User not found'));
+                } else {
+                    resolve(row);
+                }
+            });
+        });
     }
 };
 
