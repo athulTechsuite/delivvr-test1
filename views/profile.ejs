@@ -8,7 +8,7 @@ const pageTitle = 'Profile';
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title><%= pageTitle %> - Express Auth App</title>
+    <title>Profile - Delivvr</title>
     <link rel="stylesheet" href="/css/style.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -20,9 +20,9 @@ const pageTitle = 'Profile';
     <nav class="md-navbar" role="navigation" aria-label="Main navigation">
         <div class="md-navbar-container">
             <div class="md-navbar-brand">
-                <a href="/" class="md-navbar-brand-link" aria-label="Express Auth App Home">
-                    <i class="bi bi-shield-lock-fill" aria-hidden="true"></i>
-                    <span>Express Auth</span>
+                <a href="/" class="md-navbar-brand-link delivvr-brand" aria-label="Delivvr Home">
+                    <i class="bi bi-truck" aria-hidden="true"></i>
+                    <span>Delivvr</span>
                 </a>
             </div>
             
@@ -76,181 +76,121 @@ const pageTitle = 'Profile';
     <!-- Main Content -->
     <main class="md-main" role="main">
         <div class="md-container">
-            <!-- Profile Header Section -->
-            <section class="md-section" aria-labelledby="profile-heading">
-                <div class="md-row">
-                    <div class="md-col-12">
-                        <h1 id="profile-heading" class="md-display-small md-text-primary">
-                            <i class="bi bi-person-circle md-icon-large" aria-hidden="true"></i>
-                            User Profile
-                        </h1>
-                        <p class="md-body-large md-text-secondary md-margin-bottom-lg">
-                            View your account information and profile details
-                        </p>
-                    </div>
-                </div>
-            </section>
-
-            <!-- Profile Card Section -->
+            <!-- Profile Header & Card -->
             <section class="md-section" aria-labelledby="profile-info-heading">
                 <div class="md-row md-justify-center">
                     <div class="md-col-12 md-col-md-8 md-col-lg-6">
+                        <%
+                            // Compute initials
+                            const _rawName = (user && (user.name || user.username || user.email)) ? (user.name || user.username || user.email) : 'U';
+                            const _nameParts = _rawName.trim().split(/\s+/);
+                            const _initials = _nameParts.length > 1
+                                ? (_nameParts[0][0] + _nameParts[1][0]).toUpperCase()
+                                : _rawName.substring(0, 2).toUpperCase();
+                        %>
+
+                        <!-- Circular Avatar -->
+                        <div class="md-text-center" style="margin-bottom:1.5rem;">
+                            <div class="md-avatar"><%= _initials %></div>
+                            <h1 id="profile-heading" class="md-headline-medium md-text-primary" style="margin:0;">
+                                <%= (user && (user.name || user.username)) ? (user.name || user.username) : 'User' %>
+                            </h1>
+                            <p class="md-body-medium md-text-secondary" style="margin:0.25rem 0 0;">
+                                Delivvr Member
+                                <span class="md-chip md-chip-active" style="margin-left:0.5rem;"><i class="bi bi-check-circle"></i> Active</span>
+                            </p>
+                        </div>
+
                         <div class="md-card md-elevation-2" role="region" aria-labelledby="profile-info-heading">
                             <!-- Card Header -->
                             <div class="md-card-header">
-                                <div class="md-card-header-content">
-                                    <i class="bi bi-person-badge md-icon-medium md-text-primary" aria-hidden="true"></i>
-                                    <div class="md-card-header-text">
-                                        <h2 id="profile-info-heading" class="md-headline-small md-text-primary md-margin-bottom-none">
-                                            Profile Information
-                                        </h2>
-                                        <p class="md-body-medium md-text-secondary md-margin-bottom-none">
-                                            Your account details and membership information
-                                        </p>
-                                    </div>
-                                </div>
+                                <h2 id="profile-info-heading" style="color:#fff;margin:0;font-size:1.1rem;font-weight:600;">
+                                    <i class="bi bi-person-badge" aria-hidden="true"></i>
+                                    Profile Information
+                                </h2>
                             </div>
 
                             <!-- Card Body -->
                             <div class="md-card-body">
                                 <% if (typeof user !== 'undefined' && user) { %>
-                                    <!-- User Name -->
-                                    <div class="md-profile-item" role="group" aria-labelledby="name-label">
-                                        <div class="md-profile-item-icon">
-                                            <i class="bi bi-person-fill md-text-primary" aria-hidden="true"></i>
-                                        </div>
-                                        <div class="md-profile-item-content">
-                                            <dt id="name-label" class="md-label-large md-text-secondary">
-                                                Full Name
-                                            </dt>
-                                            <dd class="md-body-large md-text-primary md-font-medium">
-                                                <%= typeof user.name === 'string' ? user.name : 'N/A' %>
-                                            </dd>
-                                        </div>
+
+                                    <!-- Full Name -->
+                                    <div class="md-profile-item">
+                                        <i class="bi bi-person-fill" aria-hidden="true"></i>
+                                        <span class="label">Full Name</span>
+                                        <span class="value"><%= typeof user.name === 'string' ? user.name : (user.username || 'N/A') %></span>
                                     </div>
 
-                                    <!-- Email Address -->
-                                    <div class="md-profile-item" role="group" aria-labelledby="email-label">
-                                        <div class="md-profile-item-icon">
-                                            <i class="bi bi-envelope-fill md-text-primary" aria-hidden="true"></i>
-                                        </div>
-                                        <div class="md-profile-item-content">
-                                            <dt id="email-label" class="md-label-large md-text-secondary">
-                                                Email Address
-                                            </dt>
-                                            <dd class="md-body-large md-text-primary md-font-medium">
-                                                <%= typeof user.email === 'string' ? user.email : 'N/A' %>
-                                            </dd>
-                                        </div>
+                                    <!-- Email -->
+                                    <div class="md-profile-item">
+                                        <i class="bi bi-envelope-fill" aria-hidden="true"></i>
+                                        <span class="label">Email</span>
+                                        <span class="value"><%= typeof user.email === 'string' ? user.email : 'N/A' %></span>
                                     </div>
+
+                                    <!-- Username -->
+                                    <% if (user.username) { %>
+                                    <div class="md-profile-item">
+                                        <i class="bi bi-at" aria-hidden="true"></i>
+                                        <span class="label">Username</span>
+                                        <span class="value"><%= user.username %></span>
+                                    </div>
+                                    <% } %>
 
                                     <!-- Member Since -->
-                                    <div class="md-profile-item" role="group" aria-labelledby="member-since-label">
-                                        <div class="md-profile-item-icon">
-                                            <i class="bi bi-calendar-check-fill md-text-primary" aria-hidden="true"></i>
-                                        </div>
-                                        <div class="md-profile-item-content">
-                                            <dt id="member-since-label" class="md-label-large md-text-secondary">
-                                                Member Since
-                                            </dt>
-                                            <dd class="md-body-large md-text-primary md-font-medium">
-                                                <% 
-                                                try {
-                                                    const createdAt = user.created_at;
-                                                    if (createdAt) {
-                                                        const date = new Date(createdAt);
-                                                        if (!isNaN(date.getTime())) {
-                                                            const formattedDate = date.toLocaleDateString('en-US', {
-                                                                year: 'numeric',
-                                                                month: 'long',
-                                                                day: 'numeric'
-                                                            });
-                                                %>
-                                                            <%= formattedDate %>
-                                                <% 
-                                                        } else {
-                                                %>
-                                                            N/A
-                                                <% 
-                                                        }
-                                                    } else {
-                                                %>
-                                                        N/A
-                                                <% 
-                                                    }
-                                                } catch (error) {
-                                                %>
-                                                    N/A
-                                                <% 
-                                                }
-                                                %>
-                                            </dd>
-                                        </div>
+                                    <div class="md-profile-item">
+                                        <i class="bi bi-calendar-check-fill" aria-hidden="true"></i>
+                                        <span class="label">Member Since</span>
+                                        <span class="value">
+                                        <%
+                                        try {
+                                            const createdAt = user.created_at;
+                                            if (createdAt) {
+                                                const d = new Date(createdAt);
+                                                if (!isNaN(d.getTime())) { %>
+                                                    <%= d.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) %>
+                                                <% } else { %>N/A<% }
+                                            } else { %>N/A<% }
+                                        } catch(e) { %>N/A<% }
+                                        %>
+                                        </span>
                                     </div>
 
                                     <!-- Account Status -->
-                                    <div class="md-profile-item" role="group" aria-labelledby="status-label">
-                                        <div class="md-profile-item-icon">
-                                            <i class="bi bi-check-circle-fill md-text-success" aria-hidden="true"></i>
-                                        </div>
-                                        <div class="md-profile-item-content">
-                                            <dt id="status-label" class="md-label-large md-text-secondary">
-                                                Account Status
-                                            </dt>
-                                            <dd class="md-body-large md-text-success md-font-medium">
-                                                Active
-                                            </dd>
-                                        </div>
+                                    <div class="md-profile-item">
+                                        <i class="bi bi-shield-check" aria-hidden="true"></i>
+                                        <span class="label">Status</span>
+                                        <span class="value">
+                                            <span class="md-chip md-chip-active"><i class="bi bi-check-circle-fill"></i> Active</span>
+                                        </span>
                                     </div>
+
                                 <% } else { %>
                                     <!-- Error State -->
                                     <div class="md-profile-error" role="alert" aria-live="polite">
-                                        <div class="md-profile-error-icon">
-                                            <i class="bi bi-exclamation-triangle-fill md-text-error" aria-hidden="true"></i>
-                                        </div>
-                                        <div class="md-profile-error-content">
-                                            <h3 class="md-title-medium md-text-error md-margin-bottom-sm">
-                                                Profile Information Unavailable
-                                            </h3>
-                                            <p class="md-body-medium md-text-secondary md-margin-bottom-none">
-                                                We're unable to load your profile information at this time. Please try refreshing the page or contact support if the problem persists.
+                                        <i class="bi bi-exclamation-triangle-fill" aria-hidden="true"></i>
+                                        <div>
+                                            <strong>Profile Unavailable</strong>
+                                            <p style="margin:0.25rem 0 0;font-size:0.875rem;">
+                                                We're unable to load your profile information. Please refresh or contact support.
                                             </p>
                                         </div>
                                     </div>
                                 <% } %>
                             </div>
 
-                            <!-- Card Actions -->
-                            <div class="md-card-actions">
-                                <a href="/dashboard" class="md-button md-button-text" role="button">
-                                    <i class="bi bi-arrow-left" aria-hidden="true"></i>
-                                    Back to Dashboard
-                                </a>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </section>
-
-            <!-- Additional Actions Section -->
-            <section class="md-section" aria-labelledby="actions-heading">
-                <div class="md-row md-justify-center">
-                    <div class="md-col-12 md-col-md-8 md-col-lg-6">
-                        <div class="md-card md-elevation-1" role="region" aria-labelledby="actions-heading">
-                            <div class="md-card-header">
-                                <h2 id="actions-heading" class="md-headline-small md-text-primary">
-                                    Quick Actions
-                                </h2>
-                            </div>
-                            <div class="md-card-body">
+                            <!-- Card Actions with Button Group -->
+                            <div class="md-card-body" style="border-top:1px solid rgba(0,0,0,0.08);">
                                 <div class="md-button-group">
-                                    <a href="/dashboard" class="md-button md-button-outlined" role="button">
-                                        <i class="bi bi-speedometer2" aria-hidden="true"></i>
-                                        Go to Dashboard
+                                    <a href="/dashboard" class="md-button md-button--contained"
+                                       style="background:var(--primary,#FF6B00);color:#fff;padding:0 1.5rem;height:40px;border-radius:6px;font-weight:600;text-decoration:none;display:inline-flex;align-items:center;gap:0.4rem;">
+                                        <i class="bi bi-speedometer2"></i>
+                                        Back to Dashboard
                                     </a>
-                                    <form method="POST" action="/logout" style="display: inline;">
-                                        <button type="submit" class="md-button md-button-outlined md-button-error" role="button">
-                                            <i class="bi bi-box-arrow-right" aria-hidden="true"></i>
+                                    <form method="POST" action="/logout" style="display:inline;">
+                                        <button type="submit"
+                                                style="background:transparent;color:var(--md-text-secondary);border:1px solid rgba(0,0,0,0.18);padding:0 1.25rem;height:40px;border-radius:6px;cursor:pointer;display:inline-flex;align-items:center;gap:0.4rem;font-size:0.875rem;">
+                                            <i class="bi bi-box-arrow-right"></i>
                                             Sign Out
                                         </button>
                                     </form>
@@ -268,7 +208,7 @@ const pageTitle = 'Profile';
         <div class="md-container">
             <div class="md-footer-content">
                 <p class="md-body-small md-text-secondary md-margin-bottom-none">
-                    &copy; 2024 Express Auth App. Built with Material Design principles.
+                    &copy; 2026 Delivvr. All rights reserved.
                 </p>
             </div>
         </div>
