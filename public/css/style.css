@@ -2106,3 +2106,60 @@ h6, .md-h6 {
 .md-status-indicator--inactive { background-color: var(--md-error, #F44336); }
 .md-status-indicator--pending { background-color: var(--md-warning, #FF9800); }
 
+/* ── BEM button modifier aliases (fix #2, #3) ── */
+.md-button--full-width { width: 100%; }
+.md-button--large { padding: 0 2rem; height: 48px; font-size: 1rem; }
+
+/* md-width-full alias (fix #3) */
+.md-width-full { width: 100%; }
+
+/* Helper and error text classes for signup form (fix #4) */
+.md-helper-text {
+  font-size: 0.75rem;
+  color: var(--md-on-surface-variant, rgba(0, 0, 0, 0.6));
+  margin-top: 4px;
+  display: block;
+}
+.md-error-text {
+  font-size: 0.75rem;
+  color: var(--md-error, #F44336);
+  margin-top: 4px;
+  display: block;
+}
+
+/* CTA section button classes (fix #5) */
+.md-button--cta-primary {
+  background: #fff;
+  color: var(--md-primary, #FF6B00);
+  font-weight: 700;
+  padding: 0 2rem;
+  height: 48px;
+  border-radius: 24px;
+}
+.md-button--cta-primary:hover {
+  background: rgba(255, 255, 255, 0.9);
+}
+.md-button--cta-secondary {
+  background: rgba(255, 255, 255, 0.15);
+  color: #fff;
+  border: 2px solid rgba(255, 255, 255, 0.6);
+  padding: 0 2rem;
+  height: 48px;
+  border-radius: 24px;
+}
+.md-button--cta-secondary:hover {
+  background: rgba(255, 255, 255, 0.25);
+}
+
+/* Card header icon and heading styles (fix #6, #7) */
+.md-card-header i {
+  font-size: 2.5rem;
+  color: var(--md-on-primary, #fff);
+}
+.md-card-header h1,
+.md-card-header h2,
+.md-card-header h3 {
+  color: var(--md-on-primary, #fff);
+  margin: 0;
+}
+
