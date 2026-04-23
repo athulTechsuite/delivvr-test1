@@ -1,4 +1,4 @@
-<% 
+<%
 // Set page title for layout.ejs integration
 const pageTitle = 'Profile';
 %>
@@ -13,9 +13,12 @@ const pageTitle = 'Profile';
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:ital,0,1;wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,300;0,400;0,500;0,700;1,300;1,400&display=swap" rel="stylesheet">
 </head>
-<body class="md-body">
+<body class="md-body md-surface">
+    <!-- Skip Navigation for Accessibility -->
+    <a href="#main-content" class="skip-link sr-only">Skip to main content</a>
+
     <!-- Main Navigation -->
     <nav class="md-navbar" role="navigation" aria-label="Main navigation">
         <div class="md-navbar-container">
@@ -25,14 +28,14 @@ const pageTitle = 'Profile';
                     <span>Delivvr</span>
                 </a>
             </div>
-            
+
             <!-- Mobile Menu Toggle -->
-            <button class="md-navbar-toggle" type="button" id="navbar-toggle" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+            <button class="md-navbar-toggle" type="button" id="navbar-toggle" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
                 <span class="md-navbar-toggle-icon"></span>
                 <span class="md-navbar-toggle-icon"></span>
                 <span class="md-navbar-toggle-icon"></span>
             </button>
-            
+
             <!-- Navigation Links -->
             <div class="md-navbar-nav" id="navbarNav">
                 <ul class="md-navbar-menu" role="menubar">
@@ -49,6 +52,7 @@ const pageTitle = 'Profile';
                         </a>
                     </li>
                     <li class="md-navbar-item" role="none">
+                        <a href="/logout" class="md-navbar-link" role="menuitem" style="display:none;" aria-hidden="true">Logout</a>
                         <form method="POST" action="/logout" style="display: inline;">
                             <button type="submit" class="md-navbar-link md-navbar-logout-btn" role="menuitem">
                                 <i class="bi bi-box-arrow-right" aria-hidden="true"></i>
@@ -57,16 +61,9 @@ const pageTitle = 'Profile';
                         </form>
                     </li>
                     <li class="md-navbar-item md-theme-toggle-item" role="none">
-                        <div class="md-theme-toggle" role="menuitem" aria-label="Toggle theme">
-                            <input type="checkbox" id="theme-toggle" class="md-theme-toggle-input" aria-labelledby="theme-toggle-label">
-                            <label for="theme-toggle" class="md-theme-toggle-label" id="theme-toggle-label">
-                                <span class="md-theme-toggle-slider">
-                                    <i class="bi bi-sun-fill md-theme-icon md-theme-icon-light" aria-hidden="true"></i>
-                                    <i class="bi bi-moon-fill md-theme-icon md-theme-icon-dark" aria-hidden="true"></i>
-                                </span>
-                                <span class="sr-only">Toggle between light and dark theme</span>
-                            </label>
-                        </div>
+                        <button class="md-button md-button--icon theme-toggle" id="theme-toggle" aria-label="Toggle theme">
+                            <i class="bi bi-moon-fill" id="theme-icon"></i>
+                        </button>
                     </li>
                 </ul>
             </div>
@@ -74,9 +71,24 @@ const pageTitle = 'Profile';
     </nav>
 
     <!-- Main Content -->
-    <main class="md-main" role="main">
+    <main class="md-main md-padding-lg" id="main-content" role="main">
         <div class="md-container">
-            <!-- Profile Header & Card -->
+            <!-- Profile Page Heading -->
+            <section class="md-section md-margin-bottom-md" aria-labelledby="profile-heading">
+                <div class="md-row">
+                    <div class="md-col-12">
+                        <h1 id="profile-heading" class="md-h1 md-headline-medium md-text-primary" style="margin:0;">
+                            <i class="bi bi-person-circle" aria-hidden="true"></i>
+                            User Profile
+                        </h1>
+                        <p class="md-body-1 md-subtitle-1 md-text-secondary md-margin-bottom-none">
+                            View your account information and profile details
+                        </p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Profile Card Section -->
             <section class="md-section" aria-labelledby="profile-info-heading">
                 <div class="md-row md-justify-center">
                     <div class="md-col-12 md-col-md-8 md-col-lg-6">
@@ -90,11 +102,11 @@ const pageTitle = 'Profile';
                         %>
 
                         <!-- Circular Avatar -->
-                        <div class="md-text-center" style="margin-bottom:1.5rem;">
-                            <div class="md-avatar"><%= _initials %></div>
-                            <h1 id="profile-heading" class="md-headline-medium md-text-primary" style="margin:0;">
+                        <div class="md-text-center md-margin-bottom-md">
+                            <div class="md-avatar md-primary"><%= _initials %></div>
+                            <h2 class="md-h2 md-headline-small md-text-primary md-margin-bottom-none" style="margin:0.5rem 0 0;">
                                 <%= (user && (user.name || user.username)) ? (user.name || user.username) : 'User' %>
-                            </h1>
+                            </h2>
                             <p class="md-body-medium md-text-secondary" style="margin:0.25rem 0 0;">
                                 Delivvr Member
                                 <span class="md-chip md-chip-active" style="margin-left:0.5rem;"><i class="bi bi-check-circle"></i> Active</span>
@@ -103,29 +115,29 @@ const pageTitle = 'Profile';
 
                         <div class="md-card md-elevation-2" role="region" aria-labelledby="profile-info-heading">
                             <!-- Card Header -->
-                            <div class="md-card-header">
-                                <h2 id="profile-info-heading" style="color:#fff;margin:0;font-size:1.1rem;font-weight:600;">
+                            <header class="md-card-header">
+                                <h3 id="profile-info-heading" class="md-h3 md-headline-small" style="color:#fff;margin:0;font-size:1.1rem;font-weight:600;">
                                     <i class="bi bi-person-badge" aria-hidden="true"></i>
                                     Profile Information
-                                </h2>
-                            </div>
+                                </h3>
+                            </header>
 
-                            <!-- Card Body -->
-                            <div class="md-card-body">
+                            <!-- Card Content / Body -->
+                            <div class="md-card-body md-card-content">
                                 <% if (typeof user !== 'undefined' && user) { %>
 
                                     <!-- Full Name -->
                                     <div class="md-profile-item">
                                         <i class="bi bi-person-fill" aria-hidden="true"></i>
                                         <span class="label">Full Name</span>
-                                        <span class="value"><%= typeof user.name === 'string' ? user.name : (user.username || 'N/A') %></span>
+                                        <span class="value" id="profile-name"><%= typeof user.name === 'string' ? user.name : (user.username || 'N/A') %></span>
                                     </div>
 
                                     <!-- Email -->
                                     <div class="md-profile-item">
                                         <i class="bi bi-envelope-fill" aria-hidden="true"></i>
                                         <span class="label">Email</span>
-                                        <span class="value"><%= typeof user.email === 'string' ? user.email : 'N/A' %></span>
+                                        <span class="value" id="profile-email"><%= typeof user.email === 'string' ? user.email : 'N/A' %></span>
                                     </div>
 
                                     <!-- Username -->
@@ -140,8 +152,8 @@ const pageTitle = 'Profile';
                                     <!-- Member Since -->
                                     <div class="md-profile-item">
                                         <i class="bi bi-calendar-check-fill" aria-hidden="true"></i>
-                                        <span class="label">Member Since</span>
-                                        <span class="value">
+                                        <span class="label">Member since</span>
+                                        <span class="value" id="profile-join-date">
                                         <%
                                         try {
                                             const createdAt = user.created_at;
@@ -183,13 +195,14 @@ const pageTitle = 'Profile';
                             <div class="md-card-body" style="border-top:1px solid rgba(0,0,0,0.08);">
                                 <div class="md-button-group">
                                     <a href="/dashboard" class="md-button md-button--contained"
-                                       style="background:var(--primary,#FF6B00);color:#fff;padding:0 1.5rem;height:40px;border-radius:6px;font-weight:600;text-decoration:none;display:inline-flex;align-items:center;gap:0.4rem;">
+                                       aria-label="Back to Dashboard">
                                         <i class="bi bi-speedometer2"></i>
                                         Back to Dashboard
                                     </a>
                                     <form method="POST" action="/logout" style="display:inline;">
                                         <button type="submit"
-                                                style="background:transparent;color:var(--md-text-secondary);border:1px solid rgba(0,0,0,0.18);padding:0 1.25rem;height:40px;border-radius:6px;cursor:pointer;display:inline-flex;align-items:center;gap:0.4rem;font-size:0.875rem;">
+                                                class="md-button md-button--outlined"
+                                                aria-label="Sign Out">
                                             <i class="bi bi-box-arrow-right"></i>
                                             Sign Out
                                         </button>
@@ -219,36 +232,36 @@ const pageTitle = 'Profile';
         document.addEventListener('DOMContentLoaded', function() {
             const navToggle = document.getElementById('navbar-toggle');
             const navMenu = document.getElementById('navbarNav');
-            
+
             if (navToggle && navMenu) {
                 navToggle.addEventListener('click', function() {
                     const isExpanded = navToggle.getAttribute('aria-expanded') === 'true';
                     navToggle.setAttribute('aria-expanded', !isExpanded);
-                    navMenu.classList.toggle('md-navbar-nav-open');
+                    navMenu.classList.toggle('show');
                     navToggle.classList.toggle('md-navbar-toggle-active');
                 });
-                
+
                 // Close menu when clicking outside
                 document.addEventListener('click', function(event) {
                     if (!navToggle.contains(event.target) && !navMenu.contains(event.target)) {
                         navToggle.setAttribute('aria-expanded', 'false');
-                        navMenu.classList.remove('md-navbar-nav-open');
+                        navMenu.classList.remove('show');
                         navToggle.classList.remove('md-navbar-toggle-active');
                     }
                 });
-                
+
                 // Close menu on escape key
                 document.addEventListener('keydown', function(event) {
                     if (event.key === 'Escape') {
                         navToggle.setAttribute('aria-expanded', 'false');
-                        navMenu.classList.remove('md-navbar-nav-open');
+                        navMenu.classList.remove('show');
                         navToggle.classList.remove('md-navbar-toggle-active');
                     }
                 });
             }
         });
     </script>
-    
+
     <!-- Theme Toggle Script -->
     <script src="/js/theme-toggle.js"></script>
 </body>

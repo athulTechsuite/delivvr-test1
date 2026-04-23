@@ -2043,3 +2043,66 @@ h6, .md-h6 {
   letter-spacing: 0.5px;
 }
 
+/* ── Button variants missing from original set ── */
+.md-button--elevated {
+  background-color: var(--md-primary, #FF6B00);
+  color: var(--md-on-primary, #FFFFFF);
+  box-shadow: var(--md-elevation-2);
+}
+
+.md-button--elevated:hover {
+  box-shadow: var(--md-elevation-4);
+  background-color: var(--md-primary-dark, #CC5500);
+}
+
+.md-button--icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  padding: 0;
+  background: none;
+  border: none;
+  color: var(--md-text-primary-on-primary, #FFFFFF);
+  cursor: pointer;
+  transition: background-color var(--md-transition-standard, 0.2s ease);
+}
+
+.md-button--icon:hover {
+  background-color: rgba(255, 255, 255, 0.15);
+}
+
+.dark-theme .md-button--icon {
+  color: var(--md-text-primary, rgba(0, 0, 0, 0.87));
+}
+
+/* ── Utility classes ── */
+.md-display-flex { display: flex; }
+.md-flex-column { flex-direction: column; }
+.md-align-center { align-items: center; }
+.md-justify-between { justify-content: space-between; }
+.md-bg-primary { background-color: var(--md-primary); }
+.md-bg-surface { background-color: var(--md-surface); }
+.md-bg-background { background-color: var(--md-background); }
+.md-padding-none { padding: 0; }
+.md-padding-xs { padding: var(--md-spacing-xs, 4px); }
+.md-padding-sm { padding: var(--md-spacing-sm, 8px); }
+.md-padding-md { padding: var(--md-spacing-md, 16px); }
+.md-margin-right-xs { margin-right: var(--md-spacing-xs, 4px); }
+.md-margin-right-sm { margin-right: var(--md-spacing-sm, 8px); }
+.md-border-bottom { border-bottom: 1px solid var(--md-outline-variant, rgba(0,0,0,0.12)); }
+.md-border-radius-full { border-radius: 9999px; }
+.md-text-success { color: var(--md-success, #4CAF50); }
+.md-text-info { color: var(--md-info, #2196F3); }
+.md-text-error { color: var(--md-error, #F44336); }
+.md-text-on-primary { color: var(--md-on-primary, #FFFFFF); }
+.md-list { list-style: none; padding: 0; margin: 0; }
+.md-list-item { display: flex; align-items: center; padding: var(--md-spacing-sm, 8px) var(--md-spacing-md, 16px); }
+.md-list-item:hover { background-color: var(--md-surface-variant, rgba(0,0,0,0.04)); }
+.md-status-indicator { display: inline-block; width: 10px; height: 10px; border-radius: 50%; }
+.md-status-indicator--active { background-color: var(--md-success, #4CAF50); }
+.md-status-indicator--inactive { background-color: var(--md-error, #F44336); }
+.md-status-indicator--pending { background-color: var(--md-warning, #FF9800); }
+

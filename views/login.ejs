@@ -8,7 +8,7 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:ital,0,1;wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,300;0,400;0,500;0,700;1,300;1,400&display=swap" rel="stylesheet">
 </head>
 <body class="md-body">
     <!-- Main Navigation -->
@@ -20,12 +20,12 @@
                     <span>Delivvr</span>
                 </a>
             </div>
-            
+
             <!-- Mobile Menu Toggle -->
             <button class="md-navbar-toggle" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
                 <span class="md-navbar-toggle-icon"></span>
             </button>
-            
+
             <!-- Navigation Links -->
             <div class="md-navbar-nav" id="navbarNav">
                 <ul class="md-navbar-menu" role="menubar">
@@ -48,13 +48,9 @@
                         </a>
                     </li>
                     <li class="md-navbar-item md-theme-toggle-item" role="none">
-                        <div class="md-theme-toggle" role="switch" aria-checked="false" aria-label="Toggle dark mode" tabindex="0">
-                            <div class="md-theme-toggle-track">
-                                <div class="md-theme-toggle-thumb">
-                                    <i class="bi bi-sun-fill md-theme-toggle-icon" aria-hidden="true"></i>
-                                </div>
-                            </div>
-                        </div>
+                        <button class="md-button md-button--icon theme-toggle" id="theme-toggle" aria-label="Toggle theme">
+                            <i class="bi bi-moon-fill" id="theme-icon"></i>
+                        </button>
                     </li>
                 </ul>
             </div>
@@ -85,9 +81,21 @@
 
                             <!-- Card Content -->
                             <div class="md-card-content md-padding-lg">
+                                <!-- Success Message -->
+                                <% if (typeof message !== 'undefined' && message) { %>
+                                    <div class="md-alert md-alert--success md-margin-bottom-lg" role="alert" aria-live="polite">
+                                        <div class="md-alert-icon">
+                                            <i class="bi bi-check-circle-fill" aria-hidden="true"></i>
+                                        </div>
+                                        <div class="md-alert-content">
+                                            <span class="md-alert-message"><%= message %></span>
+                                        </div>
+                                    </div>
+                                <% } %>
+
                                 <!-- Error Alert -->
                                 <% if (typeof error !== 'undefined' && error) { %>
-                                    <div class="md-alert md-alert-error md-margin-bottom-lg" role="alert" aria-live="polite">
+                                    <div class="md-alert md-alert--error md-margin-bottom-lg" role="alert" aria-live="polite">
                                         <div class="md-alert-icon">
                                             <i class="bi bi-exclamation-triangle-fill" aria-hidden="true"></i>
                                         </div>
@@ -101,47 +109,47 @@
                                 <form action="/login" method="POST" class="md-form" novalidate aria-labelledby="login-heading">
                                     <!-- Email Field -->
                                     <div class="md-form-field md-margin-bottom-lg">
-                                        <div class="md-input-container">
-                                            <input 
-                                                type="email" 
-                                                id="email" 
-                                                name="email" 
-                                                class="md-input" 
-                                                required 
+                                        <div class="md-form-group">
+                                            <input
+                                                type="email"
+                                                id="email"
+                                                name="email"
+                                                class="md-form-control"
+                                                placeholder=" "
+                                                required
                                                 autocomplete="email"
                                                 aria-describedby="email-error"
                                                 aria-invalid="false"
                                             >
-                                            <label for="email" class="md-input-label">
-                                                <i class="bi bi-envelope md-input-icon" aria-hidden="true"></i>
+                                            <label class="md-form-label" for="email">
+                                                <i class="bi bi-envelope" aria-hidden="true"></i>
                                                 Email Address
                                             </label>
-                                            <div class="md-input-underline"></div>
                                         </div>
                                         <div id="email-error" class="md-form-helper-text md-form-error-text" role="alert" aria-live="polite"></div>
                                     </div>
 
                                     <!-- Password Field -->
                                     <div class="md-form-field md-margin-bottom-xl">
-                                        <div class="md-input-container">
-                                            <input 
-                                                type="password" 
-                                                id="password" 
-                                                name="password" 
-                                                class="md-input" 
-                                                required 
+                                        <div class="md-form-group">
+                                            <input
+                                                type="password"
+                                                id="password"
+                                                name="password"
+                                                class="md-form-control"
+                                                placeholder=" "
+                                                required
                                                 autocomplete="current-password"
                                                 aria-describedby="password-error"
                                                 aria-invalid="false"
                                             >
-                                            <label for="password" class="md-input-label">
-                                                <i class="bi bi-lock md-input-icon" aria-hidden="true"></i>
+                                            <label class="md-form-label" for="password">
+                                                <i class="bi bi-lock" aria-hidden="true"></i>
                                                 Password
                                             </label>
-                                            <div class="md-input-underline"></div>
-                                            <button 
-                                                type="button" 
-                                                class="md-input-toggle-password" 
+                                            <button
+                                                type="button"
+                                                class="md-input-toggle-password"
                                                 aria-label="Toggle password visibility"
                                                 tabindex="-1"
                                             >
@@ -155,9 +163,8 @@
                                     <div class="md-form-actions md-margin-bottom-lg">
                                         <button
                                             type="submit"
-                                            class="md-button md-button-primary md-button-large md-button-full-width"
+                                            class="md-button md-button--contained md-button-large md-button-full-width"
                                             aria-describedby="login-submit-description"
-                                            style="background:var(--primary,#FF6B00);color:#fff;width:100%;height:48px;border-radius:8px;font-size:1rem;font-weight:600;border:none;cursor:pointer;"
                                         >
                                             <span class="md-button-label"><i class="bi bi-truck" style="margin-right:0.5rem;"></i>Sign In</span>
                                             <div class="md-button-ripple"></div>
@@ -172,7 +179,7 @@
                             <!-- Card Footer -->
                             <div class="md-card-footer md-text-center md-padding-lg md-border-top">
                                 <p class="md-body-medium md-text-secondary md-margin-0">
-                                    Don't have an account? 
+                                    Don't have an account?
                                     <a href="/signup" class="md-link md-text-primary md-font-weight-medium">
                                         Create one here
                                     </a>
@@ -191,102 +198,56 @@
         document.addEventListener('DOMContentLoaded', function() {
             // Form validation and enhancement
             const form = document.querySelector('.md-form');
-            const inputs = form.querySelectorAll('.md-input');
+            const inputs = form.querySelectorAll('.md-form-control');
             const submitButton = form.querySelector('button[type="submit"]');
-            
-            // Input focus and blur handling
-            inputs.forEach(input => {
-                const container = input.closest('.md-input-container');
-                const label = container.querySelector('.md-input-label');
-                const errorDiv = input.getAttribute('aria-describedby');
-                const errorElement = errorDiv ? document.getElementById(errorDiv) : null;
-                
-                // Handle input focus
-                input.addEventListener('focus', function() {
-                    container.classList.add('md-input-focused');
-                    if (errorElement) {
-                        input.setAttribute('aria-invalid', 'false');
-                        errorElement.textContent = '';
-                        container.classList.remove('md-input-error');
-                    }
-                });
-                
-                // Handle input blur
-                input.addEventListener('blur', function() {
-                    container.classList.remove('md-input-focused');
-                    validateInput(input);
-                });
-                
-                // Handle input changes
-                input.addEventListener('input', function() {
-                    if (input.value.trim()) {
-                        container.classList.add('md-input-filled');
-                    } else {
-                        container.classList.remove('md-input-filled');
-                    }
-                    
-                    // Clear errors on input
-                    if (errorElement && errorElement.textContent) {
-                        input.setAttribute('aria-invalid', 'false');
-                        errorElement.textContent = '';
-                        container.classList.remove('md-input-error');
-                    }
-                });
-                
-                // Set initial filled state
-                if (input.value.trim()) {
-                    container.classList.add('md-input-filled');
-                }
-            });
-            
+
             // Password visibility toggle
             const passwordToggle = document.querySelector('.md-input-toggle-password');
             if (passwordToggle) {
                 const passwordInput = document.getElementById('password');
                 const toggleIcon = passwordToggle.querySelector('i');
-                
+
                 passwordToggle.addEventListener('click', function() {
                     const isPassword = passwordInput.type === 'password';
                     passwordInput.type = isPassword ? 'text' : 'password';
                     toggleIcon.className = isPassword ? 'bi bi-eye-slash' : 'bi bi-eye';
-                    passwordToggle.setAttribute('aria-label', 
+                    passwordToggle.setAttribute('aria-label',
                         isPassword ? 'Hide password' : 'Show password'
                     );
                 });
             }
-            
+
             // Form submission handling
             form.addEventListener('submit', function(e) {
                 let isValid = true;
-                
+
                 // Validate all inputs
                 inputs.forEach(input => {
                     if (!validateInput(input)) {
                         isValid = false;
                     }
                 });
-                
+
                 if (!isValid) {
                     e.preventDefault();
                     return;
                 }
-                
+
                 // Add loading state
                 submitButton.disabled = true;
                 submitButton.classList.add('md-button-loading');
                 const buttonLabel = submitButton.querySelector('.md-button-label');
                 buttonLabel.textContent = 'Signing In...';
             });
-            
+
             // Input validation function
             function validateInput(input) {
-                const container = input.closest('.md-input-container');
                 const errorDiv = input.getAttribute('aria-describedby');
                 const errorElement = errorDiv ? document.getElementById(errorDiv) : null;
                 let errorMessage = '';
-                
+
                 if (!errorElement) return true;
-                
+
                 // Required field validation
                 if (input.hasAttribute('required') && !input.value.trim()) {
                     errorMessage = `${input.name.charAt(0).toUpperCase() + input.name.slice(1)} is required`;
@@ -297,48 +258,46 @@
                         errorMessage = 'Please enter a valid email address';
                     }
                 }
-                
+
                 // Display error
                 if (errorMessage) {
                     errorElement.textContent = errorMessage;
                     input.setAttribute('aria-invalid', 'true');
-                    container.classList.add('md-input-error');
                     return false;
                 } else {
                     errorElement.textContent = '';
                     input.setAttribute('aria-invalid', 'false');
-                    container.classList.remove('md-input-error');
                     return true;
                 }
             }
-            
+
             // Button ripple effect
             const buttons = document.querySelectorAll('.md-button');
             buttons.forEach(button => {
                 button.addEventListener('click', function(e) {
                     const ripple = this.querySelector('.md-button-ripple');
                     if (!ripple) return;
-                    
+
                     const rect = this.getBoundingClientRect();
                     const size = Math.max(rect.width, rect.height);
                     const x = e.clientX - rect.left - size / 2;
                     const y = e.clientY - rect.top - size / 2;
-                    
+
                     ripple.style.width = ripple.style.height = size + 'px';
                     ripple.style.left = x + 'px';
                     ripple.style.top = y + 'px';
                     ripple.classList.add('md-button-ripple-active');
-                    
+
                     setTimeout(() => {
                         ripple.classList.remove('md-button-ripple-active');
                     }, 300);
                 });
             });
-            
+
             // Mobile menu toggle
             const navbarToggle = document.querySelector('.md-navbar-toggle');
             const navbarNav = document.getElementById('navbarNav');
-            
+
             if (navbarToggle && navbarNav) {
                 navbarToggle.addEventListener('click', function() {
                     const isExpanded = this.getAttribute('aria-expanded') === 'true';
@@ -346,7 +305,7 @@
                     navbarNav.classList.toggle('show');
                     this.classList.toggle('active');
                 });
-                
+
                 // Close mobile menu when clicking outside
                 document.addEventListener('click', function(e) {
                     if (!navbarToggle.contains(e.target) && !navbarNav.contains(e.target)) {
@@ -358,13 +317,6 @@
             }
         });
     </script>
-    <style>
-        .md-input:focus {
-            border-color: var(--primary, #FF6B00) !important;
-            box-shadow: 0 0 0 3px rgba(255, 107, 0, 0.20);
-            outline: none;
-        }
-    </style>
     <script src="/js/theme-toggle.js"></script>
 </body>
 </html>

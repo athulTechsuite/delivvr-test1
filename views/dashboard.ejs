@@ -1,4 +1,4 @@
-<% 
+<%
 // Set page title for layout.ejs integration
 const pageTitle = 'Dashboard';
 %>
@@ -13,7 +13,7 @@ const pageTitle = 'Dashboard';
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:ital,0,1;wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,300;0,400;0,500;0,700;1,300;1,400&display=swap" rel="stylesheet">
 </head>
 <body class="md-body">
     <!-- Main Navigation -->
@@ -25,14 +25,14 @@ const pageTitle = 'Dashboard';
                     <span>Delivvr</span>
                 </a>
             </div>
-            
+
             <!-- Mobile Menu Toggle -->
             <button class="md-navbar-toggle" type="button" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
                 <span class="md-navbar-toggle-icon"></span>
                 <span class="md-navbar-toggle-icon"></span>
                 <span class="md-navbar-toggle-icon"></span>
             </button>
-            
+
             <!-- Navigation Links -->
             <div class="md-navbar-nav" id="navbarNav">
                 <ul class="md-navbar-menu" role="menubar">
@@ -57,17 +57,9 @@ const pageTitle = 'Dashboard';
                         </form>
                     </li>
                     <li class="md-navbar-item md-theme-toggle-container" role="none">
-                        <div class="md-theme-toggle" role="menuitem" aria-label="Toggle between light and dark theme" aria-pressed="false" tabindex="0">
-                            <input type="checkbox" id="theme-toggle-switch" class="md-theme-toggle-input" aria-hidden="true" tabindex="-1">
-                            <label for="theme-toggle-switch" class="md-theme-toggle-label" aria-hidden="true">
-                                <span class="md-theme-toggle-slider">
-                                    <span class="md-theme-toggle-thumb">
-                                        <i class="bi bi-sun-fill md-theme-toggle-icon md-theme-toggle-icon-light" aria-hidden="true"></i>
-                                        <i class="bi bi-moon-fill md-theme-toggle-icon md-theme-toggle-icon-dark" aria-hidden="true"></i>
-                                    </span>
-                                </span>
-                            </label>
-                        </div>
+                        <button class="md-button md-button--icon theme-toggle" id="theme-toggle" aria-label="Toggle theme">
+                            <i class="bi bi-moon-fill" id="theme-icon"></i>
+                        </button>
                     </li>
                 </ul>
             </div>
@@ -152,7 +144,7 @@ const pageTitle = 'Dashboard';
                             </div>
                         </div>
                     </div>
-                    
+
                     <!-- Quick Actions Card -->
                     <div class="md-col-12 md-col-md-6">
                         <div class="md-card md-elevation-2 md-transition-standard md-border-radius-md" role="region" aria-labelledby="quick-actions-heading">
@@ -164,15 +156,15 @@ const pageTitle = 'Dashboard';
                             </div>
                             <div class="md-card-content md-padding-lg">
                                 <div class="md-button-group md-vertical md-gap-md">
-                                    <a href="/profile" class="md-button md-button-outlined md-button-primary md-ripple md-padding-md md-border-radius-sm md-display-flex md-align-items-center md-justify-content-flex-start" role="button">
+                                    <a href="/profile" class="md-button md-button--outlined md-ripple md-padding-md md-border-radius-sm md-display-flex md-align-items-center md-justify-content-flex-start" role="button">
                                         <i class="bi bi-person-gear md-icon-medium md-margin-right-sm" aria-hidden="true"></i>
                                         <span>Edit Profile</span>
                                     </a>
-                                    <button class="md-button md-button-outlined md-button-primary md-ripple md-padding-md md-border-radius-sm md-display-flex md-align-items-center md-justify-content-flex-start" type="button">
+                                    <button class="md-button md-button--outlined md-ripple md-padding-md md-border-radius-sm md-display-flex md-align-items-center md-justify-content-flex-start" type="button">
                                         <i class="bi bi-lock md-icon-medium md-margin-right-sm" aria-hidden="true"></i>
                                         <span>Change Password</span>
                                     </button>
-                                    <button class="md-button md-button-outlined md-button-primary md-ripple md-padding-md md-border-radius-sm md-display-flex md-align-items-center md-justify-content-flex-start" type="button">
+                                    <button class="md-button md-button--outlined md-ripple md-padding-md md-border-radius-sm md-display-flex md-align-items-center md-justify-content-flex-start" type="button">
                                         <i class="bi bi-gear md-icon-medium md-margin-right-sm" aria-hidden="true"></i>
                                         <span>Account Settings</span>
                                     </button>
@@ -333,11 +325,11 @@ const pageTitle = 'Dashboard';
                     <div class="md-col-12">
                         <h2 id="navigation-heading" class="md-visually-hidden">Navigation options</h2>
                         <div class="md-button-group md-horizontal md-gap-md md-flex-wrap md-justify-center">
-                            <a href="/" class="md-button md-button-contained md-button-secondary md-ripple md-padding-lg md-border-radius-sm" role="button">
+                            <a href="/" class="md-button md-button--contained md-ripple md-padding-lg md-border-radius-sm" role="button">
                                 <i class="bi bi-house-fill md-icon-medium md-margin-right-sm" aria-hidden="true"></i>
                                 <span>Back to Home</span>
                             </a>
-                            <a href="/profile" class="md-button md-button-outlined md-button-primary md-ripple md-padding-lg md-border-radius-sm" role="button">
+                            <a href="/profile" class="md-button md-button--outlined md-ripple md-padding-lg md-border-radius-sm" role="button">
                                 <i class="bi bi-person-circle md-icon-medium md-margin-right-sm" aria-hidden="true"></i>
                                 <span>View Profile</span>
                             </a>
@@ -357,47 +349,43 @@ const pageTitle = 'Dashboard';
         document.addEventListener('DOMContentLoaded', function() {
             const navToggle = document.querySelector('.md-navbar-toggle');
             const navMenu = document.querySelector('.md-navbar-nav');
-            
+
             if (navToggle && navMenu) {
                 navToggle.addEventListener('click', function(e) {
                     e.preventDefault();
                     const isExpanded = navToggle.getAttribute('aria-expanded') === 'true';
                     navToggle.setAttribute('aria-expanded', !isExpanded);
-                    navMenu.classList.toggle('md-navbar-nav-open');
+                    navMenu.classList.toggle('show');
                 });
             }
-            
+
             // Add ripple effect to buttons
             const rippleButtons = document.querySelectorAll('.md-ripple');
-            
+
             rippleButtons.forEach(button => {
                 button.addEventListener('click', function(e) {
-                    // Create ripple element
                     const ripple = document.createElement('span');
                     const rect = this.getBoundingClientRect();
                     const size = Math.max(rect.width, rect.height);
                     const x = e.clientX - rect.left - size / 2;
                     const y = e.clientY - rect.top - size / 2;
-                    
+
                     ripple.style.width = ripple.style.height = size + 'px';
                     ripple.style.left = x + 'px';
                     ripple.style.top = y + 'px';
                     ripple.classList.add('md-ripple-effect');
-                    
-                    // Remove existing ripples and add new one
+
                     const existingRipple = this.querySelector('.md-ripple-effect');
                     if (existingRipple) {
                         existingRipple.remove();
                     }
-                    
-                    // Ensure button has position relative for ripple positioning
+
                     if (getComputedStyle(this).position === 'static') {
                         this.style.position = 'relative';
                     }
-                    
+
                     this.appendChild(ripple);
-                    
-                    // Remove ripple after animation
+
                     setTimeout(() => {
                         if (ripple.parentNode) {
                             ripple.remove();
@@ -405,7 +393,7 @@ const pageTitle = 'Dashboard';
                     }, 600);
                 });
             });
-            
+
             // Add smooth scrolling for internal links
             const internalLinks = document.querySelectorAll('a[href^="#"]');
             internalLinks.forEach(link => {
@@ -420,7 +408,7 @@ const pageTitle = 'Dashboard';
                     }
                 });
             });
-            
+
             // Add focus management for accessibility
             const focusableElements = document.querySelectorAll('button, a, input, select, textarea, [tabindex]:not([tabindex="-1"])');
             focusableElements.forEach(element => {
@@ -431,13 +419,12 @@ const pageTitle = 'Dashboard';
                     this.classList.remove('md-focus-visible');
                 });
             });
-            
+
             // Add keyboard navigation support
             document.addEventListener('keydown', function(e) {
-                // Escape key to close mobile menu
-                if (e.key === 'Escape' && navMenu.classList.contains('md-navbar-nav-open')) {
+                if (e.key === 'Escape' && navMenu && navMenu.classList.contains('show')) {
                     navToggle.setAttribute('aria-expanded', 'false');
-                    navMenu.classList.remove('md-navbar-nav-open');
+                    navMenu.classList.remove('show');
                     navToggle.focus();
                 }
             });
