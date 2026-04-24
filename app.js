@@ -239,6 +239,15 @@ app.post('/logout', (req, res) => {
     res.redirect('/');
 });
 
+// Health / liveness endpoint — unauthenticated, DB-independent.
+app.get('/health', (req, res) => {
+    res.status(200).json({
+        status: 'ok',
+        uptime: process.uptime(),
+        timestamp: new Date().toISOString()
+    });
+});
+
 // Error handling middleware
 app.use((req, res) => {
     res.status(404).render('404');
