@@ -30,7 +30,27 @@ db.serialize(() => {
         password TEXT NOT NULL,
         created_at DATETIME DEFAULT CURRENT_TIMESTAMP
     )`);
+
+    db.run(`CREATE TABLE IF NOT EXISTS orders (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        user_id INTEGER NOT NULL REFERENCES users(id),
+        pickup_address TEXT NOT NULL,
+        delivery_address TEXT NOT NULL,
+        package_description TEXT,
+        status TEXT NOT NULL DEFAULT 'pending',
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    )`);
+    db.run('CREATE INDEX IF NOT EXISTS idx_orders_user_id ON orders(user_id)');
+    db.run('CREATE INDEX IF NOT EXISTS idx_orders_user_status ON orders(user_id, status)');
 });
+
+// Models
+const Order = require('./models/Order');
+
+// Order field length constants
+const ADDRESS_MIN_LENGTH = 3;
+const ADDRESS_MAX_LENGTH = 500;
+const DESCRIPTION_MAX_LENGTH = 1000;
 
 // Middleware
 app.use(express.urlencoded({ extended: true }));
@@ -90,6 +110,28 @@ const loginValidation = [
         .withMessage('Password is required')
 ];
 
+const orderValidation = [
+    body('pickup_address')
+        .exists({ checkFalsy: true })
+        .withMessage('Pickup address is required')
+        .bail()
+        .trim()
+        .isLength({ min: ADDRESS_MIN_LENGTH, max: ADDRESS_MAX_LENGTH })
+        .withMessage(`Pickup address must be between ${ADDRESS_MIN_LENGTH} and ${ADDRESS_MAX_LENGTH} characters`),
+    body('delivery_address')
+        .exists({ checkFalsy: true })
+        .withMessage('Delivery address is required')
+        .bail()
+        .trim()
+        .isLength({ min: ADDRESS_MIN_LENGTH, max: ADDRESS_MAX_LENGTH })
+        .withMessage(`Delivery address must be between ${ADDRESS_MIN_LENGTH} and ${ADDRESS_MAX_LENGTH} characters`),
+    body('package_description')
+        .optional({ checkFalsy: true })
+        .trim()
+        .isLength({ max: DESCRIPTION_MAX_LENGTH })
+        .withMessage(`Package description must be at most ${DESCRIPTION_MAX_LENGTH} characters`)
+];
+
 // Routes
 app.get('/', (req, res) => {
     res.render('index');
@@ -105,12 +147,33 @@ app.get('/login', (req, res) => {
 
 app.get('/dashboard', authenticateToken, (req, res) => {
     // Get user info from database
-    db.get('SELECT name, email FROM users WHERE id = ?', [req.user.id], (err, user) => {
+    db.get('SELECT id, name, email, created_at FROM users WHERE id = ?', [req.user.id], async (err, user) => {
         if (err) {
-            console.error(err);
+            console.error('Database error loading dashboard user:', err);
             return res.redirect('/login');
         }
-        res.render('dashboard', { user });
+        if (!user) {
+            return res.redirect('/login');
+        }
+
+        try {
+            const [activeDeliveriesCount, pendingPickupsCount] = await Promise.all([
+                Order.countActiveByUserId(req.user.id),
+                Order.countPendingByUserId(req.user.id)
+            ]);
+            res.render('dashboard', {
+                user,
+                activeDeliveriesCount,
+                pendingPickupsCount
+            });
+        } catch (statsErr) {
+            console.error('Error loading dashboard stats:', statsErr);
+            res.render('dashboard', {
+                user,
+                activeDeliveriesCount: 0,
+                pendingPickupsCount: 0
+            });
+        }
     });
 });
 
@@ -234,6 +297,58 @@ app.post('/login', loginValidation, (req, res) => {
     });
 });
 
+// Order routes (authenticated)
+app.get('/orders/new', authenticateToken, (req, res) => {
+    res.render('orders-new', {
+        user: req.user,
+        errors: [],
+        values: { pickup_address: '', delivery_address: '', package_description: '' }
+    });
+});
+
+app.post('/orders', authenticateToken, orderValidation, async (req, res) => {
+    const errors = validationResult(req);
+    const submitted = {
+        pickup_address: typeof req.body.pickup_address === 'string' ? req.body.pickup_address : '',
+        delivery_address: typeof req.body.delivery_address === 'string' ? req.body.delivery_address : '',
+        package_description: typeof req.body.package_description === 'string' ? req.body.package_description : ''
+    };
+
+    if (!errors.isEmpty()) {
+        return res.status(400).render('orders-new', {
+            user: req.user,
+            errors: errors.array(),
+            values: submitted
+        });
+    }
+
+    try {
+        await Order.create(req.user.id, {
+            pickup_address: submitted.pickup_address,
+            delivery_address: submitted.delivery_address,
+            package_description: submitted.package_description
+        });
+        return res.redirect('/orders');
+    } catch (createErr) {
+        console.error('Error creating order:', createErr);
+        return res.status(500).render('orders-new', {
+            user: req.user,
+            errors: [{ msg: 'Unable to place order. Please try again.' }],
+            values: submitted
+        });
+    }
+});
+
+app.get('/orders', authenticateToken, async (req, res) => {
+    try {
+        const orders = await Order.findByUserId(req.user.id);
+        res.render('orders-list', { user: req.user, orders });
+    } catch (listErr) {
+        console.error('Error loading orders list:', listErr);
+        res.render('orders-list', { user: req.user, orders: [] });
+    }
+});
+
 app.post('/logout', (req, res) => {
     res.clearCookie('token');
     res.redirect('/');
@@ -258,10 +373,14 @@ app.use((err, req, res, next) => {
     res.status(500).send('Something broke!');
 });
 
-// Start server
-app.listen(PORT, () => {
-    console.log(`Server is running on port ${PORT}`);
-});
+// Start server (skip when required as a module, e.g. from tests)
+if (require.main === module) {
+    app.listen(PORT, () => {
+        console.log(`Server is running on port ${PORT}`);
+    });
+}
+
+module.exports = app;
 
 // Graceful shutdown
 process.on('SIGINT', () => {
