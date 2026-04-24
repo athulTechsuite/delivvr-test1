@@ -151,21 +151,21 @@ describe('Order model', () => {
     });
 
     test('findByUserId() returns orders newest first', async () => {
-        const first = await Order.create(testUserId, {
-            pickup_address: 'First pickup',
-            delivery_address: 'First delivery'
-        });
-        // Ensure distinct created_at timestamps
-        await new Promise((r) => setTimeout(r, 1100));
-        const second = await Order.create(testUserId, {
-            pickup_address: 'Second pickup',
-            delivery_address: 'Second delivery'
-        });
+        // Insert rows directly with explicit, distinct created_at timestamps to
+        // avoid relying on wall-clock sleeps (which are flaky and slow).
+        const firstInsert = await runAsync(
+            'INSERT INTO orders (user_id, pickup_address, delivery_address, created_at) VALUES (?, ?, ?, ?)',
+            [testUserId, 'First pickup', 'First delivery', '2024-01-01 10:00:00']
+        );
+        const secondInsert = await runAsync(
+            'INSERT INTO orders (user_id, pickup_address, delivery_address, created_at) VALUES (?, ?, ?, ?)',
+            [testUserId, 'Second pickup', 'Second delivery', '2024-01-01 10:00:05']
+        );
 
         const rows = await Order.findByUserId(testUserId);
         expect(rows).toHaveLength(2);
-        expect(rows[0].id).toBe(second.id);
-        expect(rows[1].id).toBe(first.id);
+        expect(rows[0].id).toBe(secondInsert.lastID);
+        expect(rows[1].id).toBe(firstInsert.lastID);
     });
 
     test('findByUserId() returns empty array when there are no orders', async () => {
@@ -299,6 +299,94 @@ describe('Order HTTP routes', () => {
         expect(res.text).toContain('Pickup address is required');
         // Form should be re-rendered, not crashed
         expect(res.text).toContain('name="pickup_address"');
+    });
+
+    test('POST /orders renders a generic error when Order.create throws (DB error)', async () => {
+        const spy = jest.spyOn(Order, 'create').mockImplementation(() => {
+            return Promise.reject(new Error('simulated DB failure'));
+        });
+
+        try {
+            const res = await request(app)
+                .post('/orders')
+                .set('Cookie', `token=${validToken}`)
+                .type('form')
+                .send({
+                    pickup_address: '10 Main Street',
+                    delivery_address: '20 Oak Avenue',
+                    package_description: 'Books'
+                });
+
+            expect(res.status).toBe(500);
+            // Generic error message, not the raw error
+            expect(res.text).toContain('Unable to place order');
+            expect(res.text).not.toContain('simulated DB failure');
+            // Form should be re-rendered with submitted values
+            expect(res.text).toContain('name="pickup_address"');
+            expect(res.text).toContain('10 Main Street');
+        } finally {
+            spy.mockRestore();
+        }
+    });
+
+    test('GET /orders returns only the current user orders (tenant isolation)', async () => {
+        // Create a second user directly in the users table
+        const otherHashed = await bcrypt.hash('Password123', 10);
+        const otherUser = await runAsync(
+            'INSERT INTO users (name, email, password) VALUES (?, ?, ?)',
+            ['Other Tester', 'other-tester@example.com', otherHashed]
+        );
+        const otherUserId = otherUser.lastID;
+        const otherToken = jwt.sign(
+            { id: otherUserId, email: 'other-tester@example.com' },
+            process.env.JWT_SECRET
+        );
+
+        // Two orders for user A (testUser)
+        await Order.create(testUserId, {
+            pickup_address: 'User A pickup 1',
+            delivery_address: 'User A delivery 1',
+            package_description: 'A-pkg-1'
+        });
+        await Order.create(testUserId, {
+            pickup_address: 'User A pickup 2',
+            delivery_address: 'User A delivery 2',
+            package_description: 'A-pkg-2'
+        });
+        // One order for user B
+        const bOrder = await Order.create(otherUserId, {
+            pickup_address: 'User B pickup SECRET',
+            delivery_address: 'User B delivery SECRET',
+            package_description: 'B-pkg-SECRET'
+        });
+
+        const res = await request(app)
+            .get('/orders')
+            .set('Cookie', `token=${validToken}`);
+
+        expect(res.status).toBe(200);
+        // User A's orders should be present
+        expect(res.text).toContain('User A pickup 1');
+        expect(res.text).toContain('User A pickup 2');
+        // User B's order must NOT appear in user A's list
+        expect(res.text).not.toContain('User B pickup SECRET');
+        expect(res.text).not.toContain('User B delivery SECRET');
+        expect(res.text).not.toContain('B-pkg-SECRET');
+
+        // Verify at DB level only user A's orders come back
+        const aRows = await Order.findByUserId(testUserId);
+        expect(aRows).toHaveLength(2);
+        expect(aRows.every((r) => r.user_id === testUserId)).toBe(true);
+        expect(aRows.some((r) => r.id === bOrder.id)).toBe(false);
+
+        // Sanity check: user B's own request shows only their order
+        const resB = await request(app)
+            .get('/orders')
+            .set('Cookie', `token=${otherToken}`);
+        expect(resB.status).toBe(200);
+        expect(resB.text).toContain('User B pickup SECRET');
+        expect(resB.text).not.toContain('User A pickup 1');
+        expect(resB.text).not.toContain('User A pickup 2');
     });
 
     test('GET /orders lists the user orders', async () => {
