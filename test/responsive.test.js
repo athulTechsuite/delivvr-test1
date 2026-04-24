@@ -1,10 +1,19 @@
-const puppeteer = require('puppeteer');
 const path = require('path');
 
-describe('Responsive Layout Tests', function() {
+let puppeteer;
+try {
+    puppeteer = require('puppeteer');
+} catch (e) {
+    puppeteer = null;
+}
+
+const TEST_URL = process.env.TEST_URL;
+const describeOrSkip = TEST_URL && puppeteer ? describe : describe.skip;
+
+describeOrSkip('Responsive Layout Tests', function() {
     let browser;
     let page;
-    const baseUrl = process.env.TEST_URL || 'http://localhost:3000';
+    const baseUrl = TEST_URL || 'http://localhost:3000';
     
     // Test viewport configurations
     const VIEWPORT_MOBILE = { width: 375, height: 667 };
@@ -21,15 +30,14 @@ describe('Responsive Layout Tests', function() {
     // Test timeout for responsive operations
     const RESPONSIVE_TIMEOUT = 5000;
 
-    before(async function() {
-        this.timeout(10000);
+    beforeAll(async function() {
         browser = await puppeteer.launch({
             headless: process.env.NODE_ENV === 'test',
             args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage']
         });
     });
 
-    after(async function() {
+    afterAll(async function() {
         if (browser) {
             await browser.close();
         }
@@ -48,7 +56,7 @@ describe('Responsive Layout Tests', function() {
 
     describe('Mobile Viewport (320px-768px)', function() {
         
-        it('should hide sidebar by default on mobile devices', async function() {
+        test('should hide sidebar by default on mobile devices', async function() {
             await page.setViewport(VIEWPORT_MOBILE);
             await page.goto(`${baseUrl}/`);
             
@@ -66,7 +74,7 @@ describe('Responsive Layout Tests', function() {
             expect(sidebarVisible).toBe(false);
         });
 
-        it('should display mobile toggle button on small screens', async function() {
+        test('should display mobile toggle button on small screens', async function() {
             await page.setViewport(VIEWPORT_MOBILE);
             await page.goto(`${baseUrl}/`);
             
@@ -83,7 +91,7 @@ describe('Responsive Layout Tests', function() {
             expect(isVisible).toBe(true);
         });
 
-        it('should open sidebar when toggle button is clicked', async function() {
+        test('should open sidebar when toggle button is clicked', async function() {
             await page.setViewport(VIEWPORT_MOBILE);
             await page.goto(`${baseUrl}/`);
             
@@ -101,7 +109,7 @@ describe('Responsive Layout Tests', function() {
             expect(sidebarVisible).toBe(true);
         });
 
-        it('should display backdrop overlay when sidebar is open on mobile', async function() {
+        test('should display backdrop overlay when sidebar is open on mobile', async function() {
             await page.setViewport(VIEWPORT_MOBILE);
             await page.goto(`${baseUrl}/`);
             
@@ -122,7 +130,7 @@ describe('Responsive Layout Tests', function() {
             expect(backdropVisible).toBe(true);
         });
 
-        it('should close sidebar when clicking on backdrop', async function() {
+        test('should close sidebar when clicking on backdrop', async function() {
             await page.setViewport(VIEWPORT_MOBILE);
             await page.goto(`${baseUrl}/`);
             
@@ -145,7 +153,7 @@ describe('Responsive Layout Tests', function() {
             expect(sidebarVisible).toBe(false);
         });
 
-        it('should adjust main content with top padding for mobile toggle button', async function() {
+        test('should adjust main content with top padding for mobile toggle button', async function() {
             await page.setViewport(VIEWPORT_MOBILE);
             await page.goto(`${baseUrl}/`);
             
@@ -160,7 +168,7 @@ describe('Responsive Layout Tests', function() {
             expect(mainContentPadding).toBeGreaterThanOrEqual(60); // Should have padding for toggle button
         });
 
-        it('should handle touch interactions for sidebar open/close', async function() {
+        test('should handle touch interactions for sidebar open/close', async function() {
             await page.setViewport(VIEWPORT_MOBILE);
             await page.goto(`${baseUrl}/`);
             
@@ -183,7 +191,7 @@ describe('Responsive Layout Tests', function() {
             }
         });
 
-        it('should handle landscape orientation on mobile devices', async function() {
+        test('should handle landscape orientation on mobile devices', async function() {
             await page.setViewport({ width: 667, height: 375 }); // Landscape mobile
             await page.goto(`${baseUrl}/`);
             
@@ -202,7 +210,7 @@ describe('Responsive Layout Tests', function() {
 
     describe('Tablet Viewport (768px-992px)', function() {
         
-        it('should maintain mobile behavior on tablet portrait', async function() {
+        test('should maintain mobile behavior on tablet portrait', async function() {
             await page.setViewport(VIEWPORT_TABLET_PORTRAIT);
             await page.goto(`${baseUrl}/`);
             
@@ -217,7 +225,7 @@ describe('Responsive Layout Tests', function() {
             expect(toggleButtonVisible).toBe(true);
         });
 
-        it('should show sidebar offcanvas behavior on tablet', async function() {
+        test('should show sidebar offcanvas behavior on tablet', async function() {
             await page.setViewport(VIEWPORT_TABLET_LANDSCAPE);
             await page.goto(`${baseUrl}/`);
             
@@ -236,7 +244,7 @@ describe('Responsive Layout Tests', function() {
 
     describe('Desktop Viewport (992px+)', function() {
         
-        it('should display sidebar expanded by default on desktop', async function() {
+        test('should display sidebar expanded by default on desktop', async function() {
             await page.setViewport(VIEWPORT_DESKTOP);
             await page.goto(`${baseUrl}/`);
             
@@ -251,7 +259,7 @@ describe('Responsive Layout Tests', function() {
             expect(sidebarVisible).toBe(true);
         });
 
-        it('should hide mobile toggle button on desktop', async function() {
+        test('should hide mobile toggle button on desktop', async function() {
             await page.setViewport(VIEWPORT_DESKTOP);
             await page.goto(`${baseUrl}/`);
             
@@ -267,7 +275,7 @@ describe('Responsive Layout Tests', function() {
             expect(toggleButtonHidden).toBe(true);
         });
 
-        it('should adjust main content margin for sidebar width on desktop', async function() {
+        test('should adjust main content margin for sidebar width on desktop', async function() {
             await page.setViewport(VIEWPORT_DESKTOP);
             await page.goto(`${baseUrl}/`);
             
@@ -282,7 +290,7 @@ describe('Responsive Layout Tests', function() {
             expect(mainContentMargin).toBe(SIDEBAR_WIDTH);
         });
 
-        it('should not display backdrop overlay on desktop', async function() {
+        test('should not display backdrop overlay on desktop', async function() {
             await page.setViewport(VIEWPORT_DESKTOP);
             await page.goto(`${baseUrl}/`);
             
@@ -292,7 +300,7 @@ describe('Responsive Layout Tests', function() {
             expect(backdrop).toBeNull();
         });
 
-        it('should maintain full width content area when sidebar is visible', async function() {
+        test('should maintain full width content area when sidebar is visible', async function() {
             await page.setViewport(VIEWPORT_DESKTOP_LARGE);
             await page.goto(`${baseUrl}/`);
             
@@ -310,7 +318,7 @@ describe('Responsive Layout Tests', function() {
 
     describe('Breakpoint Transitions', function() {
         
-        it('should transition properly from mobile to desktop', async function() {
+        test('should transition properly from mobile to desktop', async function() {
             await page.setViewport(VIEWPORT_MOBILE);
             await page.goto(`${baseUrl}/`);
             
@@ -331,7 +339,7 @@ describe('Responsive Layout Tests', function() {
             expect(sidebarVisible).toBe(true);
         });
 
-        it('should transition properly from desktop to mobile', async function() {
+        test('should transition properly from desktop to mobile', async function() {
             await page.setViewport(VIEWPORT_DESKTOP);
             await page.goto(`${baseUrl}/`);
             
@@ -353,7 +361,7 @@ describe('Responsive Layout Tests', function() {
             expect(toggleButtonVisible).toBe(true);
         });
 
-        it('should handle rapid viewport changes gracefully', async function() {
+        test('should handle rapid viewport changes gracefully', async function() {
             const viewports = [VIEWPORT_MOBILE, VIEWPORT_DESKTOP, VIEWPORT_TABLET_PORTRAIT, VIEWPORT_DESKTOP_LARGE];
             
             await page.goto(`${baseUrl}/`);
@@ -371,7 +379,7 @@ describe('Responsive Layout Tests', function() {
 
     describe('CSS Media Queries', function() {
         
-        it('should apply correct styles at mobile breakpoint', async function() {
+        test('should apply correct styles at mobile breakpoint', async function() {
             await page.setViewport(VIEWPORT_MOBILE);
             await page.goto(`${baseUrl}/`);
             
@@ -390,7 +398,7 @@ describe('Responsive Layout Tests', function() {
             expect(parseFloat(styles.paddingTop)).toBeGreaterThan(0);
         });
 
-        it('should apply correct styles at desktop breakpoint', async function() {
+        test('should apply correct styles at desktop breakpoint', async function() {
             await page.setViewport(VIEWPORT_DESKTOP);
             await page.goto(`${baseUrl}/`);
             
@@ -408,7 +416,7 @@ describe('Responsive Layout Tests', function() {
             expect(parseFloat(styles.marginLeft)).toBe(SIDEBAR_WIDTH);
         });
 
-        it('should verify media query breakpoints match Bootstrap standards', async function() {
+        test('should verify media query breakpoints match Bootstrap standards', async function() {
             await page.setViewport({ width: BREAKPOINT_LG - 1, height: 600 });
             await page.goto(`${baseUrl}/`);
             
@@ -440,7 +448,7 @@ describe('Responsive Layout Tests', function() {
 
     describe('Print Styles', function() {
         
-        it('should hide sidebar in print media', async function() {
+        test('should hide sidebar in print media', async function() {
             await page.setViewport(VIEWPORT_DESKTOP);
             await page.goto(`${baseUrl}/`);
             
@@ -458,7 +466,7 @@ describe('Responsive Layout Tests', function() {
             expect(sidebarHidden).toBe(true);
         });
 
-        it('should reset main content margin for print', async function() {
+        test('should reset main content margin for print', async function() {
             await page.setViewport(VIEWPORT_DESKTOP);
             await page.goto(`${baseUrl}/`);
             
@@ -479,7 +487,7 @@ describe('Responsive Layout Tests', function() {
 
     describe('Accessibility Features', function() {
         
-        it('should maintain focus trap in sidebar on mobile', async function() {
+        test('should maintain focus trap in sidebar on mobile', async function() {
             await page.setViewport(VIEWPORT_MOBILE);
             await page.goto(`${baseUrl}/`);
             
@@ -498,7 +506,7 @@ describe('Responsive Layout Tests', function() {
             expect(focusedElement).toBe(true);
         });
 
-        it('should support keyboard navigation in sidebar', async function() {
+        test('should support keyboard navigation in sidebar', async function() {
             await page.setViewport(VIEWPORT_DESKTOP);
             await page.goto(`${baseUrl}/`);
             
@@ -517,7 +525,7 @@ describe('Responsive Layout Tests', function() {
             expect(navigationWorks).toBe(true);
         });
 
-        it('should provide proper ARIA labels and roles', async function() {
+        test('should provide proper ARIA labels and roles', async function() {
             await page.setViewport(VIEWPORT_MOBILE);
             await page.goto(`${baseUrl}/`);
             
@@ -542,7 +550,7 @@ describe('Responsive Layout Tests', function() {
 
     describe('Performance and Animation', function() {
         
-        it('should complete sidebar animations within reasonable time', async function() {
+        test('should complete sidebar animations within reasonable time', async function() {
             await page.setViewport(VIEWPORT_MOBILE);
             await page.goto(`${baseUrl}/`);
             
@@ -560,7 +568,7 @@ describe('Responsive Layout Tests', function() {
             expect(animationTime).toBeLessThan(1000); // Should animate within 1 second
         });
 
-        it('should handle rapid toggle clicks gracefully', async function() {
+        test('should handle rapid toggle clicks gracefully', async function() {
             await page.setViewport(VIEWPORT_MOBILE);
             await page.goto(`${baseUrl}/`);
             
@@ -580,7 +588,7 @@ describe('Responsive Layout Tests', function() {
             expect(bodyExists).not.toBeNull();
         });
 
-        it('should maintain smooth transitions during viewport changes', async function() {
+        test('should maintain smooth transitions during viewport changes', async function() {
             await page.setViewport(VIEWPORT_MOBILE);
             await page.goto(`${baseUrl}/`);
             
@@ -603,7 +611,7 @@ describe('Responsive Layout Tests', function() {
 
     describe('Edge Cases and Error Handling', function() {
         
-        it('should handle missing Bootstrap CSS gracefully', async function() {
+        test('should handle missing Bootstrap CSS gracefully', async function() {
             await page.setViewport(VIEWPORT_DESKTOP);
             
             // Block Bootstrap CSS
@@ -624,7 +632,7 @@ describe('Responsive Layout Tests', function() {
             expect(sidebarExists).not.toBeNull();
         });
 
-        it('should handle disabled JavaScript gracefully', async function() {
+        test('should handle disabled JavaScript gracefully', async function() {
             await page.setJavaScriptEnabled(false);
             await page.setViewport(VIEWPORT_DESKTOP);
             await page.goto(`${baseUrl}/`);
@@ -640,7 +648,7 @@ describe('Responsive Layout Tests', function() {
             await page.setJavaScriptEnabled(true);
         });
 
-        it('should handle extremely small viewport sizes', async function() {
+        test('should handle extremely small viewport sizes', async function() {
             await page.setViewport({ width: 240, height: 320 });
             await page.goto(`${baseUrl}/`);
             
@@ -651,7 +659,7 @@ describe('Responsive Layout Tests', function() {
             expect(bodyExists).not.toBeNull();
         });
 
-        it('should handle extremely large viewport sizes', async function() {
+        test('should handle extremely large viewport sizes', async function() {
             await page.setViewport({ width: 3840, height: 2160 });
             await page.goto(`${baseUrl}/`);
             
