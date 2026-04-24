@@ -2,10 +2,14 @@
 
 /* CSS Custom Properties - Material Design Color Palette */
 :root {
+  /* Delivvr Brand Colors */
+  --primary: #FF6B00;
+  --accent: #00BFA5;
+
   /* Primary Colors */
-  --md-primary: #1976D2;
-  --md-primary-light: #42A5F5;
-  --md-primary-dark: #1565C0;
+  --md-primary: #FF6B00;
+  --md-primary-light: #FF8C33;
+  --md-primary-dark: #CC5500;
   --md-primary-50: #E3F2FD;
   --md-primary-100: #BBDEFB;
   --md-primary-200: #90CAF9;
@@ -132,20 +136,24 @@
 
 /* Dark Theme CSS Custom Properties - Material Design Dark Palette */
 .dark-theme {
+  /* Delivvr Brand Colors - Dark Theme */
+  --primary: #FF6B00;
+  --accent: #00BFA5;
+
   /* Primary Colors - adjusted for dark theme */
-  --md-primary: #90CAF9;
-  --md-primary-light: #BBDEFB;
-  --md-primary-dark: #64B5F6;
-  --md-primary-50: #0D47A1;
-  --md-primary-100: #1565C0;
-  --md-primary-200: #1976D2;
-  --md-primary-300: #1E88E5;
-  --md-primary-400: #2196F3;
-  --md-primary-500: #42A5F5;
-  --md-primary-600: #64B5F6;
-  --md-primary-700: #90CAF9;
-  --md-primary-800: #BBDEFB;
-  --md-primary-900: #E3F2FD;
+  --md-primary: #FF8C33;
+  --md-primary-light: #FFA866;
+  --md-primary-dark: #FF6B00;
+  --md-primary-50: #3D1A00;
+  --md-primary-100: #5A2700;
+  --md-primary-200: #7A3500;
+  --md-primary-300: #9C4400;
+  --md-primary-400: #BF5500;
+  --md-primary-500: #E06400;
+  --md-primary-600: #FF6B00;
+  --md-primary-700: #FF8C33;
+  --md-primary-800: #FFAA66;
+  --md-primary-900: #FFC999;
   
   /* Secondary Colors */
   --md-secondary: #FF4081;
@@ -1802,4 +1810,356 @@ h6, .md-h6 {
 
 .md-p-4 { padding: var(--md-spacing-xl) !important; }
 .md-pt-4 { padding-top: var(--md-spacing-xl) !important; }
-.md-pr-4 { padding-right: var(--md-spacing-xl) !
+.md-pr-4 { padding-right: var(--md-spacing-xl) !important; }
+.md-pb-4 { padding-bottom: var(--md-spacing-xl) !important; }
+.md-pl-4 { padding-left: var(--md-spacing-xl) !important; }
+.md-px-4 { padding-left: var(--md-spacing-xl) !important; padding-right: var(--md-spacing-xl) !important; }
+.md-py-4 { padding-top: var(--md-spacing-xl) !important; padding-bottom: var(--md-spacing-xl) !important; }
+
+/* ============================================================
+   Delivvr Brand: 8 New CSS Classes
+   ============================================================ */
+
+/* Avatar - circular div with initials */
+.md-avatar {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  background: var(--primary, #FF6B00);
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2rem;
+  font-weight: var(--md-font-weight-bold);
+  margin: 0 auto var(--md-spacing-lg) auto;
+  box-shadow: 0 4px 16px rgba(255, 107, 0, 0.35);
+  letter-spacing: 1px;
+  flex-shrink: 0;
+}
+
+/* Profile item row: icon + label + value */
+.md-profile-item {
+  display: flex;
+  align-items: center;
+  gap: var(--md-spacing-md);
+  padding: var(--md-spacing-md) 0;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+  transition: border-color var(--md-transition-standard);
+}
+
+.md-profile-item:last-of-type {
+  border-bottom: none;
+}
+
+.md-profile-item i {
+  font-size: 20px;
+  color: var(--primary, #FF6B00);
+  width: 28px;
+  text-align: center;
+  flex-shrink: 0;
+}
+
+.md-profile-item .label {
+  font-size: var(--md-font-size-caption);
+  font-weight: var(--md-font-weight-medium);
+  color: var(--md-text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  min-width: 100px;
+}
+
+.md-profile-item .value {
+  font-size: var(--md-font-size-body1);
+  font-weight: var(--md-font-weight-regular);
+  color: var(--md-text-primary);
+  flex: 1;
+}
+
+/* Dark theme profile item */
+.dark-theme .md-profile-item {
+  border-bottom-color: rgba(255, 255, 255, 0.10);
+}
+
+/* Card body padding */
+.md-card-body {
+  padding: 1.5rem;
+  background-color: var(--md-surface);
+  transition: background-color var(--md-transition-standard);
+}
+
+.dark-theme .md-card-body {
+  background-color: var(--md-surface-2dp);
+}
+
+/* Button group - horizontal flex row */
+.md-button-group {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+/* Error alert for profile page */
+.md-profile-error {
+  background-color: #fff5f5;
+  border-left: 4px solid var(--md-error, #F44336);
+  border-radius: var(--md-border-radius-sm);
+  padding: var(--md-spacing-lg);
+  color: var(--md-error-dark, #D32F2F);
+  display: flex;
+  align-items: flex-start;
+  gap: var(--md-spacing-md);
+}
+
+.md-profile-error i {
+  font-size: 24px;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.dark-theme .md-profile-error {
+  background-color: rgba(207, 102, 121, 0.12);
+  color: var(--md-error);
+}
+
+/* Technology grid */
+.md-tech-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: var(--md-spacing-lg);
+  margin-top: var(--md-spacing-xl);
+}
+
+/* Individual tech card */
+.md-tech-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: var(--md-spacing-xl) var(--md-spacing-md);
+  background-color: var(--md-surface);
+  border-radius: var(--md-border-radius-lg);
+  box-shadow: var(--md-elevation-2);
+  transition: transform var(--md-transition-standard), box-shadow var(--md-transition-standard);
+  cursor: default;
+}
+
+.md-tech-item:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--md-elevation-6);
+}
+
+.md-tech-item .md-tech-icon {
+  font-size: 2rem;
+  color: var(--primary, #FF6B00);
+  margin-bottom: var(--md-spacing-sm);
+}
+
+.dark-theme .md-tech-item {
+  background-color: var(--md-surface-2dp);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+/* Chip / badge pill */
+.md-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.25rem 0.75rem;
+  border-radius: 999px;
+  font-size: var(--md-font-size-caption);
+  font-weight: var(--md-font-weight-medium);
+  letter-spacing: 0.3px;
+  background-color: rgba(0, 191, 165, 0.15);
+  color: var(--accent, #00BFA5);
+  border: 1px solid rgba(0, 191, 165, 0.35);
+  white-space: nowrap;
+  transition: background-color var(--md-transition-standard);
+}
+
+.md-chip.md-chip-active {
+  background-color: rgba(76, 175, 80, 0.15);
+  color: var(--md-success-dark, #388E3C);
+  border-color: rgba(76, 175, 80, 0.35);
+}
+
+.md-chip.md-chip-pending {
+  background-color: rgba(255, 107, 0, 0.12);
+  color: var(--primary, #FF6B00);
+  border-color: rgba(255, 107, 0, 0.30);
+}
+
+.md-chip.md-chip-delivered {
+  background-color: rgba(0, 191, 165, 0.15);
+  color: var(--accent, #00BFA5);
+  border-color: rgba(0, 191, 165, 0.35);
+}
+
+.md-chip-small {
+  padding: 0.15rem 0.6rem;
+  font-size: 11px;
+}
+
+/* CTA Section banner */
+.md-section-cta {
+  background: var(--primary, #FF6B00);
+  color: #ffffff;
+  text-align: center;
+  padding: var(--md-spacing-xxxl) 0;
+  position: relative;
+  overflow: hidden;
+}
+
+.md-section-cta::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  right: -10%;
+  width: 60%;
+  height: 200%;
+  background: radial-gradient(circle, rgba(255,255,255,0.12) 0%, transparent 70%);
+  pointer-events: none;
+}
+
+.md-section-cta h2,
+.md-section-cta h3 {
+  color: #ffffff;
+}
+
+.md-section-cta p {
+  color: rgba(255,255,255,0.85);
+}
+
+.dark-theme .md-section-cta {
+  background: linear-gradient(135deg, #CC5500 0%, #FF6B00 100%);
+}
+
+/* Delivvr Navbar brand override */
+.delivvr-brand {
+  font-weight: var(--md-font-weight-bold);
+  letter-spacing: 0.5px;
+}
+
+/* ── Button variants missing from original set ── */
+.md-button--elevated {
+  background-color: var(--md-primary, #FF6B00);
+  color: var(--md-on-primary, #FFFFFF);
+  box-shadow: var(--md-elevation-2);
+}
+
+.md-button--elevated:hover {
+  box-shadow: var(--md-elevation-4);
+  background-color: var(--md-primary-dark, #CC5500);
+}
+
+.md-button--icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  padding: 0;
+  background: none;
+  border: none;
+  color: var(--md-text-primary-on-primary, #FFFFFF);
+  cursor: pointer;
+  transition: background-color var(--md-transition-standard, 0.2s ease);
+}
+
+.md-button--icon:hover {
+  background-color: rgba(255, 255, 255, 0.15);
+}
+
+.dark-theme .md-button--icon {
+  color: var(--md-text-primary, rgba(0, 0, 0, 0.87));
+}
+
+/* ── Utility classes ── */
+.md-display-flex { display: flex; }
+.md-flex-column { flex-direction: column; }
+.md-align-center { align-items: center; }
+.md-justify-between { justify-content: space-between; }
+.md-bg-primary { background-color: var(--md-primary); }
+.md-bg-surface { background-color: var(--md-surface); }
+.md-bg-background { background-color: var(--md-background); }
+.md-padding-none { padding: 0; }
+.md-padding-xs { padding: var(--md-spacing-xs, 4px); }
+.md-padding-sm { padding: var(--md-spacing-sm, 8px); }
+.md-padding-md { padding: var(--md-spacing-md, 16px); }
+.md-margin-right-xs { margin-right: var(--md-spacing-xs, 4px); }
+.md-margin-right-sm { margin-right: var(--md-spacing-sm, 8px); }
+.md-border-bottom { border-bottom: 1px solid var(--md-outline-variant, rgba(0,0,0,0.12)); }
+.md-border-radius-full { border-radius: 9999px; }
+.md-text-success { color: var(--md-success, #4CAF50); }
+.md-text-info { color: var(--md-info, #2196F3); }
+.md-text-error { color: var(--md-error, #F44336); }
+.md-text-on-primary { color: var(--md-on-primary, #FFFFFF); }
+.md-list { list-style: none; padding: 0; margin: 0; }
+.md-list-item { display: flex; align-items: center; padding: var(--md-spacing-sm, 8px) var(--md-spacing-md, 16px); }
+.md-list-item:hover { background-color: var(--md-surface-variant, rgba(0,0,0,0.04)); }
+.md-status-indicator { display: inline-block; width: 10px; height: 10px; border-radius: 50%; }
+.md-status-indicator--active { background-color: var(--md-success, #4CAF50); }
+.md-status-indicator--inactive { background-color: var(--md-error, #F44336); }
+.md-status-indicator--pending { background-color: var(--md-warning, #FF9800); }
+
+/* ── BEM button modifier aliases (fix #2, #3) ── */
+.md-button--full-width { width: 100%; }
+.md-button--large { padding: 0 2rem; height: 48px; font-size: 1rem; }
+
+/* md-width-full alias (fix #3) */
+.md-width-full { width: 100%; }
+
+/* Helper and error text classes for signup form (fix #4) */
+.md-helper-text {
+  font-size: 0.75rem;
+  color: var(--md-on-surface-variant, rgba(0, 0, 0, 0.6));
+  margin-top: 4px;
+  display: block;
+}
+.md-error-text {
+  font-size: 0.75rem;
+  color: var(--md-error, #F44336);
+  margin-top: 4px;
+  display: block;
+}
+
+/* CTA section button classes (fix #5) */
+.md-button--cta-primary {
+  background: #fff;
+  color: var(--md-primary, #FF6B00);
+  font-weight: 700;
+  padding: 0 2rem;
+  height: 48px;
+  border-radius: 24px;
+}
+.md-button--cta-primary:hover {
+  background: rgba(255, 255, 255, 0.9);
+}
+.md-button--cta-secondary {
+  background: rgba(255, 255, 255, 0.15);
+  color: #fff;
+  border: 2px solid rgba(255, 255, 255, 0.6);
+  padding: 0 2rem;
+  height: 48px;
+  border-radius: 24px;
+}
+.md-button--cta-secondary:hover {
+  background: rgba(255, 255, 255, 0.25);
+}
+
+/* Card header icon and heading styles (fix #6, #7) */
+.md-card-header i {
+  font-size: 2.5rem;
+  color: var(--md-on-primary, #fff);
+}
+.md-card-header h1,
+.md-card-header h2,
+.md-card-header h3 {
+  color: var(--md-on-primary, #fff);
+  margin: 0;
+}
+

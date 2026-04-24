@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Express Auth App - Home</title>
+    <title>Delivvr - Fast &amp; Reliable Delivery</title>
     <link rel="stylesheet" href="/css/style.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -15,9 +15,9 @@
     <nav class="md-navbar" role="navigation" aria-label="Main navigation">
         <div class="md-navbar-container">
             <div class="md-navbar-brand">
-                <a href="/" class="md-navbar-brand-link" aria-label="Express Auth App Home">
-                    <i class="bi bi-shield-lock-fill" aria-hidden="true"></i>
-                    <span>Express Auth</span>
+                <a href="/" class="md-navbar-brand-link delivvr-brand" aria-label="Delivvr Home">
+                    <i class="bi bi-truck" aria-hidden="true"></i>
+                    <span>Delivvr</span>
                 </a>
             </div>
             
@@ -48,13 +48,8 @@
                         </a>
                     </li>
                     <li class="md-navbar-item md-theme-toggle-item" role="none">
-                        <button class="md-theme-toggle" type="button" role="switch" aria-label="Toggle dark mode" aria-pressed="false" title="Switch to dark theme">
-                            <span class="md-theme-toggle-track">
-                                <span class="md-theme-toggle-thumb">
-                                    <i class="bi bi-sun-fill md-theme-toggle-icon-light" aria-hidden="true"></i>
-                                    <i class="bi bi-moon-fill md-theme-toggle-icon-dark" aria-hidden="true"></i>
-                                </span>
-                            </span>
+                        <button class="md-button md-button--icon theme-toggle" id="theme-toggle" aria-label="Toggle theme">
+                            <i class="bi bi-moon-fill" id="theme-icon"></i>
                         </button>
                     </li>
                 </ul>
@@ -73,18 +68,18 @@
                     <div class="md-col-12 md-col-lg-10 md-col-xl-8">
                         <div class="md-hero-content md-text-center">
                             <h1 id="hero-heading" class="md-display-large md-text-primary-on-primary md-margin-bottom-md">
-                                Welcome to Express Auth App
+                                Fast. Reliable. <em>Delivvr.</em>
                             </h1>
                             <p class="md-headline-medium md-text-secondary-on-primary md-margin-bottom-xl">
-                                A complete authentication system built with Express.js, featuring secure user registration, 
-                                login functionality, and JWT-based session management with Material Design.
+                                Deliver smarter, faster, together. Track your packages in real time,
+                                manage deliveries, and connect with trusted couriers — all in one place.
                             </p>
                             <div class="md-hero-actions">
-                                <a href="/signup" class="md-button md-button-primary md-button-large md-margin-right-md" role="button">
+                                <a href="/signup" class="md-button md-button--contained md-button--large md-margin-right-md" role="button">
                                     <i class="bi bi-rocket-takeoff" aria-hidden="true"></i>
                                     Get Started
                                 </a>
-                                <a href="/login" class="md-button md-button-outline-primary md-button-large" role="button">
+                                <a href="/login" class="md-button md-button--outlined md-button--large" role="button">
                                     <i class="bi bi-box-arrow-in-right" aria-hidden="true"></i>
                                     Sign In
                                 </a>
@@ -110,87 +105,87 @@
                 </div>
                 
                 <div class="md-row md-row-gap-lg">
-                    <!-- Feature Card 1: Secure Authentication -->
+                    <!-- Feature Card 1: Fast Delivery -->
                     <div class="md-col-12 md-col-md-6 md-col-lg-4">
                         <article class="md-card md-elevation-2 md-card-feature" role="article">
                             <div class="md-card-content">
                                 <div class="md-card-icon md-margin-bottom-md">
                                     <div class="md-icon-circle md-bg-primary-100">
-                                        <i class="bi bi-shield-lock-fill md-text-primary" aria-hidden="true"></i>
+                                        <i class="bi bi-truck md-text-primary" aria-hidden="true"></i>
                                     </div>
                                 </div>
                                 <h3 class="md-headline-small md-text-primary md-margin-bottom-sm">
-                                    Secure Authentication
+                                    Fast Delivery
                                 </h3>
                                 <p class="md-body-large md-text-secondary">
-                                    Passwords are securely hashed using bcrypt and authentication 
-                                    is handled with JWT tokens for maximum security and data protection.
+                                    Same-day and next-day delivery options with real-time tracking
+                                    so you always know exactly where your package is.
                                 </p>
                             </div>
                         </article>
                     </div>
 
-                    <!-- Feature Card 2: Easy Registration -->
+                    <!-- Feature Card 2: Package Management -->
                     <div class="md-col-12 md-col-md-6 md-col-lg-4">
                         <article class="md-card md-elevation-2 md-card-feature" role="article">
                             <div class="md-card-content">
                                 <div class="md-card-icon md-margin-bottom-md">
                                     <div class="md-icon-circle md-bg-secondary-100">
-                                        <i class="bi bi-person-plus-fill md-text-secondary" aria-hidden="true"></i>
+                                        <i class="bi bi-box-seam md-text-secondary" aria-hidden="true"></i>
                                     </div>
                                 </div>
                                 <h3 class="md-headline-small md-text-primary md-margin-bottom-sm">
-                                    Easy Registration
+                                    Package Management
                                 </h3>
                                 <p class="md-body-large md-text-secondary">
-                                    Simple and intuitive user registration process with 
-                                    comprehensive validation and immediate account activation.
+                                    Easily manage all your shipments in one dashboard —
+                                    schedule pickups, print labels, and monitor delivery status.
                                 </p>
                             </div>
                         </article>
                     </div>
 
-                    <!-- Feature Card 3: Protected Dashboard -->
+                    <!-- Feature Card 3: Live Tracking -->
                     <div class="md-col-12 md-col-md-6 md-col-lg-4">
                         <article class="md-card md-elevation-2 md-card-feature" role="article">
                             <div class="md-card-content">
                                 <div class="md-card-icon md-margin-bottom-md">
                                     <div class="md-icon-circle md-bg-success-100">
-                                        <i class="bi bi-speedometer2 md-text-success" aria-hidden="true"></i>
+                                        <i class="bi bi-geo-alt md-text-success" aria-hidden="true"></i>
                                     </div>
                                 </div>
                                 <h3 class="md-headline-small md-text-primary md-margin-bottom-sm">
-                                    Protected Dashboard
+                                    Live GPS Tracking
                                 </h3>
                                 <p class="md-body-large md-text-secondary">
-                                    Access your personal dashboard with user profile information 
-                                    and secure session management with Material Design interface.
+                                    Pinpoint live location of every delivery on an interactive map
+                                    with accurate ETA updates every minute.
                                 </p>
                             </div>
                         </article>
                     </div>
 
-                    <!-- Feature Card 4: Material Design -->
+                    <!-- Feature Card 4: Secure Payments -->
                     <div class="md-col-12 md-col-md-6 md-col-lg-4">
                         <article class="md-card md-elevation-2 md-card-feature" role="article">
                             <div class="md-card-content">
                                 <div class="md-card-icon md-margin-bottom-md">
                                     <div class="md-icon-circle md-bg-info-100">
-                                        <i class="bi bi-palette-fill md-text-info" aria-hidden="true"></i>
+                                        <i class="bi bi-shield-lock-fill md-text-info" aria-hidden="true"></i>
                                     </div>
                                 </div>
                                 <h3 class="md-headline-small md-text-primary md-margin-bottom-sm">
-                                    Material Design
+                                    Secure &amp; Reliable
                                 </h3>
                                 <p class="md-body-large md-text-secondary">
-                                    Beautiful and responsive user interface following Google's 
-                                    Material Design principles for consistent user experience.
+                                    End-to-end encrypted transactions, insured shipments, and
+                                    a 99.9% on-time delivery guarantee you can count on.
                                 </p>
                             </div>
                         </article>
                     </div>
 
-                    <!-- Feature Card 5: Responsive Layout -->
+                    <!-- Feature Card 5: Mobile First -->
                     <div class="md-col-12 md-col-md-6 md-col-lg-4">
                         <article class="md-card md-elevation-2 md-card-feature" role="article">
                             <div class="md-card-content">
@@ -200,31 +195,31 @@
                                     </div>
                                 </div>
                                 <h3 class="md-headline-small md-text-primary md-margin-bottom-sm">
-                                    Responsive Design
+                                    Mobile-First App
                                 </h3>
                                 <p class="md-body-large md-text-secondary">
-                                    Fully responsive layout that works seamlessly across all 
-                                    devices - mobile, tablet, and desktop with touch-friendly interactions.
+                                    Manage deliveries on the go with our fully responsive interface
+                                    that works seamlessly on all devices.
                                 </p>
                             </div>
                         </article>
                     </div>
 
-                    <!-- Feature Card 6: Session Management -->
+                    <!-- Feature Card 6: Smart Scheduling -->
                     <div class="md-col-12 md-col-md-6 md-col-lg-4">
                         <article class="md-card md-elevation-2 md-card-feature" role="article">
                             <div class="md-card-content">
                                 <div class="md-card-icon md-margin-bottom-md">
                                     <div class="md-icon-circle md-bg-purple-100">
-                                        <i class="bi bi-clock-history md-text-purple" aria-hidden="true"></i>
+                                        <i class="bi bi-calendar-check md-text-purple" aria-hidden="true"></i>
                                     </div>
                                 </div>
                                 <h3 class="md-headline-small md-text-primary md-margin-bottom-sm">
-                                    Session Management
+                                    Smart Scheduling
                                 </h3>
                                 <p class="md-body-large md-text-secondary">
-                                    Advanced session management with automatic logout, 
-                                    secure cookie handling, and token refresh capabilities.
+                                    AI-powered routing and scheduling ensures your packages
+                                    always take the fastest, most efficient path.
                                 </p>
                             </div>
                         </article>
@@ -315,31 +310,28 @@
             </div>
         </section>
 
-        <!-- Material Design Call-to-Action Section -->
-        <section class="md-section md-section-cta" aria-labelledby="cta-heading">
+        <!-- Delivvr Call-to-Action Section -->
+        <section class="md-section-cta" aria-labelledby="cta-heading">
             <div class="md-container">
                 <div class="md-row md-justify-center">
-                    <div class="md-col-12 md-col-lg-8">
-                        <div class="md-card md-elevation-4 md-card-cta">
-                            <div class="md-card-content md-text-center">
-                                <h2 id="cta-heading" class="md-headline-large md-text-primary md-margin-bottom-md">
-                                    Ready to Get Started?
-                                </h2>
-                                <p class="md-body-large md-text-secondary md-margin-bottom-xl">
-                                    Join thousands of developers who trust our authentication system. 
-                                    Create your account today and experience secure, modern user management.
-                                </p>
-                                <div class="md-cta-actions">
-                                    <a href="/signup" class="md-button md-button-primary md-button-large md-margin-right-md" role="button">
-                                        <i class="bi bi-person-plus-fill" aria-hidden="true"></i>
-                                        Create Account
-                                    </a>
-                                    <a href="/login" class="md-button md-button-text md-button-large" role="button">
-                                        <i class="bi bi-arrow-right" aria-hidden="true"></i>
-                                        Already have an account?
-                                    </a>
-                                </div>
-                            </div>
+                    <div class="md-col-12 md-col-lg-8 md-text-center">
+                        <i class="bi bi-truck" aria-hidden="true" style="font-size:3rem;color:#fff;margin-bottom:1rem;display:block;"></i>
+                        <h2 id="cta-heading" style="color:#fff;font-weight:700;margin-bottom:1rem;">
+                            Ready to Deliver Smarter?
+                        </h2>
+                        <p style="color:rgba(255,255,255,0.88);font-size:1.125rem;margin-bottom:2rem;">
+                            Join thousands of businesses and individuals who trust Delivvr for
+                            fast, reliable, and trackable deliveries. Start your first shipment today.
+                        </p>
+                        <div class="md-button-group md-justify-content-center">
+                            <a href="/signup" class="md-button md-button--cta-primary" role="button">
+                                <i class="bi bi-truck" aria-hidden="true"></i>
+                                Get Started Free
+                            </a>
+                            <a href="/login" class="md-button md-button--cta-secondary" role="button">
+                                <i class="bi bi-box-arrow-in-right" aria-hidden="true"></i>
+                                Sign In
+                            </a>
                         </div>
                     </div>
                 </div>
@@ -354,11 +346,11 @@
                 <div class="md-col-12">
                     <div class="md-footer-content md-text-center">
                         <div class="md-footer-brand md-margin-bottom-sm">
-                            <i class="bi bi-shield-lock-fill md-text-primary" aria-hidden="true"></i>
-                            <span class="md-title-large md-text-primary">Express Auth</span>
+                            <i class="bi bi-truck" aria-hidden="true"></i>
+                            <span class="md-title-large">Delivvr</span>
                         </div>
                         <p class="md-body-medium md-text-secondary md-margin-bottom-md">
-                            &copy; 2024 Express Auth App. Built with Express.js, EJS, and Material Design principles.
+                            &copy; 2026 Delivvr. All rights reserved.
                         </p>
                         <div class="md-footer-tech">
                             <span class="md-chip md-chip-small">
@@ -395,7 +387,7 @@
                 navbarToggle.addEventListener('click', function() {
                     const isExpanded = navbarToggle.getAttribute('aria-expanded') === 'true';
                     navbarToggle.setAttribute('aria-expanded', !isExpanded);
-                    navbarNav.classList.toggle('md-navbar-nav-open');
+                    navbarNav.classList.toggle('show');
                 });
 
                 // Close mobile menu when clicking on navigation links
@@ -403,7 +395,7 @@
                 navLinks.forEach(link => {
                     link.addEventListener('click', function() {
                         navbarToggle.setAttribute('aria-expanded', 'false');
-                        navbarNav.classList.remove('md-navbar-nav-open');
+                        navbarNav.classList.remove('show');
                     });
                 });
 
@@ -411,7 +403,7 @@
                 document.addEventListener('click', function(event) {
                     if (!navbarToggle.contains(event.target) && !navbarNav.contains(event.target)) {
                         navbarToggle.setAttribute('aria-expanded', 'false');
-                        navbarNav.classList.remove('md-navbar-nav-open');
+                        navbarNav.classList.remove('show');
                     }
                 });
             }

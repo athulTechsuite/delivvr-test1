@@ -3,29 +3,29 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sign Up - Express Auth App</title>
+    <title>Sign Up - Delivvr</title>
     <link rel="stylesheet" href="/css/style.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:ital,0,1;wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,300;0,400;0,500;0,700;1,300;1,400&display=swap" rel="stylesheet">
 </head>
 <body class="md-body">
     <!-- Main Navigation -->
     <nav class="md-navbar" role="navigation" aria-label="Main navigation">
         <div class="md-navbar-container">
             <div class="md-navbar-brand">
-                <a href="/" class="md-navbar-brand-link" aria-label="Express Auth App Home">
-                    <i class="bi bi-shield-lock-fill" aria-hidden="true"></i>
-                    <span>Express Auth</span>
+                <a href="/" class="md-navbar-brand-link delivvr-brand" aria-label="Delivvr Home">
+                    <i class="bi bi-truck" aria-hidden="true"></i>
+                    <span>Delivvr</span>
                 </a>
             </div>
-            
+
             <!-- Mobile Menu Toggle -->
             <button class="md-navbar-toggle" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
                 <span class="md-navbar-toggle-icon"></span>
             </button>
-            
+
             <!-- Navigation Links -->
             <div class="md-navbar-nav" id="navbarNav">
                 <ul class="md-navbar-menu" role="menubar">
@@ -48,14 +48,9 @@
                         </a>
                     </li>
                     <li class="md-navbar-item md-theme-toggle-item" role="none">
-                        <div class="md-theme-toggle" role="menuitem" aria-label="Toggle theme" tabindex="0">
-                            <div class="md-theme-toggle-track">
-                                <div class="md-theme-toggle-thumb">
-                                    <i class="bi bi-sun-fill md-theme-icon-light" aria-hidden="true"></i>
-                                    <i class="bi bi-moon-fill md-theme-icon-dark" aria-hidden="true"></i>
-                                </div>
-                            </div>
-                        </div>
+                        <button class="md-button md-button--icon theme-toggle" id="theme-toggle" aria-label="Toggle theme">
+                            <i class="bi bi-moon-fill" id="theme-icon"></i>
+                        </button>
                     </li>
                 </ul>
             </div>
@@ -71,14 +66,16 @@
                     <div class="md-col-12 md-col-md-8 md-col-lg-6 md-col-xl-5">
                         <!-- Signup Card -->
                         <div class="md-card md-elevation-2" role="form" aria-labelledby="signup-heading">
-                            <!-- Card Header -->
-                            <div class="md-card-header">
-                                <h1 id="signup-heading" class="md-headline-medium md-text-primary md-text-center">
-                                    <i class="bi bi-person-plus-fill md-icon-medium" aria-hidden="true"></i>
-                                    Create Account
+                            <!-- Card Header - Delivvr Branded -->
+                            <div class="md-card-header md-text-center">
+                                <div style="margin-bottom:0.75rem;">
+                                    <i class="bi bi-truck" aria-hidden="true"></i>
+                                </div>
+                                <h1 id="signup-heading" class="md-headline-medium md-margin-0 md-text-on-primary" style="letter-spacing:1px;">
+                                    Delivvr
                                 </h1>
-                                <p class="md-body-medium md-text-secondary md-text-center md-margin-top-sm">
-                                    Join our platform today and start exploring
+                                <p class="md-body-medium md-margin-top-sm md-margin-bottom-0 md-text-on-primary">
+                                    Create your account and start delivering
                                 </p>
                             </div>
 
@@ -86,7 +83,7 @@
                             <div class="md-card-content">
                                 <!-- Error Alert -->
                                 <% if (typeof error !== 'undefined' && error) { %>
-                                    <div class="md-alert md-alert-error md-margin-bottom-lg" role="alert" aria-live="polite">
+                                    <div class="md-alert md-alert--error md-margin-bottom-lg" role="alert" aria-live="polite">
                                         <div class="md-alert-icon">
                                             <i class="bi bi-exclamation-circle-fill" aria-hidden="true"></i>
                                         </div>
@@ -95,10 +92,10 @@
                                         </div>
                                     </div>
                                 <% } %>
-                                
+
                                 <!-- Success Alert -->
                                 <% if (typeof success !== 'undefined' && success) { %>
-                                    <div class="md-alert md-alert-success md-margin-bottom-lg" role="alert" aria-live="polite">
+                                    <div class="md-alert md-alert--success md-margin-bottom-lg" role="alert" aria-live="polite">
                                         <div class="md-alert-icon">
                                             <i class="bi bi-check-circle-fill" aria-hidden="true"></i>
                                         </div>
@@ -112,24 +109,24 @@
                                 <form id="signupForm" action="/signup" method="POST" novalidate>
                                     <!-- Full Name Field -->
                                     <div class="md-form-field md-margin-bottom-lg">
-                                        <div class="md-input-container">
-                                            <input 
-                                                type="text" 
-                                                id="name" 
-                                                name="name" 
-                                                class="md-input" 
-                                                required 
+                                        <div class="md-form-group">
+                                            <input
+                                                type="text"
+                                                id="name"
+                                                name="name"
+                                                class="md-form-control"
+                                                placeholder=" "
+                                                required
                                                 minlength="2"
                                                 maxlength="50"
                                                 pattern="[a-zA-Z\s]+"
                                                 autocomplete="name"
                                                 aria-describedby="name-helper"
                                             >
-                                            <label for="name" class="md-label">
+                                            <label class="md-form-label" for="name">
                                                 <i class="bi bi-person" aria-hidden="true"></i>
                                                 Full Name
                                             </label>
-                                            <div class="md-input-underline"></div>
                                         </div>
                                         <div id="name-helper" class="md-helper-text">
                                             Enter your full name (letters and spaces only)
@@ -139,21 +136,21 @@
 
                                     <!-- Email Field -->
                                     <div class="md-form-field md-margin-bottom-lg">
-                                        <div class="md-input-container">
-                                            <input 
-                                                type="email" 
-                                                id="email" 
-                                                name="email" 
-                                                class="md-input" 
-                                                required 
+                                        <div class="md-form-group">
+                                            <input
+                                                type="email"
+                                                id="email"
+                                                name="email"
+                                                class="md-form-control"
+                                                placeholder=" "
+                                                required
                                                 autocomplete="email"
                                                 aria-describedby="email-helper"
                                             >
-                                            <label for="email" class="md-label">
+                                            <label class="md-form-label" for="email">
                                                 <i class="bi bi-envelope" aria-hidden="true"></i>
                                                 Email Address
                                             </label>
-                                            <div class="md-input-underline"></div>
                                         </div>
                                         <div id="email-helper" class="md-helper-text">
                                             We'll use this email for account verification and notifications
@@ -163,32 +160,32 @@
 
                                     <!-- Password Field -->
                                     <div class="md-form-field md-margin-bottom-lg">
-                                        <div class="md-input-container">
-                                            <input 
-                                                type="password" 
-                                                id="password" 
-                                                name="password" 
-                                                class="md-input" 
-                                                required 
+                                        <div class="md-form-group">
+                                            <input
+                                                type="password"
+                                                id="password"
+                                                name="password"
+                                                class="md-form-control"
+                                                placeholder=" "
+                                                required
                                                 minlength="6"
                                                 maxlength="128"
                                                 autocomplete="new-password"
                                                 aria-describedby="password-helper password-requirements"
                                             >
-                                            <label for="password" class="md-label">
+                                            <label class="md-form-label" for="password">
                                                 <i class="bi bi-lock" aria-hidden="true"></i>
                                                 Password
                                             </label>
-                                            <button 
-                                                type="button" 
-                                                class="md-input-action" 
+                                            <button
+                                                type="button"
+                                                class="md-input-action"
                                                 id="togglePassword"
                                                 aria-label="Show password"
                                                 tabindex="-1"
                                             >
                                                 <i class="bi bi-eye" aria-hidden="true"></i>
                                             </button>
-                                            <div class="md-input-underline"></div>
                                         </div>
                                         <div id="password-helper" class="md-helper-text">
                                             Password must be at least 6 characters long
@@ -201,30 +198,30 @@
 
                                     <!-- Confirm Password Field -->
                                     <div class="md-form-field md-margin-bottom-xl">
-                                        <div class="md-input-container">
-                                            <input 
-                                                type="password" 
-                                                id="confirmPassword" 
-                                                name="confirmPassword" 
-                                                class="md-input" 
-                                                required 
+                                        <div class="md-form-group">
+                                            <input
+                                                type="password"
+                                                id="confirmPassword"
+                                                name="confirmPassword"
+                                                class="md-form-control"
+                                                placeholder=" "
+                                                required
                                                 autocomplete="new-password"
                                                 aria-describedby="confirm-password-helper"
                                             >
-                                            <label for="confirmPassword" class="md-label">
+                                            <label class="md-form-label" for="confirmPassword">
                                                 <i class="bi bi-shield-check" aria-hidden="true"></i>
                                                 Confirm Password
                                             </label>
-                                            <button 
-                                                type="button" 
-                                                class="md-input-action" 
+                                            <button
+                                                type="button"
+                                                class="md-input-action"
                                                 id="toggleConfirmPassword"
                                                 aria-label="Show confirm password"
                                                 tabindex="-1"
                                             >
                                                 <i class="bi bi-eye" aria-hidden="true"></i>
                                             </button>
-                                            <div class="md-input-underline"></div>
                                         </div>
                                         <div id="confirm-password-helper" class="md-helper-text">
                                             Re-enter your password to confirm
@@ -234,13 +231,13 @@
 
                                     <!-- Submit Button -->
                                     <div class="md-form-field">
-                                        <button 
-                                            type="submit" 
-                                            class="md-button md-button-primary md-button-elevated md-width-full"
+                                        <button
+                                            type="submit"
+                                            class="md-button md-button--contained md-button--elevated md-button--full-width"
                                             id="submitButton"
                                         >
                                             <span class="md-button-label">
-                                                <i class="bi bi-person-plus" aria-hidden="true"></i>
+                                                <i class="bi bi-truck" aria-hidden="true"></i>
                                                 Create Account
                                             </span>
                                             <div class="md-button-ripple"></div>
@@ -253,7 +250,7 @@
                             <div class="md-card-actions">
                                 <div class="md-text-center">
                                     <p class="md-body-medium md-text-secondary">
-                                        Already have an account? 
+                                        Already have an account?
                                         <a href="/login" class="md-link md-link-primary">
                                             <i class="bi bi-box-arrow-in-right" aria-hidden="true"></i>
                                             Sign in here
@@ -303,41 +300,39 @@
         function showFieldError(field, message) {
             const container = field.closest('.md-form-field');
             const errorElement = container.querySelector('.md-error-text');
-            const inputContainer = container.querySelector('.md-input-container');
-            
+            const formGroup = container.querySelector('.md-form-group');
+
             errorElement.textContent = message;
-            inputContainer.classList.add('md-input-error');
+            if (formGroup) formGroup.classList.add('md-input-error');
             field.setAttribute('aria-invalid', 'true');
         }
 
         function clearFieldError(field) {
             const container = field.closest('.md-form-field');
             const errorElement = container.querySelector('.md-error-text');
-            const inputContainer = container.querySelector('.md-input-container');
-            
+            const formGroup = container.querySelector('.md-form-group');
+
             errorElement.textContent = '';
-            inputContainer.classList.remove('md-input-error');
+            if (formGroup) formGroup.classList.remove('md-input-error');
             field.setAttribute('aria-invalid', 'false');
         }
 
         function showFieldSuccess(field) {
             const container = field.closest('.md-form-field');
-            const inputContainer = container.querySelector('.md-input-container');
-            
-            inputContainer.classList.add('md-input-success');
+            const formGroup = container.querySelector('.md-form-group');
+            if (formGroup) formGroup.classList.add('md-input-success');
         }
 
         function clearFieldSuccess(field) {
             const container = field.closest('.md-form-field');
-            const inputContainer = container.querySelector('.md-input-container');
-            
-            inputContainer.classList.remove('md-input-success');
+            const formGroup = container.querySelector('.md-form-group');
+            if (formGroup) formGroup.classList.remove('md-input-success');
         }
 
         function updateSubmitButton() {
             const allValid = Object.values(fieldValidation).every(valid => valid);
             submitButton.disabled = !allValid;
-            
+
             if (allValid) {
                 submitButton.classList.remove('md-button-disabled');
             } else {
@@ -348,25 +343,25 @@
         // Validation functions
         function validateName() {
             const value = nameField.value.trim();
-            
+
             if (!value) {
                 showFieldError(nameField, 'Full name is required');
                 fieldValidation.name = false;
                 return false;
             }
-            
+
             if (value.length < MIN_NAME_LENGTH || value.length > MAX_NAME_LENGTH) {
                 showFieldError(nameField, `Name must be between ${MIN_NAME_LENGTH} and ${MAX_NAME_LENGTH} characters`);
                 fieldValidation.name = false;
                 return false;
             }
-            
+
             if (!VALIDATION_PATTERNS.name.test(value)) {
                 showFieldError(nameField, 'Name can only contain letters and spaces');
                 fieldValidation.name = false;
                 return false;
             }
-            
+
             clearFieldError(nameField);
             showFieldSuccess(nameField);
             fieldValidation.name = true;
@@ -375,21 +370,20 @@
 
         function validateEmail() {
             const value = emailField.value.trim();
-            
+
             if (!value) {
                 showFieldError(emailField, 'Email address is required');
                 fieldValidation.email = false;
                 return false;
             }
-            
-            // Basic email validation
+
             const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
             if (!emailPattern.test(value)) {
                 showFieldError(emailField, 'Please enter a valid email address');
                 fieldValidation.email = false;
                 return false;
             }
-            
+
             clearFieldError(emailField);
             showFieldSuccess(emailField);
             fieldValidation.email = true;
@@ -398,53 +392,52 @@
 
         function validatePassword() {
             const value = passwordField.value;
-            
+
             if (!value) {
                 showFieldError(passwordField, 'Password is required');
                 fieldValidation.password = false;
                 return false;
             }
-            
+
             if (value.length < MIN_PASSWORD_LENGTH || value.length > MAX_PASSWORD_LENGTH) {
                 showFieldError(passwordField, `Password must be between ${MIN_PASSWORD_LENGTH} and ${MAX_PASSWORD_LENGTH} characters`);
                 fieldValidation.password = false;
                 return false;
             }
-            
+
             if (!VALIDATION_PATTERNS.password.test(value)) {
                 showFieldError(passwordField, 'Password must contain at least one lowercase letter, one uppercase letter, and one number');
                 fieldValidation.password = false;
                 return false;
             }
-            
+
             clearFieldError(passwordField);
             showFieldSuccess(passwordField);
             fieldValidation.password = true;
-            
-            // Re-validate confirm password if it has a value
+
             if (confirmPasswordField.value) {
                 validateConfirmPassword();
             }
-            
+
             return true;
         }
 
         function validateConfirmPassword() {
             const value = confirmPasswordField.value;
             const passwordValue = passwordField.value;
-            
+
             if (!value) {
                 showFieldError(confirmPasswordField, 'Please confirm your password');
                 fieldValidation.confirmPassword = false;
                 return false;
             }
-            
+
             if (value !== passwordValue) {
                 showFieldError(confirmPasswordField, 'Passwords do not match');
                 fieldValidation.confirmPassword = false;
                 return false;
             }
-            
+
             clearFieldError(confirmPasswordField);
             showFieldSuccess(confirmPasswordField);
             fieldValidation.confirmPassword = true;
@@ -455,7 +448,7 @@
         function togglePasswordVisibility(inputField, toggleButton) {
             const isPassword = inputField.type === 'password';
             const icon = toggleButton.querySelector('i');
-            
+
             if (isPassword) {
                 inputField.type = 'text';
                 icon.className = 'bi bi-eye-slash';
@@ -527,37 +520,32 @@
         // Form submission
         form.addEventListener('submit', function(e) {
             e.preventDefault();
-            
+
             // Clear all previous states
             [nameField, emailField, passwordField, confirmPasswordField].forEach(field => {
                 clearFieldError(field);
                 clearFieldSuccess(field);
             });
-            
+
             // Validate all fields
             const nameValid = validateName();
             const emailValid = validateEmail();
             const passwordValid = validatePassword();
             const confirmPasswordValid = validateConfirmPassword();
-            
+
             // Update submit button state
             updateSubmitButton();
-            
+
             // If all validations pass, submit the form
             if (nameValid && emailValid && passwordValid && confirmPasswordValid) {
-                // Show loading state
                 submitButton.disabled = true;
                 const buttonLabel = submitButton.querySelector('.md-button-label');
-                const originalContent = buttonLabel.innerHTML;
                 buttonLabel.innerHTML = '<i class="bi bi-hourglass-split" aria-hidden="true"></i> Creating Account...';
-                
-                // Submit form
                 this.submit();
             } else {
-                // Focus on first invalid field
                 const invalidField = [nameField, emailField, passwordField, confirmPasswordField]
                     .find((field, index) => !Object.values(fieldValidation)[index]);
-                
+
                 if (invalidField) {
                     invalidField.focus();
                 }
@@ -567,49 +555,27 @@
         // Initialize form state
         updateSubmitButton();
 
-        // Add floating label behavior
-        document.querySelectorAll('.md-input').forEach(input => {
-            const container = input.closest('.md-input-container');
-            const label = container.querySelector('.md-label');
-            
-            function updateLabelState() {
-                if (input.value || input === document.activeElement) {
-                    container.classList.add('md-input-focused');
-                } else {
-                    container.classList.remove('md-input-focused');
-                }
-            }
-            
-            input.addEventListener('focus', updateLabelState);
-            input.addEventListener('blur', updateLabelState);
-            input.addEventListener('input', updateLabelState);
-            
-            // Initialize state
-            updateLabelState();
-        });
-
         // Mobile navigation toggle functionality
         const navToggle = document.querySelector('.md-navbar-toggle');
         const navMenu = document.querySelector('.md-navbar-nav');
-        
+
         if (navToggle && navMenu) {
             navToggle.addEventListener('click', function() {
                 const expanded = this.getAttribute('aria-expanded') === 'true';
                 this.setAttribute('aria-expanded', !expanded);
-                navMenu.classList.toggle('md-navbar-nav-open');
-                
-                // Toggle icon
+                navMenu.classList.toggle('show');
+
                 const icon = this.querySelector('.md-navbar-toggle-icon');
                 if (icon) {
                     icon.classList.toggle('md-navbar-toggle-active');
                 }
             });
-            
+
             // Close mobile menu when clicking outside
             document.addEventListener('click', function(e) {
                 if (!navToggle.contains(e.target) && !navMenu.contains(e.target)) {
                     navToggle.setAttribute('aria-expanded', 'false');
-                    navMenu.classList.remove('md-navbar-nav-open');
+                    navMenu.classList.remove('show');
                     const icon = navToggle.querySelector('.md-navbar-toggle-icon');
                     if (icon) {
                         icon.classList.remove('md-navbar-toggle-active');

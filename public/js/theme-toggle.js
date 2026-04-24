@@ -90,18 +90,26 @@ function applyTheme(theme) {
  */
 function updateToggleStates(theme) {
     try {
-        const toggles = document.querySelectorAll('.md-theme-toggle');
-        
+        // Support both id="theme-toggle" and class=".theme-toggle"
+        const toggleById = document.getElementById('theme-toggle');
+        const togglesByClass = document.querySelectorAll('.theme-toggle');
+
+        // Build a deduplicated list of toggle elements
+        const toggleSet = new Set();
+        if (toggleById) toggleSet.add(toggleById);
+        togglesByClass.forEach(t => toggleSet.add(t));
+        const toggles = Array.from(toggleSet);
+
         toggles.forEach(toggle => {
             try {
                 const input = toggle.querySelector('input[type="checkbox"]');
                 const iconLight = toggle.querySelector('.theme-icon-light');
                 const iconDark = toggle.querySelector('.theme-icon-dark');
-                
+
                 if (input) {
                     input.checked = (theme === 'dark');
                 }
-                
+
                 // Update icon visibility
                 if (iconLight && iconDark) {
                     if (theme === 'dark') {
@@ -112,11 +120,11 @@ function updateToggleStates(theme) {
                         iconDark.style.display = 'none';
                     }
                 }
-                
+
                 // Update ARIA label
                 const label = theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode';
                 toggle.setAttribute('aria-label', label);
-                
+
             } catch (error) {
                 console.warn('Failed to update individual toggle state:', error);
             }
@@ -145,34 +153,42 @@ function initializeTheme() {
  */
 function setupToggleListeners() {
     try {
-        const toggles = document.querySelectorAll('.md-theme-toggle');
-        
+        // Support both id="theme-toggle" and class=".theme-toggle"
+        const toggleById = document.getElementById('theme-toggle');
+        const togglesByClass = document.querySelectorAll('.theme-toggle');
+
+        // Build a deduplicated list of toggle elements
+        const toggleSet = new Set();
+        if (toggleById) toggleSet.add(toggleById);
+        togglesByClass.forEach(t => toggleSet.add(t));
+        const toggles = Array.from(toggleSet);
+
         if (toggles.length === 0) {
             console.info('No theme toggle elements found');
             return;
         }
-        
+
         toggles.forEach(toggle => {
             try {
                 // Remove existing listeners to prevent duplicates
                 toggle.removeEventListener('click', handleToggleClick);
-                
+
                 // Add click listener
                 toggle.addEventListener('click', handleToggleClick);
-                
+
                 // Add keyboard accessibility
                 toggle.addEventListener('keydown', handleToggleKeydown);
-                
+
                 // Ensure toggle is focusable
                 if (!toggle.hasAttribute('tabindex')) {
                     toggle.setAttribute('tabindex', '0');
                 }
-                
+
             } catch (error) {
                 console.warn('Failed to setup listener for toggle:', error);
             }
         });
-        
+
     } catch (error) {
         console.error('Failed to setup toggle listeners:', error);
     }
