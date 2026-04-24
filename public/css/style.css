@@ -1356,6 +1356,7 @@ h6, .md-h6 {
 .md-row {
   display: flex;
   flex-wrap: wrap;
+  align-items: stretch;
   margin: 0 calc(-1 * var(--md-spacing-sm));
 }
 
@@ -1363,6 +1364,19 @@ h6, .md-h6 {
   flex: 1;
   padding: 0 var(--md-spacing-sm);
   margin-bottom: var(--md-spacing-md);
+}
+
+/* Ensure child cards inside row columns stretch to equal heights */
+.md-row > .md-col,
+.md-row > [class*="md-col-"] {
+  display: flex;
+  flex-direction: column;
+}
+
+.md-row > .md-col > .md-card,
+.md-row > [class*="md-col-"] > .md-card {
+  flex: 1;
+  height: 100%;
 }
 
 .md-col-12 { flex: 0 0 100%; max-width: 100%; }
@@ -1899,6 +1913,16 @@ h6, .md-h6 {
   align-items: center;
   gap: 0.75rem;
   flex-wrap: wrap;
+}
+
+/* Button group orientation modifiers */
+.md-button-group.md-vertical {
+  flex-direction: column;
+  align-items: stretch;
+}
+
+.md-button-group.md-horizontal {
+  flex-direction: row;
 }
 
 /* Error alert for profile page */
