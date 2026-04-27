@@ -202,6 +202,38 @@ describe('Order model', () => {
         expect(count).toBe(3);
     });
 
+    test('countDeliveredByUserId() counts only delivered orders for the user', async () => {
+        await Order.create(testUserId, { pickup_address: 'p', delivery_address: 'd' });
+        await runAsync(
+            'INSERT INTO orders (user_id, pickup_address, delivery_address, status) VALUES (?, ?, ?, ?)',
+            [testUserId, 'p2', 'd2', 'delivered']
+        );
+        await runAsync(
+            'INSERT INTO orders (user_id, pickup_address, delivery_address, status) VALUES (?, ?, ?, ?)',
+            [testUserId, 'p3', 'd3', 'delivered']
+        );
+        await runAsync(
+            'INSERT INTO orders (user_id, pickup_address, delivery_address, status) VALUES (?, ?, ?, ?)',
+            [testUserId, 'p4', 'd4', 'in_transit']
+        );
+
+        const count = await Order.countDeliveredByUserId(testUserId);
+        expect(count).toBe(2);
+    });
+
+    test('countDeliveredByUserId() returns 0 when there are no delivered orders', async () => {
+        await Order.create(testUserId, { pickup_address: 'p', delivery_address: 'd' });
+        const count = await Order.countDeliveredByUserId(testUserId);
+        expect(count).toBe(0);
+    });
+
+    test('countDeliveredByUserId() rejects invalid userId', async () => {
+        await expect(Order.countDeliveredByUserId(0)).rejects.toThrow('Invalid userId');
+        await expect(Order.countDeliveredByUserId(-3)).rejects.toThrow('Invalid userId');
+        await expect(Order.countDeliveredByUserId('foo')).rejects.toThrow('Invalid userId');
+        await expect(Order.countDeliveredByUserId(null)).rejects.toThrow('Invalid userId');
+    });
+
     test('countPendingByUserId() counts only pending orders', async () => {
         await Order.create(testUserId, { pickup_address: 'p', delivery_address: 'd' });
         await runAsync(
@@ -416,6 +448,106 @@ describe('Order HTTP routes', () => {
         expect(res.text).toContain('No orders yet');
     });
 
+    test('GET /orders/:id requires authentication', async () => {
+        const res = await request(app).get('/orders/1');
+        expect(res.status).toBe(302);
+        expect(res.headers.location).toBe('/login');
+    });
+
+    test('GET /orders/:id renders the detail page for the owner', async () => {
+        const created = await Order.create(testUserId, {
+            pickup_address: 'Detail pickup',
+            delivery_address: 'Detail delivery',
+            package_description: 'Detail desc'
+        });
+
+        const res = await request(app)
+            .get(`/orders/${created.id}`)
+            .set('Cookie', `token=${validToken}`);
+
+        expect(res.status).toBe(200);
+        expect(res.text).toContain(`Order ${created.id}`);
+        expect(res.text).toContain('Detail pickup');
+        expect(res.text).toContain('Detail delivery');
+        expect(res.text).toContain('Detail desc');
+        expect(res.text).toContain('Back to My Orders');
+    });
+
+    test('GET /orders/:id renders em-dash when description is null', async () => {
+        const created = await Order.create(testUserId, {
+            pickup_address: 'No desc pickup',
+            delivery_address: 'No desc delivery'
+        });
+
+        const res = await request(app)
+            .get(`/orders/${created.id}`)
+            .set('Cookie', `token=${validToken}`);
+
+        expect(res.status).toBe(200);
+        expect(res.text).toContain('—');
+    });
+
+    test('GET /orders/:id returns 404 for missing order', async () => {
+        const res = await request(app)
+            .get('/orders/9999999')
+            .set('Cookie', `token=${validToken}`);
+
+        expect(res.status).toBe(404);
+    });
+
+    test('GET /orders/:id returns 404 for non-numeric id', async () => {
+        const res = await request(app)
+            .get('/orders/not-a-number')
+            .set('Cookie', `token=${validToken}`);
+
+        expect(res.status).toBe(404);
+    });
+
+    test('GET /orders/:id returns 404 for zero/negative id', async () => {
+        const resZero = await request(app)
+            .get('/orders/0')
+            .set('Cookie', `token=${validToken}`);
+        expect(resZero.status).toBe(404);
+
+        const resNeg = await request(app)
+            .get('/orders/-5')
+            .set('Cookie', `token=${validToken}`);
+        expect(resNeg.status).toBe(404);
+    });
+
+    test('GET /orders/:id returns 404 for cross-tenant access (no 403)', async () => {
+        const otherHashed = await bcrypt.hash('Password123', 10);
+        const otherUser = await runAsync(
+            'INSERT INTO users (name, email, password) VALUES (?, ?, ?)',
+            ['Cross Tester', `cross-${Date.now()}@example.com`, otherHashed]
+        );
+        const otherUserId = otherUser.lastID;
+
+        const otherOrder = await Order.create(otherUserId, {
+            pickup_address: 'Other user pickup SECRET',
+            delivery_address: 'Other user delivery SECRET',
+            package_description: 'Other-SECRET'
+        });
+
+        const res = await request(app)
+            .get(`/orders/${otherOrder.id}`)
+            .set('Cookie', `token=${validToken}`);
+
+        expect(res.status).toBe(404);
+        expect(res.status).not.toBe(403);
+        expect(res.text).not.toContain('Other user pickup SECRET');
+        expect(res.text).not.toContain('Other-SECRET');
+    });
+
+    test('GET /orders/new is not shadowed by /orders/:id', async () => {
+        const res = await request(app)
+            .get('/orders/new')
+            .set('Cookie', `token=${validToken}`);
+
+        expect(res.status).toBe(200);
+        expect(res.text).toContain('name="pickup_address"');
+    });
+
     test('GET /dashboard shows live counts from Order model', async () => {
         await Order.create(testUserId, {
             pickup_address: 'Dash pickup',
@@ -432,5 +564,54 @@ describe('Order HTTP routes', () => {
         expect(res.text).toContain('Place Order');
         // Unused count rows should not crash rendering
         expect(res.text).not.toContain('<%= activeDeliveriesCount %>');
+    });
+
+    test('GET /dashboard renders live deliveredCount (no hardcoded 24)', async () => {
+        // Insert two delivered + one pending for the test user
+        await runAsync(
+            'INSERT INTO orders (user_id, pickup_address, delivery_address, status) VALUES (?, ?, ?, ?)',
+            [testUserId, 'pa', 'da', 'delivered']
+        );
+        await runAsync(
+            'INSERT INTO orders (user_id, pickup_address, delivery_address, status) VALUES (?, ?, ?, ?)',
+            [testUserId, 'pb', 'db', 'delivered']
+        );
+        await Order.create(testUserId, { pickup_address: 'pc', delivery_address: 'dc' });
+
+        const res = await request(app)
+            .get('/dashboard')
+            .set('Cookie', `token=${validToken}`);
+
+        expect(res.status).toBe(200);
+        expect(res.text).toContain('Packages Delivered');
+        // Live count rendered, not the previous hardcoded literal
+        expect(res.text).toMatch(/>\s*2\s*<\/h3>\s*<p[^>]*>Packages Delivered/);
+    });
+
+    test('GET /dashboard navbar exposes My Orders and New Order links', async () => {
+        const res = await request(app)
+            .get('/dashboard')
+            .set('Cookie', `token=${validToken}`);
+
+        expect(res.status).toBe(200);
+        expect(res.text).toMatch(/href="\/orders"[^>]*>[\s\S]*?My Orders/);
+        expect(res.text).toMatch(/href="\/orders\/new"[^>]*>[\s\S]*?New Order/);
+    });
+
+    test('GET /dashboard falls back to 0 deliveredCount on DB error', async () => {
+        const spy = jest.spyOn(Order, 'countDeliveredByUserId').mockImplementation(() => {
+            return Promise.reject(new Error('simulated DB failure'));
+        });
+
+        try {
+            const res = await request(app)
+                .get('/dashboard')
+                .set('Cookie', `token=${validToken}`);
+
+            expect(res.status).toBe(200);
+            expect(res.text).toContain('Packages Delivered');
+        } finally {
+            spy.mockRestore();
+        }
     });
 });

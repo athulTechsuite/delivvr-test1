@@ -157,21 +157,27 @@ app.get('/dashboard', authenticateToken, (req, res) => {
         }
 
         try {
-            const [activeDeliveriesCount, pendingPickupsCount] = await Promise.all([
+            const [activeDeliveriesCount, pendingPickupsCount, deliveredCount] = await Promise.all([
                 Order.countActiveByUserId(req.user.id),
-                Order.countPendingByUserId(req.user.id)
+                Order.countPendingByUserId(req.user.id),
+                Order.countDeliveredByUserId(req.user.id).catch((err) => {
+                    console.error('Error loading delivered count:', err);
+                    return 0;
+                })
             ]);
             res.render('dashboard', {
                 user,
                 activeDeliveriesCount,
-                pendingPickupsCount
+                pendingPickupsCount,
+                deliveredCount
             });
         } catch (statsErr) {
             console.error('Error loading dashboard stats:', statsErr);
             res.render('dashboard', {
                 user,
                 activeDeliveriesCount: 0,
-                pendingPickupsCount: 0
+                pendingPickupsCount: 0,
+                deliveredCount: 0
             });
         }
     });
@@ -346,6 +352,39 @@ app.get('/orders', authenticateToken, async (req, res) => {
     } catch (listErr) {
         console.error('Error loading orders list:', listErr);
         res.render('orders-list', { user: req.user, orders: [] });
+    }
+});
+
+// IMPORTANT: register `/orders/:id` AFTER `/orders/new` and `/orders` so the
+// static `new` segment and the list route are not shadowed by the `:id` param.
+app.get('/orders/:id', authenticateToken, async (req, res) => {
+    const rawId = req.params.id;
+    const parsedId = Number.parseInt(rawId, 10);
+
+    // Reject any id that isn't a strictly-positive integer (also rejects
+    // non-numeric input like "abc" because Number.parseInt would NaN, and
+    // rejects strings like "12abc" by checking string equality).
+    if (
+        !Number.isInteger(parsedId) ||
+        parsedId <= 0 ||
+        String(parsedId) !== String(rawId).trim()
+    ) {
+        return res.status(404).render('404');
+    }
+
+    try {
+        const order = await Order.findById(parsedId);
+        if (!order) {
+            return res.status(404).render('404');
+        }
+        // Tenant isolation: leak nothing to other users — return 404, not 403.
+        if (order.user_id !== req.user.id) {
+            return res.status(404).render('404');
+        }
+        return res.render('orders-detail', { user: req.user, order });
+    } catch (detailErr) {
+        console.error('Error loading order detail:', detailErr);
+        return res.status(404).render('404');
     }
 });
 

@@ -139,6 +139,25 @@ class Order {
         });
     }
 
+    // Count delivered orders for a user.
+    static countDeliveredByUserId(userId) {
+        return new Promise((resolve, reject) => {
+            if (!isPositiveInteger(userId)) {
+                return reject(new Error('Invalid userId'));
+            }
+            db.get(
+                'SELECT COUNT(*) AS count FROM orders WHERE user_id = ? AND status = ?',
+                [userId, ORDER_STATUS.DELIVERED],
+                (err, row) => {
+                    if (err) {
+                        return reject(err);
+                    }
+                    resolve(row ? row.count : 0);
+                }
+            );
+        });
+    }
+
     // Count pending orders for a user.
     static countPendingByUserId(userId) {
         return new Promise((resolve, reject) => {
