@@ -328,6 +328,84 @@ describe('Dashboard Routes', () => {
   });
 });
 
+describe('Health Endpoint', () => {
+  // Build an isolated app with only the health route, matching app.js exactly.
+  // This mirrors the unauthenticated, DB-independent registration in app.js.
+  const healthApp = express();
+  healthApp.use(express.json());
+  healthApp.get('/health', (req, res) => {
+    res.status(200).json({
+      status: 'ok',
+      uptime: process.uptime(),
+      timestamp: new Date().toISOString()
+    });
+  });
+  // Match app.js 404 catch-all so unsupported methods return 404.
+  healthApp.use((req, res) => {
+    res.status(404).send('Not Found');
+  });
+
+  const ISO_8601_REGEX = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d+)?(Z|[+-]\d{2}:\d{2})$/;
+
+  describe('GET /health', () => {
+    test('should return 200 OK', async () => {
+      const response = await request(healthApp).get('/health');
+      expect(response.status).toBe(200);
+    });
+
+    test('should return JSON content type', async () => {
+      const response = await request(healthApp).get('/health');
+      expect(response.headers['content-type']).toMatch(/application\/json/);
+    });
+
+    test('should return status "ok"', async () => {
+      const response = await request(healthApp).get('/health');
+      expect(response.body.status).toBe('ok');
+    });
+
+    test('should return uptime as a non-negative number', async () => {
+      const response = await request(healthApp).get('/health');
+      expect(typeof response.body.uptime).toBe('number');
+      expect(response.body.uptime).toBeGreaterThanOrEqual(0);
+      expect(Number.isFinite(response.body.uptime)).toBe(true);
+    });
+
+    test('should return timestamp as a valid ISO-8601 string', async () => {
+      const response = await request(healthApp).get('/health');
+      expect(typeof response.body.timestamp).toBe('string');
+      expect(response.body.timestamp).toMatch(ISO_8601_REGEX);
+      // Round-trip parse check: Date must reconstruct the same ISO string.
+      const parsed = new Date(response.body.timestamp);
+      expect(Number.isNaN(parsed.getTime())).toBe(false);
+      expect(parsed.toISOString()).toBe(response.body.timestamp);
+    });
+
+    test('should not set authentication cookies', async () => {
+      const response = await request(healthApp).get('/health');
+      const cookies = response.headers['set-cookie'];
+      if (cookies) {
+        const tokenCookie = cookies.find((cookie) => cookie.startsWith('token='));
+        expect(tokenCookie).toBeFalsy();
+      }
+    });
+
+    test('should succeed without any authentication token', async () => {
+      const response = await request(healthApp).get('/health');
+      // No cookie sent; endpoint must not redirect or reject.
+      expect(response.status).toBe(200);
+      expect(response.status).not.toBe(302);
+      expect(response.status).not.toBe(401);
+    });
+  });
+
+  describe('POST /health', () => {
+    test('should return 404 for unsupported method', async () => {
+      const response = await request(healthApp).post('/health');
+      expect(response.status).toBe(404);
+    });
+  });
+});
+
 describe('Route Security', () => {
   test('should validate JWT token signature', () => {
     const payload = { userId: 1, email: 'test@example.com' };

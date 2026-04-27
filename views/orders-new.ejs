@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>New Order - Delivvr</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,300;0,400;0,500;0,700;1,300;1,400&display=swap" rel="stylesheet">
+</head>
+<body class="md-body">
+    <!-- Main Navigation -->
+    <nav class="md-navbar" role="navigation" aria-label="Main navigation">
+        <div class="md-navbar-container">
+            <div class="md-navbar-brand">
+                <a href="/" class="md-navbar-brand-link delivvr-brand" aria-label="Delivvr Home">
+                    <i class="bi bi-truck" aria-hidden="true"></i>
+                    <span>Delivvr</span>
+                </a>
+            </div>
+
+            <button class="md-navbar-toggle" type="button" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="md-navbar-toggle-icon"></span>
+            </button>
+
+            <div class="md-navbar-nav" id="navbarNav">
+                <ul class="md-navbar-menu" role="menubar">
+                    <li class="md-navbar-item" role="none">
+                        <a class="md-navbar-link" href="/dashboard" role="menuitem">
+                            <i class="bi bi-speedometer2" aria-hidden="true"></i>
+                            Dashboard
+                        </a>
+                    </li>
+                    <li class="md-navbar-item" role="none">
+                        <a class="md-navbar-link" href="/orders" role="menuitem">
+                            <i class="bi bi-box-seam" aria-hidden="true"></i>
+                            My Orders
+                        </a>
+                    </li>
+                    <li class="md-navbar-item" role="none">
+                        <a class="md-navbar-link md-navbar-link-active" href="/orders/new" role="menuitem" aria-current="page">
+                            <i class="bi bi-plus-circle" aria-hidden="true"></i>
+                            New Order
+                        </a>
+                    </li>
+                    <li class="md-navbar-item" role="none">
+                        <form action="/logout" method="POST" style="display: inline;">
+                            <button type="submit" class="md-navbar-link md-navbar-link-button" role="menuitem">
+                                <i class="bi bi-box-arrow-right" aria-hidden="true"></i>
+                                Logout
+                            </button>
+                        </form>
+                    </li>
+                    <li class="md-navbar-item md-theme-toggle-container" role="none">
+                        <button class="md-button md-button--icon theme-toggle" id="theme-toggle" aria-label="Toggle theme">
+                            <i class="bi bi-moon-fill" id="theme-icon"></i>
+                        </button>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="md-main" role="main">
+        <div class="md-container">
+            <section class="md-section" aria-labelledby="new-order-heading">
+                <div class="md-row md-justify-center">
+                    <div class="md-col-12 md-col-md-10 md-col-lg-8">
+                        <div class="md-card md-elevation-2" role="form" aria-labelledby="new-order-heading">
+                            <div class="md-card-header md-text-center">
+                                <div style="margin-bottom:0.75rem;">
+                                    <i class="bi bi-box-seam" aria-hidden="true"></i>
+                                </div>
+                                <h1 id="new-order-heading" class="md-headline-medium md-margin-0 md-text-on-primary" style="letter-spacing:1px;">
+                                    Place a New Order
+                                </h1>
+                                <p class="md-body-medium md-margin-top-sm md-margin-bottom-0 md-text-on-primary">
+                                    Tell us where to pick up and where to deliver
+                                </p>
+                            </div>
+
+                            <div class="md-card-content">
+                                <% if (Array.isArray(errors) && errors.length > 0) { %>
+                                    <div class="md-alert md-alert--error md-margin-bottom-lg" role="alert" aria-live="polite">
+                                        <div class="md-alert-icon">
+                                            <i class="bi bi-exclamation-circle-fill" aria-hidden="true"></i>
+                                        </div>
+                                        <div class="md-alert-content">
+                                            <ul class="md-alert-message" style="margin:0;padding-left:1.25rem;">
+                                                <% errors.forEach(function(err) { %>
+                                                    <li><%= err.msg %></li>
+                                                <% }) %>
+                                            </ul>
+                                        </div>
+                                    </div>
+                                <% } %>
+
+                                <form id="orderForm" action="/orders" method="POST" novalidate>
+                                    <!-- Pickup Address -->
+                                    <div class="md-form-field md-margin-bottom-lg">
+                                        <div class="md-form-group">
+                                            <input
+                                                type="text"
+                                                id="pickup_address"
+                                                name="pickup_address"
+                                                class="md-form-control"
+                                                placeholder=" "
+                                                required
+                                                minlength="3"
+                                                maxlength="500"
+                                                autocomplete="street-address"
+                                                value="<%= (values && values.pickup_address) ? values.pickup_address : '' %>"
+                                                aria-describedby="pickup-helper"
+                                            >
+                                            <label class="md-form-label" for="pickup_address">
+                                                <i class="bi bi-geo-alt" aria-hidden="true"></i>
+                                                Pickup Address
+                                            </label>
+                                        </div>
+                                        <div id="pickup-helper" class="md-helper-text">
+                                            Where should we pick up the package?
+                                        </div>
+                                    </div>
+
+                                    <!-- Delivery Address -->
+                                    <div class="md-form-field md-margin-bottom-lg">
+                                        <div class="md-form-group">
+                                            <input
+                                                type="text"
+                                                id="delivery_address"
+                                                name="delivery_address"
+                                                class="md-form-control"
+                                                placeholder=" "
+                                                required
+                                                minlength="3"
+                                                maxlength="500"
+                                                autocomplete="street-address"
+                                                value="<%= (values && values.delivery_address) ? values.delivery_address : '' %>"
+                                                aria-describedby="delivery-helper"
+                                            >
+                                            <label class="md-form-label" for="delivery_address">
+                                                <i class="bi bi-geo-alt-fill" aria-hidden="true"></i>
+                                                Delivery Address
+                                            </label>
+                                        </div>
+                                        <div id="delivery-helper" class="md-helper-text">
+                                            Where should the package be delivered?
+                                        </div>
+                                    </div>
+
+                                    <!-- Package Description (optional) -->
+                                    <div class="md-form-field md-margin-bottom-xl">
+                                        <div class="md-form-group">
+                                            <textarea
+                                                id="package_description"
+                                                name="package_description"
+                                                class="md-form-control"
+                                                placeholder=" "
+                                                maxlength="1000"
+                                                rows="4"
+                                                aria-describedby="description-helper"
+                                            ><%= (values && values.package_description) ? values.package_description : '' %></textarea>
+                                            <label class="md-form-label" for="package_description">
+                                                <i class="bi bi-card-text" aria-hidden="true"></i>
+                                                Package Description (optional)
+                                            </label>
+                                        </div>
+                                        <div id="description-helper" class="md-helper-text">
+                                            Optional notes about the package contents or handling instructions
+                                        </div>
+                                    </div>
+
+                                    <!-- Submit Button -->
+                                    <div class="md-form-field">
+                                        <button
+                                            type="submit"
+                                            class="md-button md-button--contained md-button--elevated md-button--full-width"
+                                            id="submitButton"
+                                        >
+                                            <span class="md-button-label">
+                                                <i class="bi bi-truck" aria-hidden="true"></i>
+                                                Place Order
+                                            </span>
+                                            <div class="md-button-ripple"></div>
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
+
+                            <div class="md-card-actions">
+                                <div class="md-text-center">
+                                    <p class="md-body-medium md-text-secondary">
+                                        <a href="/orders" class="md-link md-link-primary">
+                                            <i class="bi bi-arrow-left" aria-hidden="true"></i>
+                                            Back to My Orders
+                                        </a>
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <script src="/js/theme-toggle.js"></script>
+    <script>
+        // Mobile navigation toggle
+        (function () {
+            var navToggle = document.querySelector('.md-navbar-toggle');
+            var navMenu = document.querySelector('.md-navbar-nav');
+            if (navToggle && navMenu) {
+                navToggle.addEventListener('click', function () {
+                    var expanded = this.getAttribute('aria-expanded') === 'true';
+                    this.setAttribute('aria-expanded', !expanded);
+                    navMenu.classList.toggle('show');
+                });
+            }
+        })();
+    </script>
+</body>
+</html>
