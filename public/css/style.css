@@ -715,6 +715,31 @@ h6, .md-h6 {
   font-weight: var(--md-font-weight-medium);
 }
 
+/*
+ * Split card header modifier
+ * Use on .md-card-header when the header uses a flex space-between layout
+ * (title on the left, status chip / action on the right). Overrides the
+ * default centered text alignment so the title is left-aligned, matching
+ * the unified card style used across dashboard.ejs and profile.ejs.
+ */
+.md-card-header--split {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--md-spacing-sm);
+}
+
+.md-card-header--split h1,
+.md-card-header--split h2,
+.md-card-header--split h3,
+.md-card-header--split h4,
+.md-card-header--split h5,
+.md-card-header--split h6 {
+  text-align: left;
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
 .md-card-content {
   padding: var(--md-spacing-lg);
   flex-grow: 1;
@@ -2185,5 +2210,13 @@ h6, .md-h6 {
 .md-card-header h3 {
   color: var(--md-on-primary, #fff);
   margin: 0;
+}
+
+/*
+ * Keep the icon size inside split headers consistent with surrounding
+ * typography so the title and status chip stay vertically balanced.
+ */
+.md-card-header--split i {
+  font-size: 1.25rem;
 }
 
