@@ -49,6 +49,18 @@ const pageTitle = 'Dashboard';
                         </a>
                     </li>
                     <li class="md-navbar-item" role="none">
+                        <a class="md-navbar-link" href="/orders" role="menuitem">
+                            <i class="bi bi-box-seam" aria-hidden="true"></i>
+                            My Orders
+                        </a>
+                    </li>
+                    <li class="md-navbar-item" role="none">
+                        <a class="md-navbar-link" href="/orders/new" role="menuitem">
+                            <i class="bi bi-plus-circle" aria-hidden="true"></i>
+                            New Order
+                        </a>
+                    </li>
+                    <li class="md-navbar-item" role="none">
                         <form action="/logout" method="POST" style="display: inline;">
                             <button type="submit" class="md-navbar-link md-navbar-link-button" role="menuitem">
                                 <i class="bi bi-box-arrow-right" aria-hidden="true"></i>
@@ -205,7 +217,7 @@ const pageTitle = 'Dashboard';
                     <div class="md-col-12 md-col-sm-6 md-col-lg-3">
                         <div class="md-card md-card-body md-text-center">
                             <i class="bi bi-box-seam" aria-hidden="true" style="font-size:2.2rem;color:var(--accent,#00BFA5);margin-bottom:0.75rem;display:block;"></i>
-                            <h3 class="md-stat-title md-headline-small md-text-primary md-margin-bottom-xs">24</h3>
+                            <h3 class="md-stat-title md-headline-small md-text-primary md-margin-bottom-xs"><%= typeof deliveredCount !== 'undefined' ? deliveredCount : 0 %></h3>
                             <p class="md-stat-description md-body-medium md-text-secondary md-margin-bottom-sm">Packages Delivered</p>
                             <span class="md-chip md-chip-delivered"><i class="bi bi-check-circle-fill"></i> Delivered</span>
                         </div>
