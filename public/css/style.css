@@ -2220,3 +2220,143 @@ h6, .md-h6 {
   font-size: 1.25rem;
 }
 
+/* ── Order field component ───────────────────────────────────────── */
+.md-field {
+  display: grid;
+  grid-template-rows: auto auto;
+  gap: 2px;
+  padding-bottom: var(--md-spacing-md, 16px);
+}
+
+.md-field-label {
+  display: flex;
+  align-items: center;
+  gap: var(--md-spacing-xs, 4px);
+  font-size: var(--md-label-small-size, 0.75rem);
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--md-color-on-surface-variant, #49454f);
+}
+
+.md-field-label .md-icon {
+  font-size: 1rem;
+  flex-shrink: 0;
+}
+
+.md-field-value {
+  padding-left: calc(1rem + var(--md-spacing-xs, 4px));
+  font-size: var(--md-body-medium-size, 0.875rem);
+  line-height: 1.5;
+  color: var(--md-color-on-surface, #1c1b1f);
+}
+
+.md-field-value--placeholder {
+  color: var(--md-color-on-surface-variant, #49454f);
+  font-style: italic;
+}
+
+.md-field-value--multiline {
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+/* Field grid — two columns side-by-side on md+ screens */
+.md-field-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0;
+}
+
+@media (min-width: 768px) {
+  .md-field-grid--two-col {
+    grid-template-columns: 1fr 1fr;
+    column-gap: var(--md-spacing-xl, 32px);
+  }
+}
+
+.md-field--full {
+  grid-column: 1 / -1;
+}
+
+/* Divider between field groups */
+.md-field-divider {
+  grid-column: 1 / -1;
+  border: none;
+  border-top: 1px solid var(--md-color-surface-variant, #e7e0ec);
+  margin: var(--md-spacing-sm, 8px) 0 var(--md-spacing-md, 16px);
+}
+
+/* Order card link — remove inline hover JS, use CSS only */
+.md-order-card-link {
+  display: block;
+  text-decoration: none;
+  color: inherit;
+  border-radius: var(--md-shape-medium, 12px);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.md-order-card-link:hover .md-card {
+  transform: translateY(-2px);
+  box-shadow: var(--md-elevation-2, 0 2px 6px rgba(0,0,0,0.15));
+}
+
+.md-order-card-link:focus {
+  outline: none;
+}
+
+.md-order-card-link:focus-visible .md-card {
+  outline: 2px solid var(--md-primary, #FF6B00);
+  outline-offset: 2px;
+}
+
+/* Back link */
+.md-back-link {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--md-spacing-xs, 4px);
+  text-decoration: none;
+  color: var(--md-color-primary, #6750a4);
+  font-size: var(--md-body-medium-size, 0.875rem);
+  font-weight: 500;
+  margin-bottom: var(--md-spacing-lg, 24px);
+}
+
+.md-back-link:hover {
+  text-decoration: underline;
+}
+
+.md-back-link:focus-visible {
+  outline: 2px solid var(--md-primary, #FF6B00);
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+
+/* Card header padding consistency */
+.md-card-header--split {
+  padding: var(--md-spacing-lg, 24px) !important;
+  gap: var(--md-spacing-md, 16px) !important;
+  flex-wrap: wrap;
+}
+
+/* Dark theme overrides for field component */
+.dark-theme .md-field-label {
+  color: rgba(255, 255, 255, 0.60);
+}
+
+.dark-theme .md-field-value {
+  color: var(--md-text-primary);
+}
+
+.dark-theme .md-field-value--placeholder {
+  color: rgba(255, 255, 255, 0.45);
+}
+
+.dark-theme .md-field-divider {
+  border-top-color: rgba(255, 255, 255, 0.12);
+}
+
+.dark-theme .md-back-link {
+  color: var(--md-primary);
+}
+
