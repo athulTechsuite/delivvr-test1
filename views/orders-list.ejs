@@ -128,7 +128,7 @@
                             <div class="md-col-12 md-col-md-6 md-col-lg-4 md-margin-bottom-md">
                                 <a href="/orders/<%= order.id %>" class="md-order-card-link" aria-label="View order <%= order.id %> details" style="display:block;text-decoration:none;color:inherit;transition:transform 0.2s ease, box-shadow 0.2s ease;" onmouseover="this.style.transform='translateY(-2px)';this.style.boxShadow='0 6px 18px rgba(0,0,0,0.12)';" onmouseout="this.style.transform='';this.style.boxShadow='';">
                                 <article class="md-card md-elevation-2 md-border-radius-md" aria-label="Order <%= order.id %>">
-                                    <div class="md-card-header md-padding-md md-display-flex md-justify-content-space-between md-align-items-center">
+                                    <div class="md-card-header md-card-header--split md-padding-md">
                                         <h3 class="md-card-title md-headline-small md-margin-none md-text-on-primary">
                                             <i class="bi bi-hash" aria-hidden="true"></i>
                                             Order <%= order.id %>
@@ -144,7 +144,7 @@
                                                 <i class="bi bi-geo-alt md-icon-small md-text-primary md-margin-right-sm" aria-hidden="true"></i>
                                                 <span class="md-body-medium md-text-secondary md-font-weight-medium">Pickup</span>
                                             </div>
-                                            <div class="md-body-large md-text-primary md-padding-left-lg">
+                                            <div class="md-body-large md-text-primary">
                                                 <%= order.pickup_address %>
                                             </div>
                                         </div>
@@ -154,7 +154,7 @@
                                                 <i class="bi bi-geo-alt-fill md-icon-small md-text-primary md-margin-right-sm" aria-hidden="true"></i>
                                                 <span class="md-body-medium md-text-secondary md-font-weight-medium">Delivery</span>
                                             </div>
-                                            <div class="md-body-large md-text-primary md-padding-left-lg">
+                                            <div class="md-body-large md-text-primary">
                                                 <%= order.delivery_address %>
                                             </div>
                                         </div>
@@ -164,7 +164,7 @@
                                                 <i class="bi bi-card-text md-icon-small md-text-primary md-margin-right-sm" aria-hidden="true"></i>
                                                 <span class="md-body-medium md-text-secondary md-font-weight-medium">Description</span>
                                             </div>
-                                            <div class="md-body-large md-text-primary md-padding-left-lg">
+                                            <div class="md-body-large md-text-primary">
                                                 <% if (description) { %>
                                                     <%= description %>
                                                 <% } else { %>
@@ -178,7 +178,7 @@
                                                 <i class="bi bi-calendar-date md-icon-small md-text-primary md-margin-right-sm" aria-hidden="true"></i>
                                                 <span class="md-body-medium md-text-secondary md-font-weight-medium">Placed</span>
                                             </div>
-                                            <div class="md-body-medium md-text-primary md-padding-left-lg">
+                                            <div class="md-body-medium md-text-primary">
                                                 <%= createdLabel %>
                                             </div>
                                         </div>
