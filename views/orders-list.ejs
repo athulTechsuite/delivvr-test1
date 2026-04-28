@@ -126,9 +126,9 @@
                                 : null;
                         %>
                             <div class="md-col-12 md-col-md-6 md-col-lg-4 md-margin-bottom-md">
-                                <a href="/orders/<%= order.id %>" class="md-order-card-link" aria-label="View order <%= order.id %> details" style="display:block;text-decoration:none;color:inherit;transition:transform 0.2s ease, box-shadow 0.2s ease;" onmouseover="this.style.transform='translateY(-2px)';this.style.boxShadow='0 6px 18px rgba(0,0,0,0.12)';" onmouseout="this.style.transform='';this.style.boxShadow='';">
+                                <a href="/orders/<%= order.id %>" class="md-order-card-link" aria-label="View order <%= order.id %> details">
                                 <article class="md-card md-elevation-2 md-border-radius-md" aria-label="Order <%= order.id %>">
-                                    <div class="md-card-header md-padding-md md-display-flex md-justify-content-space-between md-align-items-center">
+                                    <div class="md-card-header md-card-header--split md-padding-md">
                                         <h3 class="md-card-title md-headline-small md-margin-none md-text-on-primary">
                                             <i class="bi bi-hash" aria-hidden="true"></i>
                                             Order <%= order.id %>
@@ -139,47 +139,41 @@
                                         </span>
                                     </div>
                                     <div class="md-card-content md-padding-lg">
-                                        <div class="md-margin-bottom-md">
-                                            <div class="md-display-flex md-align-items-center md-margin-bottom-xs">
-                                                <i class="bi bi-geo-alt md-icon-small md-text-primary md-margin-right-sm" aria-hidden="true"></i>
-                                                <span class="md-body-medium md-text-secondary md-font-weight-medium">Pickup</span>
+                                        <div class="md-field-grid">
+                                            <div class="md-field">
+                                                <span class="md-field-label">
+                                                    <i class="bi bi-geo-alt md-icon" aria-hidden="true"></i>
+                                                    Pickup
+                                                </span>
+                                                <span class="md-field-value"><%= order.pickup_address %></span>
                                             </div>
-                                            <div class="md-body-large md-text-primary md-padding-left-lg">
-                                                <%= order.pickup_address %>
-                                            </div>
-                                        </div>
 
-                                        <div class="md-margin-bottom-md">
-                                            <div class="md-display-flex md-align-items-center md-margin-bottom-xs">
-                                                <i class="bi bi-geo-alt-fill md-icon-small md-text-primary md-margin-right-sm" aria-hidden="true"></i>
-                                                <span class="md-body-medium md-text-secondary md-font-weight-medium">Delivery</span>
+                                            <div class="md-field">
+                                                <span class="md-field-label">
+                                                    <i class="bi bi-geo-alt-fill md-icon" aria-hidden="true"></i>
+                                                    Delivery
+                                                </span>
+                                                <span class="md-field-value"><%= order.delivery_address %></span>
                                             </div>
-                                            <div class="md-body-large md-text-primary md-padding-left-lg">
-                                                <%= order.delivery_address %>
-                                            </div>
-                                        </div>
 
-                                        <div class="md-margin-bottom-md">
-                                            <div class="md-display-flex md-align-items-center md-margin-bottom-xs">
-                                                <i class="bi bi-card-text md-icon-small md-text-primary md-margin-right-sm" aria-hidden="true"></i>
-                                                <span class="md-body-medium md-text-secondary md-font-weight-medium">Description</span>
-                                            </div>
-                                            <div class="md-body-large md-text-primary md-padding-left-lg">
+                                            <div class="md-field">
+                                                <span class="md-field-label">
+                                                    <i class="bi bi-card-text md-icon" aria-hidden="true"></i>
+                                                    Description
+                                                </span>
                                                 <% if (description) { %>
-                                                    <%= description %>
+                                                    <span class="md-field-value md-field-value--multiline"><%= description %></span>
                                                 <% } else { %>
-                                                    <span class="md-text-secondary">—</span>
+                                                    <span class="md-field-value md-field-value--placeholder">— Not provided</span>
                                                 <% } %>
                                             </div>
-                                        </div>
 
-                                        <div>
-                                            <div class="md-display-flex md-align-items-center md-margin-bottom-xs">
-                                                <i class="bi bi-calendar-date md-icon-small md-text-primary md-margin-right-sm" aria-hidden="true"></i>
-                                                <span class="md-body-medium md-text-secondary md-font-weight-medium">Placed</span>
-                                            </div>
-                                            <div class="md-body-medium md-text-primary md-padding-left-lg">
-                                                <%= createdLabel %>
+                                            <div class="md-field">
+                                                <span class="md-field-label">
+                                                    <i class="bi bi-calendar-date md-icon" aria-hidden="true"></i>
+                                                    Placed
+                                                </span>
+                                                <span class="md-field-value"><%= createdLabel %></span>
                                             </div>
                                         </div>
                                     </div>
