@@ -2187,3 +2187,101 @@ h6, .md-h6 {
   margin: 0;
 }
 
+/* ----- Split card header (title + status chip) ----- */
+.md-card-header--split {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: var(--md-spacing-md);
+  padding: var(--md-spacing-lg);
+}
+
+.md-card-header--split h1,
+.md-card-header--split h2,
+.md-card-header--split h3,
+.md-card-header--split h4,
+.md-card-header--split h5,
+.md-card-header--split h6 {
+  text-align: left;
+  flex: 1 1 auto;
+  min-width: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--md-spacing-sm);
+}
+
+/* ----- Shared order field component ----- */
+.md-field {
+  padding: var(--md-spacing-md) 0;
+  border-top: 1px solid var(--md-divider, rgba(0, 0, 0, 0.08));
+}
+.md-field:first-child { border-top: 0; padding-top: 0; }
+.md-field:last-child  { padding-bottom: 0; }
+
+.md-field-label {
+  display: flex;
+  align-items: center;
+  gap: var(--md-spacing-sm);
+  margin-bottom: var(--md-spacing-xs);
+  color: var(--md-text-secondary);
+  font-weight: var(--md-font-weight-medium);
+}
+
+.md-field-value {
+  padding-left: calc(16px + var(--md-spacing-sm)); /* icon-small width + gap */
+  color: var(--md-text-primary);
+  overflow-wrap: anywhere;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.md-field-value--multiline { -webkit-line-clamp: 5; }
+.md-field-value--placeholder { color: var(--md-text-secondary); }
+
+.md-field-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0;
+}
+@media (min-width: 768px) {
+  .md-field-grid--two-col {
+    grid-template-columns: 1fr 1fr;
+    gap: 0 var(--md-spacing-lg);
+  }
+  .md-field-grid--two-col > .md-field--full {
+    grid-column: 1 / -1;
+  }
+  .md-field-grid--two-col > .md-field {
+    border-top: 1px solid var(--md-divider, rgba(0, 0, 0, 0.08));
+  }
+  .md-field-grid--two-col > .md-field:nth-child(-n+2) {
+    border-top: 0;
+    padding-top: 0;
+  }
+}
+
+.dark-theme .md-field { border-top-color: rgba(255, 255, 255, 0.12); }
+
+/* Order list card link wrapper — replaces inline hover JS */
+.md-order-card-link {
+  display: block;
+  text-decoration: none;
+  color: inherit;
+}
+.md-order-card-link:focus-visible .md-card {
+  outline: 2px solid var(--md-primary);
+  outline-offset: 2px;
+}
+
+/* Back link utility for detail page */
+.md-back-link {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--md-spacing-xs);
+  text-decoration: none;
+  margin-bottom: var(--md-spacing-sm);
+}
+.md-back-link:hover { text-decoration: underline; }
+

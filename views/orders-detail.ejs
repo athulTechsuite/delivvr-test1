@@ -83,9 +83,9 @@
             <section class="md-section md-padding-top-lg md-padding-bottom-md" aria-labelledby="order-detail-heading">
                 <div class="md-row md-align-items-center md-justify-content-space-between">
                     <div class="md-col-12 md-col-md-8">
-                        <a href="/orders" class="md-body-medium md-text-secondary md-margin-bottom-sm" style="display:inline-flex;align-items:center;text-decoration:none;">
-                            <i class="bi bi-arrow-left md-icon-small md-margin-right-sm" aria-hidden="true"></i>
-                            Back to My Orders
+                        <a href="/orders" class="md-back-link md-body-medium md-text-secondary">
+                            <i class="bi bi-arrow-left md-icon-small" aria-hidden="true"></i>
+                            <span>Back to My Orders</span>
                         </a>
                         <h1 id="order-detail-heading" class="md-headline-medium md-text-primary md-margin-bottom-xs">
                             <i class="bi bi-hash md-icon-medium md-margin-right-sm" aria-hidden="true"></i>
@@ -103,68 +103,50 @@
                 <div class="md-row md-justify-center">
                     <div class="md-col-12 md-col-md-10 md-col-lg-8">
                         <article class="md-card md-elevation-2 md-border-radius-md" aria-label="Order <%= order.id %> details">
-                            <div class="md-card-header md-padding-md md-display-flex md-justify-content-space-between md-align-items-center">
+                            <div class="md-card-header md-card-header--split">
                                 <h3 class="md-card-title md-headline-small md-margin-none md-text-on-primary">
-                                    <i class="bi bi-receipt" aria-hidden="true"></i>
-                                    Order #<%= order.id %>
+                                    <i class="bi bi-receipt md-icon-medium" aria-hidden="true"></i>
+                                    <span>Order #<%= order.id %></span>
                                 </h3>
                                 <span class="<%= chipClass %>" aria-label="Status: <%= statusLabel %>">
                                     <i class="bi bi-circle-fill" aria-hidden="true" style="font-size:0.5rem;margin-right:0.35rem;"></i>
                                     <%= statusLabel %>
                                 </span>
                             </div>
-                            <div class="md-card-content md-padding-lg">
-                                <div class="md-margin-bottom-md">
-                                    <div class="md-display-flex md-align-items-center md-margin-bottom-xs">
-                                        <i class="bi bi-hash md-icon-small md-text-primary md-margin-right-sm" aria-hidden="true"></i>
-                                        <span class="md-body-medium md-text-secondary md-font-weight-medium">Order ID</span>
+                            <div class="md-card-content">
+                                <div class="md-field-grid md-field-grid--two-col">
+                                    <div class="md-field">
+                                        <div class="md-field-label md-body-medium">
+                                            <i class="bi bi-geo-alt md-icon-small md-text-primary" aria-hidden="true"></i>
+                                            <span>Pickup</span>
+                                        </div>
+                                        <div class="md-field-value md-field-value--multiline md-body-medium"><%= order.pickup_address %></div>
                                     </div>
-                                    <div class="md-body-large md-text-primary md-padding-left-lg">
-                                        <%= order.id %>
-                                    </div>
-                                </div>
 
-                                <div class="md-margin-bottom-md">
-                                    <div class="md-display-flex md-align-items-center md-margin-bottom-xs">
-                                        <i class="bi bi-geo-alt md-icon-small md-text-primary md-margin-right-sm" aria-hidden="true"></i>
-                                        <span class="md-body-medium md-text-secondary md-font-weight-medium">Pickup</span>
+                                    <div class="md-field">
+                                        <div class="md-field-label md-body-medium">
+                                            <i class="bi bi-geo-alt-fill md-icon-small md-text-primary" aria-hidden="true"></i>
+                                            <span>Delivery</span>
+                                        </div>
+                                        <div class="md-field-value md-field-value--multiline md-body-medium"><%= order.delivery_address %></div>
                                     </div>
-                                    <div class="md-body-large md-text-primary md-padding-left-lg">
-                                        <%= order.pickup_address %>
-                                    </div>
-                                </div>
 
-                                <div class="md-margin-bottom-md">
-                                    <div class="md-display-flex md-align-items-center md-margin-bottom-xs">
-                                        <i class="bi bi-geo-alt-fill md-icon-small md-text-primary md-margin-right-sm" aria-hidden="true"></i>
-                                        <span class="md-body-medium md-text-secondary md-font-weight-medium">Delivery</span>
+                                    <div class="md-field md-field--full">
+                                        <div class="md-field-label md-body-medium">
+                                            <i class="bi bi-card-text md-icon-small md-text-primary" aria-hidden="true"></i>
+                                            <span>Description</span>
+                                        </div>
+                                        <div class="md-field-value md-field-value--multiline md-body-medium <%= description ? '' : 'md-field-value--placeholder' %>">
+                                            <%= description ? description : '—' %>
+                                        </div>
                                     </div>
-                                    <div class="md-body-large md-text-primary md-padding-left-lg">
-                                        <%= order.delivery_address %>
-                                    </div>
-                                </div>
 
-                                <div class="md-margin-bottom-md">
-                                    <div class="md-display-flex md-align-items-center md-margin-bottom-xs">
-                                        <i class="bi bi-card-text md-icon-small md-text-primary md-margin-right-sm" aria-hidden="true"></i>
-                                        <span class="md-body-medium md-text-secondary md-font-weight-medium">Description</span>
-                                    </div>
-                                    <div class="md-body-large md-text-primary md-padding-left-lg">
-                                        <% if (description) { %>
-                                            <%= description %>
-                                        <% } else { %>
-                                            <span class="md-text-secondary">—</span>
-                                        <% } %>
-                                    </div>
-                                </div>
-
-                                <div>
-                                    <div class="md-display-flex md-align-items-center md-margin-bottom-xs">
-                                        <i class="bi bi-calendar-date md-icon-small md-text-primary md-margin-right-sm" aria-hidden="true"></i>
-                                        <span class="md-body-medium md-text-secondary md-font-weight-medium">Placed</span>
-                                    </div>
-                                    <div class="md-body-medium md-text-primary md-padding-left-lg">
-                                        <%= createdLabel %>
+                                    <div class="md-field md-field--full">
+                                        <div class="md-field-label md-body-medium">
+                                            <i class="bi bi-calendar-date md-icon-small md-text-primary" aria-hidden="true"></i>
+                                            <span>Placed</span>
+                                        </div>
+                                        <div class="md-field-value md-body-medium"><%= createdLabel %></div>
                                     </div>
                                 </div>
                             </div>
