@@ -6,6 +6,7 @@ const sqlite3 = require('sqlite3').verbose();
 const path = require('path');
 const cookieParser = require('cookie-parser');
 const { body, validationResult } = require('express-validator');
+const { authorizeRole } = require('./middleware/auth');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -28,8 +29,21 @@ db.serialize(() => {
         name TEXT NOT NULL,
         email TEXT UNIQUE NOT NULL,
         password TEXT NOT NULL,
+        role TEXT NOT NULL DEFAULT 'customer',
         created_at DATETIME DEFAULT CURRENT_TIMESTAMP
     )`);
+
+    // Idempotent migration: add role column to existing databases.
+    // SQLite does not support ALTER TABLE ... ADD COLUMN IF NOT EXISTS,
+    // so we ignore the "duplicate column name" error on subsequent startups.
+    db.run(
+        `ALTER TABLE users ADD COLUMN role TEXT NOT NULL DEFAULT 'customer'`,
+        (err) => {
+            if (err && !err.message.includes('duplicate column name')) {
+                console.error('Error migrating users table (role column):', err.message);
+            }
+        }
+    );
 
     db.run(`CREATE TABLE IF NOT EXISTS orders (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -283,7 +297,7 @@ app.post('/login', loginValidation, (req, res) => {
             
             // Generate JWT token
             const token = jwt.sign(
-                { id: user.id, email: user.email },
+                { id: user.id, email: user.email, role: user.role },
                 JWT_SECRET,
                 { expiresIn: '24h' }
             );
@@ -303,8 +317,8 @@ app.post('/login', loginValidation, (req, res) => {
     });
 });
 
-// Order routes (authenticated)
-app.get('/orders/new', authenticateToken, (req, res) => {
+// Order routes (authenticated, customer-only)
+app.get('/orders/new', authenticateToken, authorizeRole('customer'), (req, res) => {
     res.render('orders-new', {
         user: req.user,
         errors: [],
@@ -312,7 +326,7 @@ app.get('/orders/new', authenticateToken, (req, res) => {
     });
 });
 
-app.post('/orders', authenticateToken, orderValidation, async (req, res) => {
+app.post('/orders', authenticateToken, authorizeRole('customer'), orderValidation, async (req, res) => {
     const errors = validationResult(req);
     const submitted = {
         pickup_address: typeof req.body.pickup_address === 'string' ? req.body.pickup_address : '',
@@ -345,7 +359,7 @@ app.post('/orders', authenticateToken, orderValidation, async (req, res) => {
     }
 });
 
-app.get('/orders', authenticateToken, async (req, res) => {
+app.get('/orders', authenticateToken, authorizeRole('customer'), async (req, res) => {
     try {
         const orders = await Order.findByUserId(req.user.id);
         res.render('orders-list', { user: req.user, orders });
@@ -357,7 +371,7 @@ app.get('/orders', authenticateToken, async (req, res) => {
 
 // IMPORTANT: register `/orders/:id` AFTER `/orders/new` and `/orders` so the
 // static `new` segment and the list route are not shadowed by the `:id` param.
-app.get('/orders/:id', authenticateToken, async (req, res) => {
+app.get('/orders/:id', authenticateToken, authorizeRole('customer'), async (req, res) => {
     const rawId = req.params.id;
     const parsedId = Number.parseInt(rawId, 10);
 
