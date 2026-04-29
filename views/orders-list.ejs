@@ -126,61 +126,51 @@
                                 : null;
                         %>
                             <div class="md-col-12 md-col-md-6 md-col-lg-4 md-margin-bottom-md">
-                                <a href="/orders/<%= order.id %>" class="md-order-card-link" aria-label="View order <%= order.id %> details" style="display:block;text-decoration:none;color:inherit;transition:transform 0.2s ease, box-shadow 0.2s ease;" onmouseover="this.style.transform='translateY(-2px)';this.style.boxShadow='0 6px 18px rgba(0,0,0,0.12)';" onmouseout="this.style.transform='';this.style.boxShadow='';">
+                                <a href="/orders/<%= order.id %>" class="md-order-card-link" aria-label="View order <%= order.id %> details">
                                 <article class="md-card md-elevation-2 md-border-radius-md" aria-label="Order <%= order.id %>">
-                                    <div class="md-card-header md-padding-md md-display-flex md-justify-content-space-between md-align-items-center">
+                                    <div class="md-card-header md-card-header--split">
                                         <h3 class="md-card-title md-headline-small md-margin-none md-text-on-primary">
-                                            <i class="bi bi-hash" aria-hidden="true"></i>
-                                            Order <%= order.id %>
+                                            <i class="bi bi-hash md-icon-medium" aria-hidden="true"></i>
+                                            <span>Order <%= order.id %></span>
                                         </h3>
                                         <span class="<%= chipClass %>" aria-label="Status: <%= statusLabel %>">
                                             <i class="bi bi-circle-fill" aria-hidden="true" style="font-size:0.5rem;margin-right:0.35rem;"></i>
                                             <%= statusLabel %>
                                         </span>
                                     </div>
-                                    <div class="md-card-content md-padding-lg">
-                                        <div class="md-margin-bottom-md">
-                                            <div class="md-display-flex md-align-items-center md-margin-bottom-xs">
-                                                <i class="bi bi-geo-alt md-icon-small md-text-primary md-margin-right-sm" aria-hidden="true"></i>
-                                                <span class="md-body-medium md-text-secondary md-font-weight-medium">Pickup</span>
+                                    <div class="md-card-content">
+                                        <div class="md-field">
+                                            <div class="md-field-label md-body-medium">
+                                                <i class="bi bi-geo-alt md-icon-small md-text-primary" aria-hidden="true"></i>
+                                                <span>Pickup</span>
                                             </div>
-                                            <div class="md-body-large md-text-primary md-padding-left-lg">
-                                                <%= order.pickup_address %>
+                                            <div class="md-field-value md-body-medium"><%= order.pickup_address %></div>
+                                        </div>
+
+                                        <div class="md-field">
+                                            <div class="md-field-label md-body-medium">
+                                                <i class="bi bi-geo-alt-fill md-icon-small md-text-primary" aria-hidden="true"></i>
+                                                <span>Delivery</span>
+                                            </div>
+                                            <div class="md-field-value md-body-medium"><%= order.delivery_address %></div>
+                                        </div>
+
+                                        <div class="md-field">
+                                            <div class="md-field-label md-body-medium">
+                                                <i class="bi bi-card-text md-icon-small md-text-primary" aria-hidden="true"></i>
+                                                <span>Description</span>
+                                            </div>
+                                            <div class="md-field-value md-body-medium <%= description ? '' : 'md-field-value--placeholder' %>">
+                                                <%= description ? description : '—' %>
                                             </div>
                                         </div>
 
-                                        <div class="md-margin-bottom-md">
-                                            <div class="md-display-flex md-align-items-center md-margin-bottom-xs">
-                                                <i class="bi bi-geo-alt-fill md-icon-small md-text-primary md-margin-right-sm" aria-hidden="true"></i>
-                                                <span class="md-body-medium md-text-secondary md-font-weight-medium">Delivery</span>
+                                        <div class="md-field">
+                                            <div class="md-field-label md-body-medium">
+                                                <i class="bi bi-calendar-date md-icon-small md-text-primary" aria-hidden="true"></i>
+                                                <span>Placed</span>
                                             </div>
-                                            <div class="md-body-large md-text-primary md-padding-left-lg">
-                                                <%= order.delivery_address %>
-                                            </div>
-                                        </div>
-
-                                        <div class="md-margin-bottom-md">
-                                            <div class="md-display-flex md-align-items-center md-margin-bottom-xs">
-                                                <i class="bi bi-card-text md-icon-small md-text-primary md-margin-right-sm" aria-hidden="true"></i>
-                                                <span class="md-body-medium md-text-secondary md-font-weight-medium">Description</span>
-                                            </div>
-                                            <div class="md-body-large md-text-primary md-padding-left-lg">
-                                                <% if (description) { %>
-                                                    <%= description %>
-                                                <% } else { %>
-                                                    <span class="md-text-secondary">—</span>
-                                                <% } %>
-                                            </div>
-                                        </div>
-
-                                        <div>
-                                            <div class="md-display-flex md-align-items-center md-margin-bottom-xs">
-                                                <i class="bi bi-calendar-date md-icon-small md-text-primary md-margin-right-sm" aria-hidden="true"></i>
-                                                <span class="md-body-medium md-text-secondary md-font-weight-medium">Placed</span>
-                                            </div>
-                                            <div class="md-body-medium md-text-primary md-padding-left-lg">
-                                                <%= createdLabel %>
-                                            </div>
+                                            <div class="md-field-value md-body-medium"><%= createdLabel %></div>
                                         </div>
                                     </div>
                                 </article>
