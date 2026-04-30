@@ -31,6 +31,16 @@ db.serialize(() => {
         created_at DATETIME DEFAULT CURRENT_TIMESTAMP
     )`);
 
+    // Idempotent migration: add role column if it doesn't already exist.
+    db.run(
+        `ALTER TABLE users ADD COLUMN role TEXT NOT NULL DEFAULT 'customer'`,
+        (err) => {
+            if (err && !err.message.includes('duplicate column name')) {
+                console.error('Migration error adding role column:', err.message);
+            }
+        }
+    );
+
     db.run(`CREATE TABLE IF NOT EXISTS orders (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         user_id INTEGER NOT NULL REFERENCES users(id),
@@ -62,22 +72,8 @@ app.use(express.static('public'));
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
 
-// Authentication middleware
-const authenticateToken = (req, res, next) => {
-    const token = req.cookies.token;
-    
-    if (!token) {
-        return res.redirect('/login');
-    }
-    
-    jwt.verify(token, JWT_SECRET, (err, user) => {
-        if (err) {
-            return res.redirect('/login');
-        }
-        req.user = user;
-        next();
-    });
-};
+// Authentication middleware — imported from middleware/auth.js (single source of truth)
+const { authenticateToken, requireRole } = require('./middleware/auth');
 
 // Validation middleware
 const signupValidation = [
@@ -233,8 +229,8 @@ app.post('/signup', signupValidation, async (req, res) => {
         const hashedPassword = await bcrypt.hash(password, saltRounds);
         
         // Insert user into database
-        db.run('INSERT INTO users (name, email, password) VALUES (?, ?, ?)', 
-            [name, email, hashedPassword], 
+        db.run('INSERT INTO users (name, email, password, role) VALUES (?, ?, ?, ?)',
+            [name, email, hashedPassword, 'customer'],
             function(err) {
                 if (err) {
                     if (err.message.includes('UNIQUE constraint failed')) {
@@ -281,9 +277,9 @@ app.post('/login', loginValidation, (req, res) => {
                 return res.render('login', { error: 'Invalid email or password' });
             }
             
-            // Generate JWT token
+            // Generate JWT token — include role for RBAC middleware
             const token = jwt.sign(
-                { id: user.id, email: user.email },
+                { id: user.id, email: user.email, role: user.role },
                 JWT_SECRET,
                 { expiresIn: '24h' }
             );
@@ -385,6 +381,17 @@ app.get('/orders/:id', authenticateToken, async (req, res) => {
     } catch (detailErr) {
         console.error('Error loading order detail:', detailErr);
         return res.status(404).render('404');
+    }
+});
+
+// Admin route — restricted to admin role
+app.get('/admin', authenticateToken, requireRole('admin'), async (req, res) => {
+    try {
+        const orders = await Order.findAll();
+        res.render('admin-dashboard', { user: req.user, orders });
+    } catch (err) {
+        console.error('Error loading admin dashboard:', err);
+        res.status(500).send('Unable to load admin dashboard');
     }
 });
 
