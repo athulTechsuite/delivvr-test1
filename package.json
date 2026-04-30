@@ -6,7 +6,7 @@
   "scripts": {
     "start": "node app.js",
     "dev": "nodemon app.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "jest --testPathPatterns=test/app.test.js --testNamePattern=\"GET /health\""
   },
   "keywords": [
     "express",
@@ -29,6 +29,23 @@
     "dotenv": "^16.3.1"
   },
   "devDependencies": {
-    "nodemon": "^3.0.1"
+    "nodemon": "^3.0.1",
+    "jest": "^30.3.0",
+    "supertest": "^7.2.2"
+  },
+  "jest": {
+    "testEnvironment": "node",
+    "setupFiles": [
+      "<rootDir>/test/jest-setup.js"
+    ],
+    "testPathIgnorePatterns": [
+      "/node_modules/",
+      "/\\.claude/",
+      "\\.test\\.ts$"
+    ],
+    "modulePathIgnorePatterns": [
+      "<rootDir>/\\.claude/",
+      "<rootDir>/delivvr-test1/"
+    ]
   }
 }
