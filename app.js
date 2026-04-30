@@ -42,6 +42,19 @@ db.serialize(() => {
     )`);
     db.run('CREATE INDEX IF NOT EXISTS idx_orders_user_id ON orders(user_id)');
     db.run('CREATE INDEX IF NOT EXISTS idx_orders_user_status ON orders(user_id, status)');
+
+    // RBAC migration: add role column (idempotent — ignore duplicate-column error on restart)
+    db.run(
+        "ALTER TABLE users ADD COLUMN role TEXT NOT NULL DEFAULT 'customer'",
+        (err) => {
+            if (err && err.message && err.message.includes('duplicate column name')) {
+                return; // Column already exists — safe to ignore
+            }
+            if (err) {
+                console.error('FATAL: Failed to add role column to users table:', err);
+            }
+        }
+    );
 });
 
 // Models
@@ -77,6 +90,16 @@ const authenticateToken = (req, res, next) => {
         req.user = user;
         next();
     });
+};
+
+// Role-based access control middleware factory
+const VALID_ROLES = ['customer', 'admin'];
+
+const requireRole = (...allowedRoles) => (req, res, next) => {
+    if (!req.user || !allowedRoles.includes(req.user.role)) {
+        return res.status(403).render('403');
+    }
+    next();
 };
 
 // Validation middleware
@@ -283,7 +306,7 @@ app.post('/login', loginValidation, (req, res) => {
             
             // Generate JWT token
             const token = jwt.sign(
-                { id: user.id, email: user.email },
+                { id: user.id, email: user.email, role: user.role },
                 JWT_SECRET,
                 { expiresIn: '24h' }
             );
@@ -304,7 +327,7 @@ app.post('/login', loginValidation, (req, res) => {
 });
 
 // Order routes (authenticated)
-app.get('/orders/new', authenticateToken, (req, res) => {
+app.get('/orders/new', authenticateToken, requireRole('customer', 'admin'), (req, res) => {
     res.render('orders-new', {
         user: req.user,
         errors: [],
@@ -312,7 +335,7 @@ app.get('/orders/new', authenticateToken, (req, res) => {
     });
 });
 
-app.post('/orders', authenticateToken, orderValidation, async (req, res) => {
+app.post('/orders', authenticateToken, requireRole('customer', 'admin'), orderValidation, async (req, res) => {
     const errors = validationResult(req);
     const submitted = {
         pickup_address: typeof req.body.pickup_address === 'string' ? req.body.pickup_address : '',
@@ -386,6 +409,38 @@ app.get('/orders/:id', authenticateToken, async (req, res) => {
         console.error('Error loading order detail:', detailErr);
         return res.status(404).render('404');
     }
+});
+
+// Admin: user management
+app.get('/admin/users', authenticateToken, requireRole('admin'), (req, res) => {
+    db.all('SELECT id, name, email, role, created_at FROM users ORDER BY created_at ASC', (err, users) => {
+        if (err) {
+            console.error('Database error loading admin user list:', err);
+            return res.status(500).send('Unable to load users.');
+        }
+        res.render('admin-users', { user: req.user, users });
+    });
+});
+
+app.post('/admin/users/:id/role', authenticateToken, requireRole('admin'), (req, res) => {
+    const rawId = req.params.id;
+    const parsedId = Number.parseInt(rawId, 10);
+    const newRole = req.body.role;
+
+    if (!Number.isInteger(parsedId) || parsedId <= 0) {
+        return res.status(400).send('Invalid user ID.');
+    }
+    if (!VALID_ROLES.includes(newRole)) {
+        return res.status(400).send('Invalid role value.');
+    }
+
+    db.run('UPDATE users SET role = ? WHERE id = ?', [newRole, parsedId], function (err) {
+        if (err) {
+            console.error('Database error updating user role:', err);
+            return res.status(500).send('Unable to update role.');
+        }
+        res.redirect('/admin/users');
+    });
 });
 
 app.post('/logout', (req, res) => {

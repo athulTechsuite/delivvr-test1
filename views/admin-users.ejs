@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Management - Delivvr</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+</head>
+<body class="md-body">
+    <nav class="md-navbar" role="navigation" aria-label="Main navigation">
+        <div class="md-navbar-container">
+            <div class="md-navbar-brand">
+                <a href="/" class="md-navbar-brand-link delivvr-brand" aria-label="Delivvr Home">
+                    <i class="bi bi-truck" aria-hidden="true"></i>
+                    <span>Delivvr</span>
+                </a>
+            </div>
+            <div class="md-navbar-nav" id="navbarNav">
+                <ul class="md-navbar-menu" role="menubar">
+                    <li class="md-navbar-item" role="none">
+                        <a class="md-navbar-link" href="/dashboard" role="menuitem">
+                            <i class="bi bi-speedometer2" aria-hidden="true"></i> Dashboard
+                        </a>
+                    </li>
+                    <li class="md-navbar-item" role="none">
+                        <a class="md-navbar-link md-navbar-link-active" href="/admin/users" role="menuitem" aria-current="page">
+                            <i class="bi bi-people" aria-hidden="true"></i> User Management
+                        </a>
+                    </li>
+                    <li class="md-navbar-item" role="none">
+                        <form action="/logout" method="POST" style="display:inline;">
+                            <button type="submit" class="md-navbar-link md-navbar-link-button" role="menuitem">
+                                <i class="bi bi-box-arrow-right" aria-hidden="true"></i> Logout
+                            </button>
+                        </form>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <main class="md-main" role="main">
+        <div class="md-container">
+            <section class="md-section md-padding-top-lg md-padding-bottom-md" aria-labelledby="admin-heading">
+                <h1 id="admin-heading" class="md-headline-medium md-text-primary md-margin-bottom-xs">
+                    <i class="bi bi-people md-icon-medium md-margin-right-sm" aria-hidden="true"></i>
+                    User Management
+                </h1>
+                <p class="md-body-medium md-text-secondary md-margin-bottom-lg">
+                    View all registered users and manage their roles.
+                </p>
+            </section>
+
+            <section class="md-section md-margin-bottom-lg">
+                <div class="md-card md-elevation-1">
+                    <div class="md-card-content">
+                        <table class="md-table" role="table" aria-label="Users table">
+                            <thead>
+                                <tr>
+                                    <th scope="col">ID</th>
+                                    <th scope="col">Name</th>
+                                    <th scope="col">Email</th>
+                                    <th scope="col">Role</th>
+                                    <th scope="col">Joined</th>
+                                    <th scope="col">Change Role</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <% users.forEach(function(u) { %>
+                                <tr>
+                                    <td><%= u.id %></td>
+                                    <td><%= u.name %></td>
+                                    <td><%= u.email %></td>
+                                    <td>
+                                        <span class="md-chip <%= u.role === 'admin' ? 'md-chip-active' : 'md-chip-pending' %>">
+                                            <%= u.role %>
+                                        </span>
+                                    </td>
+                                    <td><%= u.created_at ? new Date(u.created_at).toLocaleDateString() : '—' %></td>
+                                    <td>
+                                        <form method="POST" action="/admin/users/<%= u.id %>/role" style="display:inline-flex;gap:0.5rem;align-items:center;">
+                                            <select name="role" class="md-select" aria-label="Change role for <%= u.name %>">
+                                                <option value="customer" <%= u.role === 'customer' ? 'selected' : '' %>>customer</option>
+                                                <option value="admin" <%= u.role === 'admin' ? 'selected' : '' %>>admin</option>
+                                            </select>
+                                            <button type="submit" class="md-button md-button--contained md-ripple md-padding-sm md-border-radius-sm">
+                                                Update
+                                            </button>
+                                        </form>
+                                    </td>
+                                </tr>
+                                <% }) %>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </main>
+    <script src="/js/theme-toggle.js"></script>
+</body>
+</html>
