@@ -28,8 +28,20 @@ db.serialize(() => {
         name TEXT NOT NULL,
         email TEXT UNIQUE NOT NULL,
         password TEXT NOT NULL,
+        role TEXT NOT NULL DEFAULT 'customer',
         created_at DATETIME DEFAULT CURRENT_TIMESTAMP
     )`);
+
+    // Migration guard: add role column to existing databases.
+    // SQLite will error "duplicate column name" if it already exists — ignore it.
+    db.run(
+        `ALTER TABLE users ADD COLUMN role TEXT NOT NULL DEFAULT 'customer'`,
+        (err) => {
+            if (err && !err.message.includes('duplicate column name')) {
+                console.error('Migration error:', err);
+            }
+        }
+    );
 
     db.run(`CREATE TABLE IF NOT EXISTS orders (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -43,6 +55,10 @@ db.serialize(() => {
     db.run('CREATE INDEX IF NOT EXISTS idx_orders_user_id ON orders(user_id)');
     db.run('CREATE INDEX IF NOT EXISTS idx_orders_user_status ON orders(user_id, status)');
 });
+
+// RBAC middleware and admin router
+const { requireRole } = require('./middleware/rbac');
+const { createAdminRouter } = require('./routes/admin');
 
 // Models
 const Order = require('./models/Order');
@@ -281,9 +297,10 @@ app.post('/login', loginValidation, (req, res) => {
                 return res.render('login', { error: 'Invalid email or password' });
             }
             
-            // Generate JWT token
+            // Generate JWT token — embed role so requireRole middleware can
+            // enforce RBAC on every subsequent request without a DB round-trip.
             const token = jwt.sign(
-                { id: user.id, email: user.email },
+                { id: user.id, email: user.email, role: user.role || 'customer' },
                 JWT_SECRET,
                 { expiresIn: '24h' }
             );
@@ -388,6 +405,42 @@ app.get('/orders/:id', authenticateToken, async (req, res) => {
     }
 });
 
+// PATCH /orders/:id/status — driver and admin only
+// Allows authorised parties to advance the order lifecycle.
+// Must be registered AFTER GET /orders/:id to preserve route ordering.
+app.patch('/orders/:id/status', authenticateToken, requireRole('driver', 'admin'), async (req, res) => {
+    const rawId = req.params.id;
+    const parsedId = Number.parseInt(rawId, 10);
+
+    if (!Number.isInteger(parsedId) || parsedId <= 0 || String(parsedId) !== String(rawId).trim()) {
+        return res.status(404).json({ error: 'Order not found' });
+    }
+
+    const { status } = req.body;
+    const validStatuses = Object.values(Order.STATUS);
+    if (!status || !validStatuses.includes(status)) {
+        return res.status(400).json({ error: 'Invalid status' });
+    }
+
+    try {
+        const order = await Order.findById(parsedId);
+        if (!order) {
+            return res.status(404).json({ error: 'Order not found' });
+        }
+        await new Promise((resolve, reject) => {
+            db.run('UPDATE orders SET status = ? WHERE id = ?', [status, parsedId], function (err) {
+                if (err) return reject(err);
+                resolve();
+            });
+        });
+        const updated = await Order.findById(parsedId);
+        return res.status(200).json(updated);
+    } catch (err) {
+        console.error('Error updating order status:', err);
+        return res.status(500).json({ error: 'Internal server error' });
+    }
+});
+
 app.post('/logout', (req, res) => {
     res.clearCookie('token');
     res.redirect('/');
@@ -401,6 +454,12 @@ app.get('/health', (req, res) => {
         timestamp: new Date().toISOString()
     });
 });
+
+// Admin routes — mount before the 404 handler so /admin/* is reachable.
+// Pass the shared db instance so admin queries target database.sqlite,
+// not the separate database.db opened by models/User.js.
+const adminRouter = createAdminRouter(db, authenticateToken, requireRole);
+app.use('/admin', adminRouter);
 
 // Error handling middleware
 app.use((req, res) => {
