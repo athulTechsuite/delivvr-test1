@@ -4,14 +4,15 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>New Order - Delivvr</title>
-    <link rel="stylesheet" href="/css/style.css">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,300;0,400;0,500;0,700;1,300;1,400&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="/css/style.css">
 </head>
 <body class="md-body">
-    <!-- Main Navigation -->
+    <a href="#main-content" class="skip-link sr-only">Skip to main content</a>
+
     <nav class="md-navbar" role="navigation" aria-label="Main navigation">
         <div class="md-navbar-container">
             <div class="md-navbar-brand">
@@ -20,11 +21,11 @@
                     <span>Delivvr</span>
                 </a>
             </div>
-
             <button class="md-navbar-toggle" type="button" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
                 <span class="md-navbar-toggle-icon"></span>
+                <span class="md-navbar-toggle-icon"></span>
+                <span class="md-navbar-toggle-icon"></span>
             </button>
-
             <div class="md-navbar-nav" id="navbarNav">
                 <ul class="md-navbar-menu" role="menubar">
                     <li class="md-navbar-item" role="none">
@@ -46,7 +47,7 @@
                         </a>
                     </li>
                     <li class="md-navbar-item" role="none">
-                        <form action="/logout" method="POST" style="display: inline;">
+                        <form action="/logout" method="POST" class="md-navbar-form">
                             <button type="submit" class="md-navbar-link md-navbar-link-button" role="menuitem">
                                 <i class="bi bi-box-arrow-right" aria-hidden="true"></i>
                                 Logout
@@ -63,50 +64,51 @@
         </div>
     </nav>
 
-    <!-- Main Content -->
-    <main class="md-main" role="main">
+    <main class="md-main" id="main-content" role="main">
         <div class="md-container">
-            <section class="md-section" aria-labelledby="new-order-heading">
+            <header class="md-page-header" aria-labelledby="new-order-heading">
+                <div>
+                    <a href="/orders" class="md-back-link md-body2 md-text-secondary">
+                        <i class="bi bi-arrow-left" aria-hidden="true"></i>
+                        <span>Back to My Orders</span>
+                    </a>
+                    <h1 id="new-order-heading" class="md-page-header-title">
+                        <i class="bi bi-box-seam" aria-hidden="true"></i>
+                        Place a New Order
+                    </h1>
+                    <p class="md-page-header-subtitle">Tell us where to pick up and where to deliver.</p>
+                </div>
+            </header>
+
+            <section class="md-section md-margin-bottom-lg" aria-labelledby="new-order-heading">
                 <div class="md-row md-justify-center">
                     <div class="md-col-12 md-col-md-10 md-col-lg-8">
-                        <div class="md-card md-elevation-2" role="form" aria-labelledby="new-order-heading">
-                            <div class="md-card-header md-text-center">
-                                <div style="margin-bottom:0.75rem;">
-                                    <i class="bi bi-box-seam" aria-hidden="true"></i>
-                                </div>
-                                <h1 id="new-order-heading" class="md-headline-medium md-margin-0 md-text-on-primary" style="letter-spacing:1px;">
-                                    Place a New Order
-                                </h1>
-                                <p class="md-body-medium md-margin-top-sm md-margin-bottom-0 md-text-on-primary">
-                                    Tell us where to pick up and where to deliver
-                                </p>
-                            </div>
-
-                            <div class="md-card-content">
-                                <% if (Array.isArray(errors) && errors.length > 0) { %>
-                                    <div class="md-alert md-alert--error md-margin-bottom-lg" role="alert" aria-live="polite">
-                                        <div class="md-alert-icon">
-                                            <i class="bi bi-exclamation-circle-fill" aria-hidden="true"></i>
-                                        </div>
-                                        <div class="md-alert-content">
-                                            <ul class="md-alert-message" style="margin:0;padding-left:1.25rem;">
+                        <div class="md-section-card">
+                            <% if (Array.isArray(errors) && errors.length > 0) { %>
+                                <div class="md-alert md-alert--error md-alert-error md-margin-bottom-md" role="alert" aria-live="polite">
+                                    <div class="md-alert-content">
+                                        <i class="bi bi-exclamation-circle-fill md-alert-icon" aria-hidden="true"></i>
+                                        <div>
+                                            <p class="md-alert-message md-margin-none"><strong>We couldn't place this order.</strong></p>
+                                            <ul class="md-alert-message md-margin-none">
                                                 <% errors.forEach(function(err) { %>
                                                     <li><%= err.msg %></li>
                                                 <% }) %>
                                             </ul>
                                         </div>
                                     </div>
-                                <% } %>
+                                </div>
+                            <% } %>
 
-                                <form id="orderForm" action="/orders" method="POST" novalidate>
-                                    <!-- Pickup Address -->
-                                    <div class="md-form-field md-margin-bottom-lg">
+                            <form id="orderForm" action="/orders" method="POST" novalidate>
+                                <div class="md-field-grid md-field-grid--two-col">
+                                    <div class="md-form-field md-margin-bottom-md md-field--full">
                                         <div class="md-form-group">
                                             <input
                                                 type="text"
                                                 id="pickup_address"
                                                 name="pickup_address"
-                                                class="md-form-control"
+                                                class="md-form-control md-input"
                                                 placeholder=" "
                                                 required
                                                 minlength="3"
@@ -120,19 +122,18 @@
                                                 Pickup Address
                                             </label>
                                         </div>
-                                        <div id="pickup-helper" class="md-helper-text">
-                                            Where should we pick up the package?
+                                        <div id="pickup-helper" class="md-form-helper-text md-helper-text">
+                                            Where should we pick up the package? (3&ndash;500 chars)
                                         </div>
                                     </div>
 
-                                    <!-- Delivery Address -->
-                                    <div class="md-form-field md-margin-bottom-lg">
+                                    <div class="md-form-field md-margin-bottom-md md-field--full">
                                         <div class="md-form-group">
                                             <input
                                                 type="text"
                                                 id="delivery_address"
                                                 name="delivery_address"
-                                                class="md-form-control"
+                                                class="md-form-control md-input"
                                                 placeholder=" "
                                                 required
                                                 minlength="3"
@@ -146,18 +147,17 @@
                                                 Delivery Address
                                             </label>
                                         </div>
-                                        <div id="delivery-helper" class="md-helper-text">
-                                            Where should the package be delivered?
+                                        <div id="delivery-helper" class="md-form-helper-text md-helper-text">
+                                            Where should the package be delivered? (3&ndash;500 chars)
                                         </div>
                                     </div>
 
-                                    <!-- Package Description (optional) -->
-                                    <div class="md-form-field md-margin-bottom-xl">
+                                    <div class="md-form-field md-margin-bottom-lg md-field--full">
                                         <div class="md-form-group">
                                             <textarea
                                                 id="package_description"
                                                 name="package_description"
-                                                class="md-form-control"
+                                                class="md-form-control md-input"
                                                 placeholder=" "
                                                 maxlength="1000"
                                                 rows="4"
@@ -168,38 +168,25 @@
                                                 Package Description (optional)
                                             </label>
                                         </div>
-                                        <div id="description-helper" class="md-helper-text">
-                                            Optional notes about the package contents or handling instructions
+                                        <div id="description-helper" class="md-form-helper-text md-helper-text">
+                                            Optional notes about the package contents or handling instructions.
                                         </div>
                                     </div>
-
-                                    <!-- Submit Button -->
-                                    <div class="md-form-field">
-                                        <button
-                                            type="submit"
-                                            class="md-button md-button--contained md-button--elevated md-button--full-width"
-                                            id="submitButton"
-                                        >
-                                            <span class="md-button-label">
-                                                <i class="bi bi-truck" aria-hidden="true"></i>
-                                                Place Order
-                                            </span>
-                                            <div class="md-button-ripple"></div>
-                                        </button>
-                                    </div>
-                                </form>
-                            </div>
-
-                            <div class="md-card-actions">
-                                <div class="md-text-center">
-                                    <p class="md-body-medium md-text-secondary">
-                                        <a href="/orders" class="md-link md-link-primary">
-                                            <i class="bi bi-arrow-left" aria-hidden="true"></i>
-                                            Back to My Orders
-                                        </a>
-                                    </p>
                                 </div>
-                            </div>
+
+                                <div class="md-form-actions">
+                                    <button
+                                        type="submit"
+                                        class="md-btn md-button md-btn-primary md-button--contained md-btn-block md-button--full-width md-button--large"
+                                        id="submitButton"
+                                    >
+                                        <span class="md-button-label">
+                                            <i class="bi bi-truck" aria-hidden="true"></i>
+                                            Place Order
+                                        </span>
+                                    </button>
+                                </div>
+                            </form>
                         </div>
                     </div>
                 </div>
@@ -207,9 +194,14 @@
         </div>
     </main>
 
+    <footer class="md-footer" role="contentinfo">
+        <div class="md-container">
+            <p class="md-body2 md-text-secondary md-text-center md-margin-none">&copy; 2026 Delivvr. All rights reserved.</p>
+        </div>
+    </footer>
+
     <script src="/js/theme-toggle.js"></script>
     <script>
-        // Mobile navigation toggle
         (function () {
             var navToggle = document.querySelector('.md-navbar-toggle');
             var navMenu = document.querySelector('.md-navbar-nav');
@@ -218,6 +210,23 @@
                     var expanded = this.getAttribute('aria-expanded') === 'true';
                     this.setAttribute('aria-expanded', !expanded);
                     navMenu.classList.toggle('show');
+                });
+                document.addEventListener('keydown', function (e) {
+                    if (e.key === 'Escape' && navMenu.classList.contains('show')) {
+                        navToggle.setAttribute('aria-expanded', 'false');
+                        navMenu.classList.remove('show');
+                    }
+                });
+            }
+            var form = document.getElementById('orderForm');
+            var submitBtn = document.getElementById('submitButton');
+            if (form && submitBtn) {
+                form.addEventListener('submit', function () {
+                    submitBtn.disabled = true;
+                    var label = submitBtn.querySelector('.md-button-label');
+                    if (label) {
+                        label.innerHTML = '<i class="bi bi-hourglass-split" aria-hidden="true"></i> Placing order...';
+                    }
                 });
             }
         })();

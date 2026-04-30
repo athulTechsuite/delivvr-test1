@@ -4,585 +4,246 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sign Up - Delivvr</title>
-    <link rel="stylesheet" href="/css/style.css">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,300;0,400;0,500;0,700;1,300;1,400&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="/css/style.css">
 </head>
 <body class="md-body">
-    <!-- Main Navigation -->
-    <nav class="md-navbar" role="navigation" aria-label="Main navigation">
-        <div class="md-navbar-container">
-            <div class="md-navbar-brand">
-                <a href="/" class="md-navbar-brand-link delivvr-brand" aria-label="Delivvr Home">
-                    <i class="bi bi-truck" aria-hidden="true"></i>
-                    <span>Delivvr</span>
-                </a>
-            </div>
+    <a href="#signup-form" class="skip-link sr-only">Skip to signup form</a>
+    <main class="md-auth-shell" role="main">
+        <section class="md-auth-card" aria-labelledby="signup-heading">
+            <header class="md-auth-brand">
+                <div class="md-auth-brand-mark" aria-hidden="true">
+                    <i class="bi bi-truck"></i>
+                </div>
+                <h1 id="signup-heading" class="md-auth-title">Create your Delivvr account</h1>
+                <p class="md-auth-subtitle">Start delivering smarter in minutes</p>
+            </header>
 
-            <!-- Mobile Menu Toggle -->
-            <button class="md-navbar-toggle" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-                <span class="md-navbar-toggle-icon"></span>
-            </button>
-
-            <!-- Navigation Links -->
-            <div class="md-navbar-nav" id="navbarNav">
-                <ul class="md-navbar-menu" role="menubar">
-                    <li class="md-navbar-item" role="none">
-                        <a class="md-navbar-link" href="/" role="menuitem">
-                            <i class="bi bi-house" aria-hidden="true"></i>
-                            Home
-                        </a>
-                    </li>
-                    <li class="md-navbar-item" role="none">
-                        <a class="md-navbar-link" href="/login" role="menuitem">
-                            <i class="bi bi-box-arrow-in-right" aria-hidden="true"></i>
-                            Login
-                        </a>
-                    </li>
-                    <li class="md-navbar-item" role="none">
-                        <a class="md-navbar-link active" href="/signup" role="menuitem" aria-current="page">
-                            <i class="bi bi-person-plus" aria-hidden="true"></i>
-                            Sign Up
-                        </a>
-                    </li>
-                    <li class="md-navbar-item md-theme-toggle-item" role="none">
-                        <button class="md-button md-button--icon theme-toggle" id="theme-toggle" aria-label="Toggle theme">
-                            <i class="bi bi-moon-fill" id="theme-icon"></i>
-                        </button>
-                    </li>
-                </ul>
-            </div>
-        </div>
-    </nav>
-
-    <!-- Main Content -->
-    <main class="md-main" role="main">
-        <div class="md-container">
-            <!-- Signup Form Section -->
-            <section class="md-section" aria-labelledby="signup-heading">
-                <div class="md-row md-justify-center">
-                    <div class="md-col-12 md-col-md-8 md-col-lg-6 md-col-xl-5">
-                        <!-- Signup Card -->
-                        <div class="md-card md-elevation-2" role="form" aria-labelledby="signup-heading">
-                            <!-- Card Header - Delivvr Branded -->
-                            <div class="md-card-header md-text-center">
-                                <div style="margin-bottom:0.75rem;">
-                                    <i class="bi bi-truck" aria-hidden="true"></i>
-                                </div>
-                                <h1 id="signup-heading" class="md-headline-medium md-margin-0 md-text-on-primary" style="letter-spacing:1px;">
-                                    Delivvr
-                                </h1>
-                                <p class="md-body-medium md-margin-top-sm md-margin-bottom-0 md-text-on-primary">
-                                    Create your account and start delivering
-                                </p>
-                            </div>
-
-                            <!-- Card Content -->
-                            <div class="md-card-content">
-                                <!-- Error Alert -->
-                                <% if (typeof error !== 'undefined' && error) { %>
-                                    <div class="md-alert md-alert--error md-margin-bottom-lg" role="alert" aria-live="polite">
-                                        <div class="md-alert-icon">
-                                            <i class="bi bi-exclamation-circle-fill" aria-hidden="true"></i>
-                                        </div>
-                                        <div class="md-alert-content">
-                                            <p class="md-alert-message"><%= error %></p>
-                                        </div>
-                                    </div>
-                                <% } %>
-
-                                <!-- Success Alert -->
-                                <% if (typeof success !== 'undefined' && success) { %>
-                                    <div class="md-alert md-alert--success md-margin-bottom-lg" role="alert" aria-live="polite">
-                                        <div class="md-alert-icon">
-                                            <i class="bi bi-check-circle-fill" aria-hidden="true"></i>
-                                        </div>
-                                        <div class="md-alert-content">
-                                            <p class="md-alert-message"><%= success %></p>
-                                        </div>
-                                    </div>
-                                <% } %>
-
-                                <!-- Signup Form -->
-                                <form id="signupForm" action="/signup" method="POST" novalidate>
-                                    <!-- Full Name Field -->
-                                    <div class="md-form-field md-margin-bottom-lg">
-                                        <div class="md-form-group">
-                                            <input
-                                                type="text"
-                                                id="name"
-                                                name="name"
-                                                class="md-form-control"
-                                                placeholder=" "
-                                                required
-                                                minlength="2"
-                                                maxlength="50"
-                                                pattern="[a-zA-Z\s]+"
-                                                autocomplete="name"
-                                                aria-describedby="name-helper"
-                                            >
-                                            <label class="md-form-label" for="name">
-                                                <i class="bi bi-person" aria-hidden="true"></i>
-                                                Full Name
-                                            </label>
-                                        </div>
-                                        <div id="name-helper" class="md-helper-text">
-                                            Enter your full name (letters and spaces only)
-                                        </div>
-                                        <div class="md-error-text" role="alert" aria-live="polite"></div>
-                                    </div>
-
-                                    <!-- Email Field -->
-                                    <div class="md-form-field md-margin-bottom-lg">
-                                        <div class="md-form-group">
-                                            <input
-                                                type="email"
-                                                id="email"
-                                                name="email"
-                                                class="md-form-control"
-                                                placeholder=" "
-                                                required
-                                                autocomplete="email"
-                                                aria-describedby="email-helper"
-                                            >
-                                            <label class="md-form-label" for="email">
-                                                <i class="bi bi-envelope" aria-hidden="true"></i>
-                                                Email Address
-                                            </label>
-                                        </div>
-                                        <div id="email-helper" class="md-helper-text">
-                                            We'll use this email for account verification and notifications
-                                        </div>
-                                        <div class="md-error-text" role="alert" aria-live="polite"></div>
-                                    </div>
-
-                                    <!-- Password Field -->
-                                    <div class="md-form-field md-margin-bottom-lg">
-                                        <div class="md-form-group">
-                                            <input
-                                                type="password"
-                                                id="password"
-                                                name="password"
-                                                class="md-form-control"
-                                                placeholder=" "
-                                                required
-                                                minlength="6"
-                                                maxlength="128"
-                                                autocomplete="new-password"
-                                                aria-describedby="password-helper password-requirements"
-                                            >
-                                            <label class="md-form-label" for="password">
-                                                <i class="bi bi-lock" aria-hidden="true"></i>
-                                                Password
-                                            </label>
-                                            <button
-                                                type="button"
-                                                class="md-input-action"
-                                                id="togglePassword"
-                                                aria-label="Show password"
-                                                tabindex="-1"
-                                            >
-                                                <i class="bi bi-eye" aria-hidden="true"></i>
-                                            </button>
-                                        </div>
-                                        <div id="password-helper" class="md-helper-text">
-                                            Password must be at least 6 characters long
-                                        </div>
-                                        <div id="password-requirements" class="md-helper-text md-text-caption">
-                                            Must contain: lowercase letter, uppercase letter, and number
-                                        </div>
-                                        <div class="md-error-text" role="alert" aria-live="polite"></div>
-                                    </div>
-
-                                    <!-- Confirm Password Field -->
-                                    <div class="md-form-field md-margin-bottom-xl">
-                                        <div class="md-form-group">
-                                            <input
-                                                type="password"
-                                                id="confirmPassword"
-                                                name="confirmPassword"
-                                                class="md-form-control"
-                                                placeholder=" "
-                                                required
-                                                autocomplete="new-password"
-                                                aria-describedby="confirm-password-helper"
-                                            >
-                                            <label class="md-form-label" for="confirmPassword">
-                                                <i class="bi bi-shield-check" aria-hidden="true"></i>
-                                                Confirm Password
-                                            </label>
-                                            <button
-                                                type="button"
-                                                class="md-input-action"
-                                                id="toggleConfirmPassword"
-                                                aria-label="Show confirm password"
-                                                tabindex="-1"
-                                            >
-                                                <i class="bi bi-eye" aria-hidden="true"></i>
-                                            </button>
-                                        </div>
-                                        <div id="confirm-password-helper" class="md-helper-text">
-                                            Re-enter your password to confirm
-                                        </div>
-                                        <div class="md-error-text" role="alert" aria-live="polite"></div>
-                                    </div>
-
-                                    <!-- Submit Button -->
-                                    <div class="md-form-field">
-                                        <button
-                                            type="submit"
-                                            class="md-button md-button--contained md-button--elevated md-button--full-width"
-                                            id="submitButton"
-                                        >
-                                            <span class="md-button-label">
-                                                <i class="bi bi-truck" aria-hidden="true"></i>
-                                                Create Account
-                                            </span>
-                                            <div class="md-button-ripple"></div>
-                                        </button>
-                                    </div>
-                                </form>
-                            </div>
-
-                            <!-- Card Footer -->
-                            <div class="md-card-actions">
-                                <div class="md-text-center">
-                                    <p class="md-body-medium md-text-secondary">
-                                        Already have an account?
-                                        <a href="/login" class="md-link md-link-primary">
-                                            <i class="bi bi-box-arrow-in-right" aria-hidden="true"></i>
-                                            Sign in here
-                                        </a>
-                                    </p>
-                                </div>
-                            </div>
-                        </div>
+            <% if (typeof error !== 'undefined' && error) { %>
+                <div class="md-alert md-alert--error md-alert-error md-margin-bottom-md" role="alert" aria-live="polite">
+                    <div class="md-alert-content">
+                        <i class="bi bi-exclamation-circle-fill md-alert-icon" aria-hidden="true"></i>
+                        <span class="md-alert-message"><%= error %></span>
                     </div>
                 </div>
-            </section>
-        </div>
+            <% } %>
+
+            <form id="signup-form" action="/signup" method="POST" class="md-form" novalidate aria-labelledby="signup-heading">
+                <div class="md-form-field md-margin-bottom-md">
+                    <div class="md-form-group">
+                        <input
+                            type="text"
+                            id="name"
+                            name="name"
+                            class="md-form-control md-input"
+                            placeholder=" "
+                            required
+                            minlength="2"
+                            maxlength="50"
+                            pattern="[a-zA-Z\s]+"
+                            autocomplete="name"
+                            aria-describedby="name-helper name-error"
+                        >
+                        <label class="md-form-label" for="name">
+                            <i class="bi bi-person" aria-hidden="true"></i>
+                            Full Name
+                        </label>
+                    </div>
+                    <div id="name-helper" class="md-form-helper-text">Letters and spaces only, 2&ndash;50 characters.</div>
+                    <div id="name-error" class="md-form-helper-text md-form-error-text" role="alert" aria-live="polite"></div>
+                </div>
+
+                <div class="md-form-field md-margin-bottom-md">
+                    <div class="md-form-group">
+                        <input
+                            type="email"
+                            id="email"
+                            name="email"
+                            class="md-form-control md-input"
+                            placeholder=" "
+                            required
+                            autocomplete="email"
+                            aria-describedby="email-helper email-error"
+                        >
+                        <label class="md-form-label" for="email">
+                            <i class="bi bi-envelope" aria-hidden="true"></i>
+                            Email Address
+                        </label>
+                    </div>
+                    <div id="email-helper" class="md-form-helper-text">We'll use this for login and order updates.</div>
+                    <div id="email-error" class="md-form-helper-text md-form-error-text" role="alert" aria-live="polite"></div>
+                </div>
+
+                <div class="md-form-field md-margin-bottom-md">
+                    <div class="md-form-group">
+                        <input
+                            type="password"
+                            id="password"
+                            name="password"
+                            class="md-form-control md-input"
+                            placeholder=" "
+                            required
+                            minlength="6"
+                            maxlength="128"
+                            autocomplete="new-password"
+                            aria-describedby="password-helper password-error"
+                        >
+                        <label class="md-form-label" for="password">
+                            <i class="bi bi-lock" aria-hidden="true"></i>
+                            Password
+                        </label>
+                        <button
+                            type="button"
+                            class="md-input-toggle-password"
+                            aria-label="Show password"
+                            tabindex="-1"
+                            data-toggle="password"
+                        >
+                            <i class="bi bi-eye" aria-hidden="true"></i>
+                        </button>
+                    </div>
+                    <div id="password-helper" class="md-form-helper-text">At least 6 chars with one lowercase, one uppercase, one number.</div>
+                    <div id="password-error" class="md-form-helper-text md-form-error-text" role="alert" aria-live="polite"></div>
+                </div>
+
+                <div class="md-form-field md-margin-bottom-lg">
+                    <div class="md-form-group">
+                        <input
+                            type="password"
+                            id="confirmPassword"
+                            name="confirmPassword"
+                            class="md-form-control md-input"
+                            placeholder=" "
+                            required
+                            autocomplete="new-password"
+                            aria-describedby="confirm-password-error"
+                        >
+                        <label class="md-form-label" for="confirmPassword">
+                            <i class="bi bi-shield-check" aria-hidden="true"></i>
+                            Confirm Password
+                        </label>
+                        <button
+                            type="button"
+                            class="md-input-toggle-password"
+                            aria-label="Show password"
+                            tabindex="-1"
+                            data-toggle="confirmPassword"
+                        >
+                            <i class="bi bi-eye" aria-hidden="true"></i>
+                        </button>
+                    </div>
+                    <div id="confirm-password-error" class="md-form-helper-text md-form-error-text" role="alert" aria-live="polite"></div>
+                </div>
+
+                <button
+                    type="submit"
+                    class="md-btn md-button md-btn-primary md-button--contained md-btn-block md-button--full-width md-button--large"
+                    id="submitButton"
+                >
+                    <span class="md-button-label">
+                        <i class="bi bi-person-plus-fill" aria-hidden="true"></i>
+                        Create Account
+                    </span>
+                </button>
+            </form>
+
+            <footer class="md-auth-footer">
+                <p class="md-margin-none">
+                    Already have an account?
+                    <a href="/login" class="md-link">Sign in here</a>
+                </p>
+            </footer>
+        </section>
     </main>
 
-    <!-- JavaScript for Form Validation and Interactions -->
     <script>
-        // Constants for validation
-        const VALIDATION_PATTERNS = {
-            name: /^[a-zA-Z\s]+$/,
-            password: /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/
-        };
+        document.addEventListener('DOMContentLoaded', function () {
+            var NAME_PATTERN = /^[a-zA-Z\s]+$/;
+            var PASSWORD_PATTERN = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/;
+            var EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-        const MIN_NAME_LENGTH = 2;
-        const MAX_NAME_LENGTH = 50;
-        const MIN_PASSWORD_LENGTH = 6;
-        const MAX_PASSWORD_LENGTH = 128;
+            var form = document.getElementById('signup-form');
+            if (!form) { return; }
+            var nameField = document.getElementById('name');
+            var emailField = document.getElementById('email');
+            var passwordField = document.getElementById('password');
+            var confirmField = document.getElementById('confirmPassword');
+            var submitButton = document.getElementById('submitButton');
 
-        // Form elements
-        const form = document.getElementById('signupForm');
-        const nameField = document.getElementById('name');
-        const emailField = document.getElementById('email');
-        const passwordField = document.getElementById('password');
-        const confirmPasswordField = document.getElementById('confirmPassword');
-        const submitButton = document.getElementById('submitButton');
-        const togglePasswordButton = document.getElementById('togglePassword');
-        const toggleConfirmPasswordButton = document.getElementById('toggleConfirmPassword');
-
-        // Validation state
-        const fieldValidation = {
-            name: false,
-            email: false,
-            password: false,
-            confirmPassword: false
-        };
-
-        // Utility functions
-        function showFieldError(field, message) {
-            const container = field.closest('.md-form-field');
-            const errorElement = container.querySelector('.md-error-text');
-            const formGroup = container.querySelector('.md-form-group');
-
-            errorElement.textContent = message;
-            if (formGroup) formGroup.classList.add('md-input-error');
-            field.setAttribute('aria-invalid', 'true');
-        }
-
-        function clearFieldError(field) {
-            const container = field.closest('.md-form-field');
-            const errorElement = container.querySelector('.md-error-text');
-            const formGroup = container.querySelector('.md-form-group');
-
-            errorElement.textContent = '';
-            if (formGroup) formGroup.classList.remove('md-input-error');
-            field.setAttribute('aria-invalid', 'false');
-        }
-
-        function showFieldSuccess(field) {
-            const container = field.closest('.md-form-field');
-            const formGroup = container.querySelector('.md-form-group');
-            if (formGroup) formGroup.classList.add('md-input-success');
-        }
-
-        function clearFieldSuccess(field) {
-            const container = field.closest('.md-form-field');
-            const formGroup = container.querySelector('.md-form-group');
-            if (formGroup) formGroup.classList.remove('md-input-success');
-        }
-
-        function updateSubmitButton() {
-            const allValid = Object.values(fieldValidation).every(valid => valid);
-            submitButton.disabled = !allValid;
-
-            if (allValid) {
-                submitButton.classList.remove('md-button-disabled');
-            } else {
-                submitButton.classList.add('md-button-disabled');
-            }
-        }
-
-        // Validation functions
-        function validateName() {
-            const value = nameField.value.trim();
-
-            if (!value) {
-                showFieldError(nameField, 'Full name is required');
-                fieldValidation.name = false;
-                return false;
+            function setError(field, errorId, message) {
+                var el = document.getElementById(errorId);
+                if (el) { el.textContent = message || ''; }
+                field.setAttribute('aria-invalid', message ? 'true' : 'false');
+                return !message;
             }
 
-            if (value.length < MIN_NAME_LENGTH || value.length > MAX_NAME_LENGTH) {
-                showFieldError(nameField, `Name must be between ${MIN_NAME_LENGTH} and ${MAX_NAME_LENGTH} characters`);
-                fieldValidation.name = false;
-                return false;
+            function validateName() {
+                var v = nameField.value.trim();
+                if (!v) { return setError(nameField, 'name-error', 'Full name is required'); }
+                if (v.length < 2 || v.length > 50) { return setError(nameField, 'name-error', 'Name must be 2-50 characters'); }
+                if (!NAME_PATTERN.test(v)) { return setError(nameField, 'name-error', 'Letters and spaces only'); }
+                return setError(nameField, 'name-error', '');
+            }
+            function validateEmail() {
+                var v = emailField.value.trim();
+                if (!v) { return setError(emailField, 'email-error', 'Email is required'); }
+                if (!EMAIL_PATTERN.test(v)) { return setError(emailField, 'email-error', 'Please enter a valid email'); }
+                return setError(emailField, 'email-error', '');
+            }
+            function validatePassword() {
+                var v = passwordField.value;
+                if (!v) { return setError(passwordField, 'password-error', 'Password is required'); }
+                if (v.length < 6 || v.length > 128) { return setError(passwordField, 'password-error', 'Password must be 6-128 characters'); }
+                if (!PASSWORD_PATTERN.test(v)) { return setError(passwordField, 'password-error', 'Need lowercase, uppercase and number'); }
+                return setError(passwordField, 'password-error', '');
+            }
+            function validateConfirm() {
+                var v = confirmField.value;
+                if (!v) { return setError(confirmField, 'confirm-password-error', 'Please confirm password'); }
+                if (v !== passwordField.value) { return setError(confirmField, 'confirm-password-error', 'Passwords do not match'); }
+                return setError(confirmField, 'confirm-password-error', '');
             }
 
-            if (!VALIDATION_PATTERNS.name.test(value)) {
-                showFieldError(nameField, 'Name can only contain letters and spaces');
-                fieldValidation.name = false;
-                return false;
-            }
-
-            clearFieldError(nameField);
-            showFieldSuccess(nameField);
-            fieldValidation.name = true;
-            return true;
-        }
-
-        function validateEmail() {
-            const value = emailField.value.trim();
-
-            if (!value) {
-                showFieldError(emailField, 'Email address is required');
-                fieldValidation.email = false;
-                return false;
-            }
-
-            const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-            if (!emailPattern.test(value)) {
-                showFieldError(emailField, 'Please enter a valid email address');
-                fieldValidation.email = false;
-                return false;
-            }
-
-            clearFieldError(emailField);
-            showFieldSuccess(emailField);
-            fieldValidation.email = true;
-            return true;
-        }
-
-        function validatePassword() {
-            const value = passwordField.value;
-
-            if (!value) {
-                showFieldError(passwordField, 'Password is required');
-                fieldValidation.password = false;
-                return false;
-            }
-
-            if (value.length < MIN_PASSWORD_LENGTH || value.length > MAX_PASSWORD_LENGTH) {
-                showFieldError(passwordField, `Password must be between ${MIN_PASSWORD_LENGTH} and ${MAX_PASSWORD_LENGTH} characters`);
-                fieldValidation.password = false;
-                return false;
-            }
-
-            if (!VALIDATION_PATTERNS.password.test(value)) {
-                showFieldError(passwordField, 'Password must contain at least one lowercase letter, one uppercase letter, and one number');
-                fieldValidation.password = false;
-                return false;
-            }
-
-            clearFieldError(passwordField);
-            showFieldSuccess(passwordField);
-            fieldValidation.password = true;
-
-            if (confirmPasswordField.value) {
-                validateConfirmPassword();
-            }
-
-            return true;
-        }
-
-        function validateConfirmPassword() {
-            const value = confirmPasswordField.value;
-            const passwordValue = passwordField.value;
-
-            if (!value) {
-                showFieldError(confirmPasswordField, 'Please confirm your password');
-                fieldValidation.confirmPassword = false;
-                return false;
-            }
-
-            if (value !== passwordValue) {
-                showFieldError(confirmPasswordField, 'Passwords do not match');
-                fieldValidation.confirmPassword = false;
-                return false;
-            }
-
-            clearFieldError(confirmPasswordField);
-            showFieldSuccess(confirmPasswordField);
-            fieldValidation.confirmPassword = true;
-            return true;
-        }
-
-        // Password toggle functionality
-        function togglePasswordVisibility(inputField, toggleButton) {
-            const isPassword = inputField.type === 'password';
-            const icon = toggleButton.querySelector('i');
-
-            if (isPassword) {
-                inputField.type = 'text';
-                icon.className = 'bi bi-eye-slash';
-                toggleButton.setAttribute('aria-label', 'Hide password');
-            } else {
-                inputField.type = 'password';
-                icon.className = 'bi bi-eye';
-                toggleButton.setAttribute('aria-label', 'Show password');
-            }
-        }
-
-        // Event listeners
-        nameField.addEventListener('blur', () => {
-            validateName();
-            updateSubmitButton();
-        });
-
-        nameField.addEventListener('input', () => {
-            if (nameField.value.trim()) {
-                clearFieldError(nameField);
-                clearFieldSuccess(nameField);
-            }
-        });
-
-        emailField.addEventListener('blur', () => {
-            validateEmail();
-            updateSubmitButton();
-        });
-
-        emailField.addEventListener('input', () => {
-            if (emailField.value.trim()) {
-                clearFieldError(emailField);
-                clearFieldSuccess(emailField);
-            }
-        });
-
-        passwordField.addEventListener('blur', () => {
-            validatePassword();
-            updateSubmitButton();
-        });
-
-        passwordField.addEventListener('input', () => {
-            if (passwordField.value) {
-                clearFieldError(passwordField);
-                clearFieldSuccess(passwordField);
-            }
-        });
-
-        confirmPasswordField.addEventListener('blur', () => {
-            validateConfirmPassword();
-            updateSubmitButton();
-        });
-
-        confirmPasswordField.addEventListener('input', () => {
-            if (confirmPasswordField.value) {
-                clearFieldError(confirmPasswordField);
-                clearFieldSuccess(confirmPasswordField);
-            }
-        });
-
-        togglePasswordButton.addEventListener('click', () => {
-            togglePasswordVisibility(passwordField, togglePasswordButton);
-        });
-
-        toggleConfirmPasswordButton.addEventListener('click', () => {
-            togglePasswordVisibility(confirmPasswordField, toggleConfirmPasswordButton);
-        });
-
-        // Form submission
-        form.addEventListener('submit', function(e) {
-            e.preventDefault();
-
-            // Clear all previous states
-            [nameField, emailField, passwordField, confirmPasswordField].forEach(field => {
-                clearFieldError(field);
-                clearFieldSuccess(field);
+            nameField.addEventListener('blur', validateName);
+            emailField.addEventListener('blur', validateEmail);
+            passwordField.addEventListener('blur', validatePassword);
+            confirmField.addEventListener('blur', validateConfirm);
+            passwordField.addEventListener('input', function () {
+                if (confirmField.value) { validateConfirm(); }
             });
 
-            // Validate all fields
-            const nameValid = validateName();
-            const emailValid = validateEmail();
-            const passwordValid = validatePassword();
-            const confirmPasswordValid = validateConfirmPassword();
+            // Password toggles
+            document.querySelectorAll('[data-toggle]').forEach(function (btn) {
+                btn.addEventListener('click', function () {
+                    var targetId = btn.getAttribute('data-toggle');
+                    var input = document.getElementById(targetId);
+                    if (!input) { return; }
+                    var icon = btn.querySelector('i');
+                    var show = input.type === 'password';
+                    input.type = show ? 'text' : 'password';
+                    if (icon) { icon.className = show ? 'bi bi-eye-slash' : 'bi bi-eye'; }
+                    btn.setAttribute('aria-label', show ? 'Hide password' : 'Show password');
+                });
+            });
 
-            // Update submit button state
-            updateSubmitButton();
-
-            // If all validations pass, submit the form
-            if (nameValid && emailValid && passwordValid && confirmPasswordValid) {
+            form.addEventListener('submit', function (e) {
+                var ok = [validateName(), validateEmail(), validatePassword(), validateConfirm()].every(Boolean);
+                if (!ok) {
+                    e.preventDefault();
+                    var firstInvalid = form.querySelector('[aria-invalid="true"]');
+                    if (firstInvalid) { firstInvalid.focus(); }
+                    return;
+                }
                 submitButton.disabled = true;
-                const buttonLabel = submitButton.querySelector('.md-button-label');
-                buttonLabel.innerHTML = '<i class="bi bi-hourglass-split" aria-hidden="true"></i> Creating Account...';
-                this.submit();
-            } else {
-                const invalidField = [nameField, emailField, passwordField, confirmPasswordField]
-                    .find((field, index) => !Object.values(fieldValidation)[index]);
-
-                if (invalidField) {
-                    invalidField.focus();
+                var label = submitButton.querySelector('.md-button-label');
+                if (label) {
+                    label.innerHTML = '<i class="bi bi-hourglass-split" aria-hidden="true"></i> Creating account...';
                 }
-            }
+            });
         });
-
-        // Initialize form state
-        updateSubmitButton();
-
-        // Mobile navigation toggle functionality
-        const navToggle = document.querySelector('.md-navbar-toggle');
-        const navMenu = document.querySelector('.md-navbar-nav');
-
-        if (navToggle && navMenu) {
-            navToggle.addEventListener('click', function() {
-                const expanded = this.getAttribute('aria-expanded') === 'true';
-                this.setAttribute('aria-expanded', !expanded);
-                navMenu.classList.toggle('show');
-
-                const icon = this.querySelector('.md-navbar-toggle-icon');
-                if (icon) {
-                    icon.classList.toggle('md-navbar-toggle-active');
-                }
-            });
-
-            // Close mobile menu when clicking outside
-            document.addEventListener('click', function(e) {
-                if (!navToggle.contains(e.target) && !navMenu.contains(e.target)) {
-                    navToggle.setAttribute('aria-expanded', 'false');
-                    navMenu.classList.remove('show');
-                    const icon = navToggle.querySelector('.md-navbar-toggle-icon');
-                    if (icon) {
-                        icon.classList.remove('md-navbar-toggle-active');
-                    }
-                }
-            });
-        }
     </script>
     <script src="/js/theme-toggle.js"></script>
 </body>
