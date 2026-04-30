@@ -2,8 +2,8 @@ const sqlite3 = require('sqlite3').verbose();
 const bcrypt = require('bcrypt');
 const path = require('path');
 
-// Create database connection
-const dbPath = path.join(__dirname, '..', 'database.db');
+// Create database connection — must match the path used by app.js and models/Order.js
+const dbPath = process.env.DB_PATH || path.join(__dirname, '..', 'database.sqlite');
 const db = new sqlite3.Database(dbPath);
 
 // Create users table if it doesn't exist
@@ -86,10 +86,10 @@ class User {
         }
     }
 
-    // Get all users (for admin purposes)
+    // Get all users (for admin purposes) — includes role for RBAC display
     static findAll() {
         return new Promise((resolve, reject) => {
-            db.all('SELECT id, name, email, created_at FROM users', (err, rows) => {
+            db.all('SELECT id, name, email, role, created_at FROM users ORDER BY created_at ASC', (err, rows) => {
                 if (err) {
                     reject(err);
                 } else {
