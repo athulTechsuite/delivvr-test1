@@ -176,6 +176,46 @@ class Order {
             );
         });
     }
+
+    // Find all orders across all users (admin use), newest first.
+    static findAll() {
+        return new Promise((resolve, reject) => {
+            db.all(
+                'SELECT * FROM orders ORDER BY created_at DESC',
+                [],
+                (err, rows) => {
+                    if (err) {
+                        return reject(err);
+                    }
+                    resolve(rows || []);
+                }
+            );
+        });
+    }
+
+    // Update the status of a single order. Returns true if a row was changed,
+    // false if the order does not exist. Rejects if status is invalid.
+    static updateStatus(id, status) {
+        return new Promise((resolve, reject) => {
+            if (!isPositiveInteger(id)) {
+                return reject(new Error('Invalid id'));
+            }
+            const validStatuses = Object.values(ORDER_STATUS);
+            if (!validStatuses.includes(status)) {
+                return reject(new Error(`Invalid status: ${status}`));
+            }
+            db.run(
+                'UPDATE orders SET status = ? WHERE id = ?',
+                [status, id],
+                function (err) {
+                    if (err) {
+                        return reject(err);
+                    }
+                    resolve(this.changes > 0);
+                }
+            );
+        });
+    }
 }
 
 Order.STATUS = ORDER_STATUS;

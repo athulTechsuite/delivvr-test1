@@ -28,6 +28,7 @@ db.serialize(() => {
         name TEXT NOT NULL,
         email TEXT UNIQUE NOT NULL,
         password TEXT NOT NULL,
+        role TEXT NOT NULL DEFAULT 'user',
         created_at DATETIME DEFAULT CURRENT_TIMESTAMP
     )`);
 
@@ -62,22 +63,8 @@ app.use(express.static('public'));
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
 
-// Authentication middleware
-const authenticateToken = (req, res, next) => {
-    const token = req.cookies.token;
-    
-    if (!token) {
-        return res.redirect('/login');
-    }
-    
-    jwt.verify(token, JWT_SECRET, (err, user) => {
-        if (err) {
-            return res.redirect('/login');
-        }
-        req.user = user;
-        next();
-    });
-};
+// Import shared auth middleware (replaces inline authenticateToken closure)
+const { authenticateToken, requireRole } = require('./middleware/auth');
 
 // Validation middleware
 const signupValidation = [
@@ -385,6 +372,49 @@ app.get('/orders/:id', authenticateToken, async (req, res) => {
     } catch (detailErr) {
         console.error('Error loading order detail:', detailErr);
         return res.status(404).render('404');
+    }
+});
+
+// Admin routes
+app.get('/admin/orders', authenticateToken, requireRole('admin'), async (req, res) => {
+    try {
+        const orders = await Order.findAll();
+        res.render('admin-orders', { user: req.user, orders });
+    } catch (err) {
+        console.error('Error loading admin orders:', err);
+        res.render('admin-orders', { user: req.user, orders: [] });
+    }
+});
+
+app.patch('/orders/:id/status', authenticateToken, requireRole('admin'), async (req, res) => {
+    const rawId = req.params.id;
+    const parsedId = Number.parseInt(rawId, 10);
+
+    if (
+        !Number.isInteger(parsedId) ||
+        parsedId <= 0 ||
+        String(parsedId) !== String(rawId).trim()
+    ) {
+        return res.status(404).json({ error: 'Order not found' });
+    }
+
+    const { status } = req.body;
+    const validStatuses = Object.values(Order.STATUS);
+    if (!status || !validStatuses.includes(status)) {
+        return res.status(400).json({
+            error: `Invalid status. Must be one of: ${validStatuses.join(', ')}`
+        });
+    }
+
+    try {
+        const updated = await Order.updateStatus(parsedId, status);
+        if (!updated) {
+            return res.status(404).json({ error: 'Order not found' });
+        }
+        return res.status(200).json({ success: true, id: parsedId, status });
+    } catch (err) {
+        console.error('Error updating order status:', err);
+        return res.status(500).json({ error: 'Failed to update order status' });
     }
 });
 
