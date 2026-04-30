@@ -52,7 +52,19 @@ const redirectIfAuthenticated = (req, res, next) => {
     }
 };
 
+/**
+ * requireRole(role) — call after authenticateToken.
+ * Returns 403 JSON if req.user.role does not match the required role.
+ */
+const requireRole = (role) => (req, res, next) => {
+    if (!req.user || req.user.role !== role) {
+        return res.status(403).json({ error: 'Forbidden' });
+    }
+    next();
+};
+
 module.exports = {
     authenticateToken,
-    redirectIfAuthenticated
+    redirectIfAuthenticated,
+    requireRole
 };
