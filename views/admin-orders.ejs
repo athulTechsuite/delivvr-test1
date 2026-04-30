@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin — All Orders - Delivvr</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+</head>
+<body class="md-body">
+    <main class="md-main" role="main">
+        <div class="md-container md-padding-top-lg md-padding-bottom-lg">
+            <div class="md-row md-justify-between md-align-center md-margin-bottom-lg">
+                <h1 class="md-headline-medium md-text-primary">
+                    <i class="bi bi-clipboard-data md-icon-medium md-margin-right-sm" aria-hidden="true"></i>
+                    All Orders
+                </h1>
+                <a href="/dashboard" class="md-button md-button--outlined md-ripple md-padding-sm md-border-radius-sm">
+                    <i class="bi bi-house-fill md-icon-small md-margin-right-xs" aria-hidden="true"></i>
+                    Dashboard
+                </a>
+            </div>
+            <% if (orders.length === 0) { %>
+                <div class="md-card md-elevation-1 md-padding-xl md-text-center">
+                    <i class="bi bi-inbox" aria-hidden="true" style="font-size:2rem;color:var(--primary,#FF6B00);"></i>
+                    <p class="md-body-medium md-text-secondary md-margin-top-sm">No orders found.</p>
+                </div>
+            <% } else { %>
+                <div class="md-card md-elevation-1">
+                    <table class="md-table" style="width:100%;border-collapse:collapse;">
+                        <thead>
+                            <tr>
+                                <th class="md-table-header">Order ID</th>
+                                <th class="md-table-header">User ID</th>
+                                <th class="md-table-header">Pickup</th>
+                                <th class="md-table-header">Delivery</th>
+                                <th class="md-table-header">Status</th>
+                                <th class="md-table-header">Created</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <% orders.forEach(order => { %>
+                                <tr class="md-table-row">
+                                    <td class="md-table-cell"><%= order.id %></td>
+                                    <td class="md-table-cell"><%= order.user_id %></td>
+                                    <td class="md-table-cell"><%= order.pickup_address %></td>
+                                    <td class="md-table-cell"><%= order.delivery_address %></td>
+                                    <td class="md-table-cell"><span class="md-badge"><%= order.status %></span></td>
+                                    <td class="md-table-cell"><%= new Date(order.created_at).toLocaleDateString() %></td>
+                                </tr>
+                            <% }); %>
+                        </tbody>
+                    </table>
+                </div>
+            <% } %>
+        </div>
+    </main>
+</body>
+</html>

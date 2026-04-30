@@ -1,42 +1,19 @@
 const express = require('express');
-const jwt = require('jsonwebtoken');
-const sqlite3 = require('sqlite3').verbose();
-const path = require('path');
 const router = express.Router();
-
-// Initialize database connection
-const db = new sqlite3.Database(path.join(__dirname, '../database/users.db'));
-
-// JWT authentication middleware
-const authenticateToken = (req, res, next) => {
-    const token = req.cookies.token;
-    
-    if (!token) {
-        return res.redirect('/login');
-    }
-
-    jwt.verify(token, process.env.JWT_SECRET || 'your-secret-key', (err, user) => {
-        if (err) {
-            res.clearCookie('token');
-            return res.redirect('/login');
-        }
-        req.user = user;
-        next();
-    });
-};
+const { authenticateToken } = require('../middleware/auth');
 
 // Dashboard route - protected
 router.get('/', authenticateToken, (req, res) => {
-    // Get user details from database
-    db.get('SELECT id, name, email FROM users WHERE id = ?', [req.user.userId], (err, user) => {
+    // Get user details from database — use req.user.id (app.js JWT convention)
+    // Note: this route is a legacy parallel to the dashboard route in app.js.
+    // If app.js handles /dashboard directly, this router may be unmounted.
+    const db = require('../database/db');
+    db.get('SELECT id, name, email FROM users WHERE id = ?', [req.user.id], (err, user) => {
         if (err) {
             console.error('Database error:', err);
-            return res.status(500).render('error', { 
-                title: 'Error',
-                message: 'Database error occurred'
-            });
+            return res.status(500).render('404');
         }
-        
+
         if (!user) {
             res.clearCookie('token');
             return res.redirect('/login');
