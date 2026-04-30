@@ -272,6 +272,34 @@ describe('Express.js Authentication App', () => {
     });
   });
 
+  describe('GET /health', () => {
+    test('should return 200 with status ok and integer uptime', async () => {
+      const response = await request(app).get('/health');
+
+      expect(response.status).toBe(200);
+      expect(response.headers['content-type']).toMatch(/application\/json/);
+      expect(response.body.status).toBe('ok');
+      expect(Number.isInteger(response.body.uptime)).toBe(true);
+      expect(response.body.uptime).toBeGreaterThanOrEqual(0);
+    });
+
+    test('should not require authentication', async () => {
+      const response = await request(app).get('/health');
+
+      expect(response.status).toBe(200);
+      expect(response.status).not.toBe(302);
+      expect(response.body.status).toBe('ok');
+    });
+
+    test('should include an ISO 8601 timestamp', async () => {
+      const response = await request(app).get('/health');
+
+      expect(response.status).toBe(200);
+      expect(typeof response.body.timestamp).toBe('string');
+      expect(Number.isNaN(Date.parse(response.body.timestamp))).toBe(false);
+    });
+  });
+
   describe('Security Features', () => {
     test('should hash passwords with bcrypt', async () => {
       const password = 'testpassword123';

@@ -427,7 +427,7 @@ app.post('/logout', (req, res) => {
 app.get('/health', (req, res) => {
     res.status(200).json({
         status: 'ok',
-        uptime: process.uptime(),
+        uptime: Math.floor(process.uptime()),
         timestamp: new Date().toISOString()
     });
 });

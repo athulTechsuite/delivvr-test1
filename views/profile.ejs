@@ -1,25 +1,18 @@
-<%
-// Set page title for layout.ejs integration
-const pageTitle = 'Profile';
-%>
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Profile - Delivvr</title>
-    <link rel="stylesheet" href="/css/style.css">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,300;0,400;0,500;0,700;1,300;1,400&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="/css/style.css">
 </head>
-<body class="md-body md-surface">
-    <!-- Skip Navigation for Accessibility -->
+<body class="md-body">
     <a href="#main-content" class="skip-link sr-only">Skip to main content</a>
 
-    <!-- Main Navigation -->
     <nav class="md-navbar" role="navigation" aria-label="Main navigation">
         <div class="md-navbar-container">
             <div class="md-navbar-brand">
@@ -28,23 +21,13 @@ const pageTitle = 'Profile';
                     <span>Delivvr</span>
                 </a>
             </div>
-
-            <!-- Mobile Menu Toggle -->
-            <button class="md-navbar-toggle" type="button" id="navbar-toggle" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+            <button class="md-navbar-toggle" type="button" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
                 <span class="md-navbar-toggle-icon"></span>
                 <span class="md-navbar-toggle-icon"></span>
                 <span class="md-navbar-toggle-icon"></span>
             </button>
-
-            <!-- Navigation Links -->
             <div class="md-navbar-nav" id="navbarNav">
                 <ul class="md-navbar-menu" role="menubar">
-                    <li class="md-navbar-item" role="none">
-                        <a class="md-navbar-link active" href="/profile" role="menuitem" aria-current="page">
-                            <i class="bi bi-person-circle" aria-hidden="true"></i>
-                            Profile
-                        </a>
-                    </li>
                     <li class="md-navbar-item" role="none">
                         <a class="md-navbar-link" href="/dashboard" role="menuitem">
                             <i class="bi bi-speedometer2" aria-hidden="true"></i>
@@ -52,14 +35,26 @@ const pageTitle = 'Profile';
                         </a>
                     </li>
                     <li class="md-navbar-item" role="none">
-                        <form method="POST" action="/logout" style="display: inline;">
-                            <button type="submit" class="md-navbar-link md-navbar-logout-btn" role="menuitem">
+                        <a class="md-navbar-link" href="/orders" role="menuitem">
+                            <i class="bi bi-box-seam" aria-hidden="true"></i>
+                            My Orders
+                        </a>
+                    </li>
+                    <li class="md-navbar-item" role="none">
+                        <a class="md-navbar-link md-navbar-link-active" href="/profile" role="menuitem" aria-current="page">
+                            <i class="bi bi-person-circle" aria-hidden="true"></i>
+                            Profile
+                        </a>
+                    </li>
+                    <li class="md-navbar-item" role="none">
+                        <form method="POST" action="/logout" class="md-navbar-form">
+                            <button type="submit" class="md-navbar-link md-navbar-link-button" role="menuitem">
                                 <i class="bi bi-box-arrow-right" aria-hidden="true"></i>
                                 Logout
                             </button>
                         </form>
                     </li>
-                    <li class="md-navbar-item md-theme-toggle-item" role="none">
+                    <li class="md-navbar-item md-theme-toggle-container" role="none">
                         <button class="md-button md-button--icon theme-toggle" id="theme-toggle" aria-label="Toggle theme">
                             <i class="bi bi-moon-fill" id="theme-icon"></i>
                         </button>
@@ -69,77 +64,73 @@ const pageTitle = 'Profile';
         </div>
     </nav>
 
-    <!-- Main Content -->
-    <main class="md-main md-padding-lg" id="main-content" role="main">
+    <main class="md-main" id="main-content" role="main">
         <div class="md-container">
-            <!-- Profile Page Heading -->
-            <section class="md-section md-margin-bottom-md" aria-labelledby="profile-heading">
-                <div class="md-row">
-                    <div class="md-col-12">
-                        <h1 id="profile-heading" class="md-h1 md-headline-medium md-text-primary" style="margin:0;">
-                            <i class="bi bi-person-circle" aria-hidden="true"></i>
-                            User Profile
-                        </h1>
-                        <p class="md-body-1 md-subtitle-1 md-text-secondary md-margin-bottom-none">
-                            View your account information and profile details
-                        </p>
-                    </div>
+            <%
+                var rawName = (user && (user.name || user.username || user.email)) ? (user.name || user.username || user.email) : 'U';
+                var nameParts = String(rawName).trim().split(/\s+/);
+                var initials = nameParts.length > 1
+                    ? (nameParts[0][0] + nameParts[1][0]).toUpperCase()
+                    : String(rawName).substring(0, 2).toUpperCase();
+                var displayName = (user && (user.name || user.username)) ? (user.name || user.username) : 'User';
+                var memberSince = 'N/A';
+                try {
+                    if (user && user.created_at) {
+                        var d = new Date(user.created_at);
+                        if (!isNaN(d.getTime())) {
+                            memberSince = d.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+                        }
+                    }
+                } catch (e) { memberSince = 'N/A'; }
+            %>
+
+            <header class="md-page-header" aria-labelledby="profile-heading">
+                <div>
+                    <h1 id="profile-heading" class="md-page-header-title">
+                        <i class="bi bi-person-circle" aria-hidden="true"></i>
+                        Your Profile
+                    </h1>
+                    <p class="md-page-header-subtitle">View your account details and preferences.</p>
                 </div>
-            </section>
+            </header>
 
-            <!-- Profile Card Section -->
-            <section class="md-section" aria-labelledby="profile-info-heading">
+            <section class="md-section md-margin-bottom-lg" aria-labelledby="profile-info-heading">
+                <h2 id="profile-info-heading" class="md-visually-hidden">Profile information</h2>
                 <div class="md-row md-justify-center">
-                    <div class="md-col-12 md-col-md-8 md-col-lg-6">
-                        <%
-                            // Compute initials
-                            const _rawName = (user && (user.name || user.username || user.email)) ? (user.name || user.username || user.email) : 'U';
-                            const _nameParts = _rawName.trim().split(/\s+/);
-                            const _initials = _nameParts.length > 1
-                                ? (_nameParts[0][0] + _nameParts[1][0]).toUpperCase()
-                                : _rawName.substring(0, 2).toUpperCase();
-                        %>
+                    <div class="md-col-12 md-col-md-10 md-col-lg-8">
+                        <% if (typeof user !== 'undefined' && user) { %>
+                            <!-- Avatar header -->
+                            <div class="md-section-card md-text-center">
+                                <div class="md-avatar md-primary md-avatar-large" aria-hidden="true"><%= initials %></div>
+                                <h2 class="md-section-card-title md-margin-top-sm md-display-block">
+                                    <%= displayName %>
+                                </h2>
+                                <p class="md-section-card-subtitle">
+                                    Delivvr Member
+                                    <span class="md-badge md-badge-delivered" aria-label="Account active">
+                                        <i class="bi bi-check-circle-fill" aria-hidden="true"></i>
+                                        Active
+                                    </span>
+                                </p>
+                            </div>
 
-                        <!-- Circular Avatar -->
-                        <div class="md-text-center md-margin-bottom-md">
-                            <div class="md-avatar md-primary"><%= _initials %></div>
-                            <h2 class="md-h2 md-headline-small md-text-primary md-margin-bottom-none" style="margin:0.5rem 0 0;">
-                                <%= (user && (user.name || user.username)) ? (user.name || user.username) : 'User' %>
-                            </h2>
-                            <p class="md-body-medium md-text-secondary" style="margin:0.25rem 0 0;">
-                                Delivvr Member
-                                <span class="md-chip md-chip-active" style="margin-left:0.5rem;"><i class="bi bi-check-circle"></i> Active</span>
-                            </p>
-                        </div>
-
-                        <div class="md-card md-elevation-2" role="region" aria-labelledby="profile-info-heading">
-                            <!-- Card Header -->
-                            <header class="md-card-header">
-                                <h3 id="profile-info-heading" class="md-h3 md-headline-small">
+                            <!-- Account details -->
+                            <div class="md-section-card" role="region" aria-labelledby="account-section">
+                                <h3 id="account-section" class="md-section-card-title">
                                     <i class="bi bi-person-badge" aria-hidden="true"></i>
-                                    Profile Information
+                                    Account Information
                                 </h3>
-                            </header>
-
-                            <!-- Card Content / Body -->
-                            <div class="md-card-body md-card-content">
-                                <% if (typeof user !== 'undefined' && user) { %>
-
-                                    <!-- Full Name -->
+                                <div class="md-profile-info-list">
                                     <div class="md-profile-item">
                                         <i class="bi bi-person-fill" aria-hidden="true"></i>
                                         <span class="label">Full Name</span>
                                         <span class="value" id="profile-name"><%= typeof user.name === 'string' ? user.name : (user.username || 'N/A') %></span>
                                     </div>
-
-                                    <!-- Email -->
                                     <div class="md-profile-item">
                                         <i class="bi bi-envelope-fill" aria-hidden="true"></i>
                                         <span class="label">Email</span>
                                         <span class="value" id="profile-email"><%= typeof user.email === 'string' ? user.email : 'N/A' %></span>
                                     </div>
-
-                                    <!-- Username -->
                                     <% if (user.username) { %>
                                     <div class="md-profile-item">
                                         <i class="bi bi-at" aria-hidden="true"></i>
@@ -147,121 +138,91 @@ const pageTitle = 'Profile';
                                         <span class="value"><%= user.username %></span>
                                     </div>
                                     <% } %>
+                                </div>
+                            </div>
 
-                                    <!-- Member Since -->
+                            <!-- Membership / status -->
+                            <div class="md-section-card" role="region" aria-labelledby="membership-section">
+                                <h3 id="membership-section" class="md-section-card-title">
+                                    <i class="bi bi-shield-check" aria-hidden="true"></i>
+                                    Membership &amp; Status
+                                </h3>
+                                <div class="md-profile-info-list">
                                     <div class="md-profile-item">
                                         <i class="bi bi-calendar-check-fill" aria-hidden="true"></i>
                                         <span class="label">Member since</span>
-                                        <span class="value" id="profile-join-date">
-                                        <%
-                                        try {
-                                            const createdAt = user.created_at;
-                                            if (createdAt) {
-                                                const d = new Date(createdAt);
-                                                if (!isNaN(d.getTime())) { %>
-                                                    <%= d.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) %>
-                                                <% } else { %>N/A<% }
-                                            } else { %>N/A<% }
-                                        } catch(e) { %>N/A<% }
-                                        %>
-                                        </span>
+                                        <span class="value" id="profile-join-date"><%= memberSince %></span>
                                     </div>
-
-                                    <!-- Account Status -->
                                     <div class="md-profile-item">
                                         <i class="bi bi-shield-check" aria-hidden="true"></i>
                                         <span class="label">Status</span>
                                         <span class="value">
-                                            <span class="md-chip md-chip-active"><i class="bi bi-check-circle-fill"></i> Active</span>
+                                            <span class="md-badge md-badge-delivered">
+                                                <i class="bi bi-check-circle-fill" aria-hidden="true"></i>
+                                                Active
+                                            </span>
                                         </span>
                                     </div>
-
-                                <% } else { %>
-                                    <!-- Error State -->
-                                    <div class="md-profile-error" role="alert" aria-live="polite">
-                                        <i class="bi bi-exclamation-triangle-fill" aria-hidden="true"></i>
-                                        <div>
-                                            <strong>Profile Unavailable</strong>
-                                            <p style="margin:0.25rem 0 0;font-size:0.875rem;">
-                                                We're unable to load your profile information. Please refresh or contact support.
-                                            </p>
-                                        </div>
-                                    </div>
-                                <% } %>
+                                </div>
                             </div>
 
-                            <!-- Card Actions with Button Group -->
-                            <div class="md-card-body" style="border-top:1px solid rgba(0,0,0,0.08);">
-                                <div class="md-button-group">
-                                    <a href="/dashboard" class="md-button md-button--contained"
-                                       aria-label="Back to Dashboard">
-                                        <i class="bi bi-speedometer2"></i>
-                                        Back to Dashboard
+                            <!-- Actions -->
+                            <div class="md-section-card">
+                                <div class="md-button-group md-gap-sm">
+                                    <a href="/dashboard" class="md-btn md-button md-btn-primary md-button--contained" aria-label="Back to Dashboard">
+                                        <i class="bi bi-speedometer2" aria-hidden="true"></i>
+                                        <span>Back to Dashboard</span>
                                     </a>
-                                    <form method="POST" action="/logout" style="display:inline;">
-                                        <button type="submit"
-                                                class="md-button md-button--outlined"
-                                                aria-label="Sign Out">
-                                            <i class="bi bi-box-arrow-right"></i>
-                                            Sign Out
+                                    <form method="POST" action="/logout" class="md-navbar-form">
+                                        <button type="submit" class="md-btn md-button md-button--outlined" aria-label="Sign Out">
+                                            <i class="bi bi-box-arrow-right" aria-hidden="true"></i>
+                                            <span>Sign Out</span>
                                         </button>
                                     </form>
                                 </div>
                             </div>
-                        </div>
+                        <% } else { %>
+                            <div class="md-section-card md-profile-error" role="alert" aria-live="polite">
+                                <i class="bi bi-exclamation-triangle-fill" aria-hidden="true"></i>
+                                <div>
+                                    <strong>Profile Unavailable</strong>
+                                    <p class="md-margin-none md-body2">
+                                        We're unable to load your profile information. Please refresh or contact support.
+                                    </p>
+                                </div>
+                            </div>
+                        <% } %>
                     </div>
                 </div>
             </section>
         </div>
     </main>
 
-    <!-- Footer -->
     <footer class="md-footer" role="contentinfo">
         <div class="md-container">
-            <div class="md-footer-content">
-                <p class="md-body-small md-text-secondary md-margin-bottom-none">
-                    &copy; 2026 Delivvr. All rights reserved.
-                </p>
-            </div>
+            <p class="md-body2 md-text-secondary md-text-center md-margin-none">&copy; 2026 Delivvr. All rights reserved.</p>
         </div>
     </footer>
 
-    <!-- Mobile Navigation Toggle Script -->
+    <script src="/js/theme-toggle.js"></script>
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const navToggle = document.getElementById('navbar-toggle');
-            const navMenu = document.getElementById('navbarNav');
-
+        document.addEventListener('DOMContentLoaded', function () {
+            var navToggle = document.querySelector('.md-navbar-toggle');
+            var navMenu = document.querySelector('.md-navbar-nav');
             if (navToggle && navMenu) {
-                navToggle.addEventListener('click', function() {
-                    const isExpanded = navToggle.getAttribute('aria-expanded') === 'true';
-                    navToggle.setAttribute('aria-expanded', !isExpanded);
+                navToggle.addEventListener('click', function () {
+                    var expanded = this.getAttribute('aria-expanded') === 'true';
+                    this.setAttribute('aria-expanded', !expanded);
                     navMenu.classList.toggle('show');
-                    navToggle.classList.toggle('md-navbar-toggle-active');
                 });
-
-                // Close menu when clicking outside
-                document.addEventListener('click', function(event) {
-                    if (!navToggle.contains(event.target) && !navMenu.contains(event.target)) {
+                document.addEventListener('keydown', function (e) {
+                    if (e.key === 'Escape' && navMenu.classList.contains('show')) {
                         navToggle.setAttribute('aria-expanded', 'false');
                         navMenu.classList.remove('show');
-                        navToggle.classList.remove('md-navbar-toggle-active');
-                    }
-                });
-
-                // Close menu on escape key
-                document.addEventListener('keydown', function(event) {
-                    if (event.key === 'Escape') {
-                        navToggle.setAttribute('aria-expanded', 'false');
-                        navMenu.classList.remove('show');
-                        navToggle.classList.remove('md-navbar-toggle-active');
                     }
                 });
             }
         });
     </script>
-
-    <!-- Theme Toggle Script -->
-    <script src="/js/theme-toggle.js"></script>
 </body>
 </html>
