@@ -2,9 +2,10 @@ const sqlite3 = require('sqlite3').verbose();
 const bcrypt = require('bcrypt');
 const path = require('path');
 
-// Create database connection
-const dbPath = path.join(__dirname, '..', 'database.db');
-const db = new sqlite3.Database(dbPath);
+// Use the same database path logic as app.js and middleware/auth.js so all
+// modules share a single SQLite file.
+const DB_PATH = process.env.DB_PATH || path.join(__dirname, '..', 'database.sqlite');
+const db = new sqlite3.Database(DB_PATH);
 
 // Create users table if it doesn't exist
 db.serialize(() => {
@@ -133,6 +134,50 @@ class User {
         });
     }
 }
+
+// Allowed role values — extend this array if the role enum ever grows.
+User.VALID_ROLES = Object.freeze(['user', 'admin']);
+
+// Return all users with their roles, newest first.
+User.findAllWithRoles = function findAllWithRoles() {
+    return new Promise((resolve, reject) => {
+        db.all(
+            'SELECT id, name, email, role, created_at FROM users ORDER BY created_at DESC',
+            [],
+            (err, rows) => {
+                if (err) return reject(err);
+                resolve(rows || []);
+            }
+        );
+    });
+};
+
+// Update a user's role. Validates the enum, then updates and re-fetches the row.
+// Resolves to the updated user row, or null if the user does not exist.
+User.updateRole = function updateRole(id, role) {
+    return new Promise((resolve, reject) => {
+        if (!User.VALID_ROLES.includes(role)) {
+            return reject(
+                Object.assign(
+                    new Error(`Invalid role. Must be one of: ${User.VALID_ROLES.join(', ')}`),
+                    { code: 'INVALID_ROLE' }
+                )
+            );
+        }
+        db.run('UPDATE users SET role = ? WHERE id = ?', [role, id], function (err) {
+            if (err) return reject(err);
+            if (this.changes === 0) return resolve(null); // user not found
+            db.get(
+                'SELECT id, name, email, role, created_at FROM users WHERE id = ?',
+                [id],
+                (selErr, row) => {
+                    if (selErr) return reject(selErr);
+                    resolve(row);
+                }
+            );
+        });
+    });
+};
 
 // Close database connection on process termination
 process.on('SIGINT', () => {
