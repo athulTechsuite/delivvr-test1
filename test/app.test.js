@@ -296,12 +296,43 @@ describe('Express.js Authentication App', () => {
     test('should reject requests with expired JWT tokens', () => {
       const payload = { id: 1, email: 'test@example.com' };
       const secret = 'test-secret';
-      
+
       const expiredToken = jwt.sign(payload, secret, { expiresIn: '-1h' });
-      
+
       expect(() => {
         jwt.verify(expiredToken, secret);
       }).toThrow();
+    });
+  });
+
+  describe('Health Endpoint', () => {
+    test('should return 200 OK without authentication', async () => {
+      const response = await request(app).get('/health');
+      expect(response.status).toBe(200);
+    });
+
+    test('should return JSON content type', async () => {
+      const response = await request(app).get('/health');
+      expect(response.headers['content-type']).toMatch(/application\/json/);
+    });
+
+    test('should return status "ok" in body', async () => {
+      const response = await request(app).get('/health');
+      expect(response.body.status).toBe('ok');
+    });
+
+    test('should not set token cookie', async () => {
+      const response = await request(app).get('/health');
+      const cookies = response.headers['set-cookie'];
+      if (cookies) {
+        const tokenCookie = cookies.find((c) => c.startsWith('token='));
+        expect(tokenCookie).toBeFalsy();
+      }
+    });
+
+    test('should return 404 for POST /health', async () => {
+      const response = await request(app).post('/health');
+      expect(response.status).toBe(404);
     });
   });
 });
