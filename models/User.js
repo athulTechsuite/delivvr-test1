@@ -90,7 +90,7 @@ class User {
     // Get all users (for admin purposes)
     static findAll() {
         return new Promise((resolve, reject) => {
-            db.all('SELECT id, name, email, created_at FROM users', (err, rows) => {
+            db.all('SELECT id, name, email, role, created_at FROM users ORDER BY created_at DESC', (err, rows) => {
                 if (err) {
                     reject(err);
                 } else {

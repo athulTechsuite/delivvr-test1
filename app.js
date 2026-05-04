@@ -47,6 +47,10 @@ db.serialize(() => {
 
 // Models
 const Order = require('./models/Order');
+const User = require('./models/User');
+
+// Allowed roles for RBAC admin UI
+const ALLOWED_ROLES = ['admin', 'user'];
 
 // Order field length constants
 const ADDRESS_MIN_LENGTH = 3;
@@ -134,7 +138,7 @@ app.get('/login', (req, res) => {
 
 app.get('/dashboard', authenticateToken, (req, res) => {
     // Get user info from database
-    db.get('SELECT id, name, email, created_at FROM users WHERE id = ?', [req.user.id], async (err, user) => {
+    db.get('SELECT id, name, email, role, created_at FROM users WHERE id = ?', [req.user.id], async (err, user) => {
         if (err) {
             console.error('Database error loading dashboard user:', err);
             return res.redirect('/login');
@@ -383,6 +387,31 @@ app.get('/admin/orders', authenticateToken, requireRole('admin'), async (req, re
     } catch (err) {
         console.error('Error loading admin orders:', err);
         res.render('admin-orders', { user: req.user, orders: [] });
+    }
+});
+
+app.get('/admin/users', authenticateToken, requireRole('admin'), async (req, res) => {
+    try {
+        const users = await User.findAll();
+        res.render('admin-users', { user: req.user, users });
+    } catch (err) {
+        console.error('Error loading admin users:', err);
+        res.status(500).json({ error: 'Failed to load users' });
+    }
+});
+
+app.post('/admin/users/:id/role', authenticateToken, requireRole('admin'), async (req, res) => {
+    const { role } = req.body;
+    const targetId = parseInt(req.params.id, 10);
+    if (!ALLOWED_ROLES.includes(role)) {
+        return res.status(400).json({ error: 'Invalid role' });
+    }
+    try {
+        await User.updateById(targetId, { role });
+        res.redirect('/admin/users');
+    } catch (err) {
+        console.error('Error updating user role:', err);
+        res.status(500).json({ error: 'Failed to update role' });
     }
 });
 

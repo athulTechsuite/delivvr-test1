@@ -188,6 +188,12 @@ const pageTitle = 'Dashboard';
                                         <i class="bi bi-gear md-icon-medium md-margin-right-sm" aria-hidden="true"></i>
                                         <span>Account Settings</span>
                                     </button>
+                                    <% if (user.role === 'admin') { %>
+                                    <a href="/admin/users" class="md-button md-button--outlined md-ripple md-padding-md md-border-radius-sm md-display-flex md-align-items-center md-justify-content-flex-start" role="button">
+                                        <i class="bi bi-people-fill md-icon-medium md-margin-right-sm" aria-hidden="true"></i>
+                                        <span>Manage Users</span>
+                                    </a>
+                                    <% } %>
                                 </div>
                             </div>
                         </div>
