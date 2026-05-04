@@ -47,6 +47,7 @@ db.serialize(() => {
 
 // Models
 const Order = require('./models/Order');
+const User = require('./models/User');
 
 // Order field length constants
 const ADDRESS_MIN_LENGTH = 3;
@@ -383,6 +384,50 @@ app.get('/admin/orders', authenticateToken, requireRole('admin'), async (req, re
     } catch (err) {
         console.error('Error loading admin orders:', err);
         res.render('admin-orders', { user: req.user, orders: [] });
+    }
+});
+
+app.get('/admin/users', authenticateToken, requireRole('admin'), async (req, res) => {
+    try {
+        const users = await User.findAllWithRoles();
+        res.render('admin-users', { currentUser: req.user, users });
+    } catch (err) {
+        console.error('Error loading admin users:', err);
+        res.render('admin-users', { currentUser: req.user, users: [] });
+    }
+});
+
+app.post('/admin/users/:id/role', authenticateToken, requireRole('admin'), async (req, res) => {
+    const rawId = req.params.id;
+    const parsedId = Number.parseInt(rawId, 10);
+
+    if (
+        !Number.isInteger(parsedId) ||
+        parsedId <= 0 ||
+        String(parsedId) !== String(rawId).trim()
+    ) {
+        return res.status(404).json({ error: 'User not found' });
+    }
+
+    // Prevent an admin from changing their own role (self-lockout guard).
+    if (parsedId === req.user.id) {
+        return res.status(403).json({ error: 'Cannot change your own role' });
+    }
+
+    const { role } = req.body;
+
+    try {
+        const updated = await User.updateRole(parsedId, role);
+        if (!updated) {
+            return res.status(404).json({ error: 'User not found' });
+        }
+        return res.redirect('/admin/users');
+    } catch (err) {
+        if (err.code === 'INVALID_ROLE') {
+            return res.status(400).json({ error: err.message });
+        }
+        console.error('Error updating user role:', err);
+        return res.status(500).json({ error: 'Failed to update user role' });
     }
 });
 
