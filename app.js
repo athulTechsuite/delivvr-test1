@@ -134,7 +134,7 @@ app.get('/login', (req, res) => {
 
 app.get('/dashboard', authenticateToken, (req, res) => {
     // Get user info from database
-    db.get('SELECT id, name, email, created_at FROM users WHERE id = ?', [req.user.id], async (err, user) => {
+    db.get('SELECT id, name, email, role, created_at FROM users WHERE id = ?', [req.user.id], async (err, user) => {
         if (err) {
             console.error('Database error loading dashboard user:', err);
             return res.redirect('/login');
@@ -180,7 +180,7 @@ app.get('/profile', authenticateToken, (req, res) => {
     }
     
     // Get user information from database using parameterized query
-    db.get('SELECT name, email, created_at FROM users WHERE id = ?', [userId], (err, user) => {
+    db.get('SELECT id, name, email, role, created_at FROM users WHERE id = ?', [userId], (err, user) => {
         if (err) {
             console.error('Database error fetching user profile:', err);
             return res.redirect('/login');
@@ -416,6 +416,52 @@ app.patch('/orders/:id/status', authenticateToken, requireRole('admin'), async (
         console.error('Error updating order status:', err);
         return res.status(500).json({ error: 'Failed to update order status' });
     }
+});
+
+app.get('/admin/users', authenticateToken, requireRole('admin'), (req, res) => {
+    db.all('SELECT id, name, email, role, created_at FROM users ORDER BY id ASC', [], (err, users) => {
+        if (err) {
+            console.error('Error loading admin users:', err);
+            return res.render('admin-users', { user: req.user, users: [] });
+        }
+        res.render('admin-users', { user: req.user, users });
+    });
+});
+
+app.post('/admin/users/:id/role', authenticateToken, requireRole('admin'), (req, res) => {
+    const rawId = req.params.id;
+    const targetId = parseInt(rawId, 10);
+
+    if (!Number.isInteger(targetId) || targetId <= 0 || String(targetId) !== String(rawId).trim()) {
+        return res.status(404).json({ error: 'User not found' });
+    }
+
+    const { role } = req.body;
+    const validRoles = ['user', 'admin'];
+    if (!role || !validRoles.includes(role)) {
+        return res.status(400).json({ error: `Invalid role. Must be one of: ${validRoles.join(', ')}` });
+    }
+
+    if (req.user.id === targetId && role === 'user') {
+        return res.status(403).json({ error: 'You cannot demote yourself. Assign another admin first.' });
+    }
+
+    db.get('SELECT id FROM users WHERE id = ?', [targetId], (err, row) => {
+        if (err) {
+            console.error('DB error checking user existence:', err);
+            return res.status(500).json({ error: 'Server error' });
+        }
+        if (!row) {
+            return res.status(404).json({ error: 'User not found' });
+        }
+        db.run('UPDATE users SET role = ? WHERE id = ?', [role, targetId], (updateErr) => {
+            if (updateErr) {
+                console.error('Error updating user role:', updateErr);
+                return res.status(500).json({ error: 'Failed to update role' });
+            }
+            res.redirect('/admin/users');
+        });
+    });
 });
 
 app.post('/logout', (req, res) => {
