@@ -60,6 +60,14 @@ const pageTitle = 'Dashboard';
                             New Order
                         </a>
                     </li>
+                    <% if (user && (user.role === 'admin' || user.role === 'manager')) { %>
+                    <li class="md-navbar-item" role="none">
+                        <a class="md-navbar-link" href="/admin/orders" role="menuitem">
+                            <i class="bi bi-shield-lock" aria-hidden="true"></i>
+                            Admin
+                        </a>
+                    </li>
+                    <% } %>
                     <li class="md-navbar-item" role="none">
                         <form action="/logout" method="POST" style="display: inline;">
                             <button type="submit" class="md-navbar-link md-navbar-link-button" role="menuitem">

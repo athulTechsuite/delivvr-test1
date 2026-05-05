@@ -45,8 +45,10 @@ const authenticateToken = (req, res, next) => {
 };
 
 const requireRole = (role) => (req, res, next) => {
-    if (!req.user || req.user.role !== role) {
-        return res.status(403).render('403');
+    if (!req.user) return res.redirect('/login');
+    const allowed = Array.isArray(role) ? role : [role];
+    if (!allowed.includes(req.user.role)) {
+        return res.status(403).render('403', { user: req.user });
     }
     next();
 };

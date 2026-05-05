@@ -337,23 +337,20 @@ describe('RBAC HTTP routes', () => {
     });
 
     // TC-E-005 requireRole called without prior authenticateToken
-    test('TC-E-005 requireRole renders 403 when req.user is undefined', async () => {
+    test('TC-E-005 requireRole redirects to /login when req.user is undefined', async () => {
         // Hit the admin route without any token — authenticateToken redirects to /login.
-        // To test requireRole alone, we confirm that its !req.user guard renders 403 not crash.
+        // To test requireRole alone, we confirm that its !req.user guard redirects to /login.
         const { requireRole } = require('../middleware/auth');
-        let statusSet = null;
-        let rendered = null;
+        let redirectTarget = null;
         const fakeReq = { user: undefined };
         const fakeRes = {
-            status(code) { statusSet = code; return this; },
-            render(view) { rendered = view; }
+            redirect(url) { redirectTarget = url; }
         };
         const next = jest.fn();
 
         requireRole('admin')(fakeReq, fakeRes, next);
 
-        expect(statusSet).toBe(403);
-        expect(rendered).toBe('403');
+        expect(redirectTarget).toBe('/login');
         expect(next).not.toHaveBeenCalled();
     });
 
