@@ -221,12 +221,16 @@ class Order {
     // chain .catch(console.error) for fire-and-forget use.
     static logStatusChange(orderId, changedByUserId, oldStatus, newStatus) {
         return new Promise((resolve, reject) => {
-            const histDb = new sqlite3.Database(DB_PATH);
-            histDb.run(
+            if (!isPositiveInteger(orderId)) {
+                return reject(new Error('Invalid orderId'));
+            }
+            if (!isPositiveInteger(changedByUserId)) {
+                return reject(new Error('Invalid changedByUserId'));
+            }
+            db.run(
                 'INSERT INTO order_status_history (order_id, changed_by_user_id, old_status, new_status) VALUES (?, ?, ?, ?)',
                 [orderId, changedByUserId, oldStatus, newStatus],
                 function (err) {
-                    histDb.close();
                     if (err) reject(err);
                     else resolve(this.lastID);
                 }
@@ -237,14 +241,12 @@ class Order {
     // Retrieve the full audit history for a single order, newest-first.
     static getStatusHistory(orderId) {
         return new Promise((resolve, reject) => {
-            const histDb = new sqlite3.Database(DB_PATH);
-            histDb.all(
+            db.all(
                 'SELECT * FROM order_status_history WHERE order_id = ? ORDER BY changed_at DESC',
                 [orderId],
                 (err, rows) => {
-                    histDb.close();
                     if (err) reject(err);
-                    else resolve(rows);
+                    else resolve(rows || []);
                 }
             );
         });

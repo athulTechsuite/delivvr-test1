@@ -214,6 +214,24 @@ describe('RBAC Enhancement HTTP routes', () => {
         await runAsync('UPDATE users SET role = ? WHERE id = ?', ['user', regularUserId]);
     });
 
+    // TC-F-004 demotion Admin can demote manager to user via POST /admin/users/:id/role
+    test('TC-F-004 demotion Admin can demote manager to user (302)', async () => {
+        const res = await request(app)
+            .post(`/admin/users/${managerUserId}/role`)
+            .set('Cookie', `token=${adminToken}`)
+            .type('form')
+            .send({ role: 'user' });
+
+        expect(res.status).toBe(302);
+        expect(res.headers.location).toBe('/admin/users');
+
+        const row = await getAsync('SELECT role FROM users WHERE id = ?', [managerUserId]);
+        expect(row.role).toBe('user');
+
+        // Restore original role for other tests.
+        await runAsync('UPDATE users SET role = ? WHERE id = ?', ['manager', managerUserId]);
+    });
+
     // TC-F-006 Audit row is inserted when status changes
     test('TC-F-006 Audit row inserted on PATCH /orders/:id/status', async () => {
         const result = await runAsync(
@@ -230,13 +248,17 @@ describe('RBAC Enhancement HTTP routes', () => {
 
         expect(res.status).toBe(200);
 
-        // Wait briefly for the non-blocking audit insert to complete.
-        await new Promise((r) => setTimeout(r, 100));
+        // Poll for the non-blocking audit insert to complete (up to 3 retries at 50ms intervals).
+        let histRows = [];
+        for (let attempt = 0; attempt < 3; attempt++) {
+            await new Promise((r) => setTimeout(r, 50));
+            histRows = await allAsync(
+                'SELECT * FROM order_status_history WHERE order_id = ?',
+                [orderId]
+            );
+            if (histRows.length > 0) break;
+        }
 
-        const histRows = await allAsync(
-            'SELECT * FROM order_status_history WHERE order_id = ?',
-            [orderId]
-        );
         expect(histRows.length).toBe(1);
         expect(histRows[0].old_status).toBe('pending');
         expect(histRows[0].new_status).toBe('in_transit');
@@ -293,6 +315,41 @@ describe('RBAC Enhancement HTTP routes', () => {
         expect(res.body.error).toMatch(/Invalid role/);
     });
 
+    // TC-E-004 Audit log failure is non-blocking — PATCH /orders/:id/status still returns 200
+    test('TC-E-004 Audit log failure is non-blocking (still returns 200)', async () => {
+        const result = await runAsync(
+            'INSERT INTO orders (user_id, pickup_address, delivery_address) VALUES (?, ?, ?)',
+            [regularUserId, 'Audit Fail Pickup', 'Audit Fail Delivery']
+        );
+        const orderId = result.lastID;
+
+        const originalLogStatusChange = Order.logStatusChange;
+        Order.logStatusChange = () => Promise.reject(new Error('audit error'));
+
+        try {
+            const res = await request(app)
+                .patch(`/orders/${orderId}/status`)
+                .set('Cookie', `token=${adminToken}`)
+                .set('Content-Type', 'application/json')
+                .send({ status: 'in_transit' });
+
+            expect(res.status).toBe(200);
+        } finally {
+            Order.logStatusChange = originalLogStatusChange;
+        }
+    });
+
+    // TC-E-005 POST /admin/users/abc/role returns 404 for non-integer user id
+    test('TC-E-005 POST /admin/users/abc/role returns 404 for non-integer user id', async () => {
+        const res = await request(app)
+            .post('/admin/users/abc/role')
+            .set('Cookie', `token=${adminToken}`)
+            .type('form')
+            .send({ role: 'user' });
+
+        expect(res.status).toBe(404);
+    });
+
     // TC-F-008 JWT payload fix: decoded.id is present after login
     test('TC-F-008 JWT payload fix: decoded.id is present after login', async () => {
         const res = await request(app)
@@ -324,6 +381,15 @@ describe('RBAC Enhancement HTTP routes', () => {
             .set('Cookie', `token=${userToken}`);
 
         expect(res.status).toBe(403);
+    });
+
+    // TC-R-001 admin-gets-200 Admin can access GET /admin/orders
+    test('TC-R-001 admin-gets-200 Admin can GET /admin/orders (200)', async () => {
+        const res = await request(app)
+            .get('/admin/orders')
+            .set('Cookie', `token=${adminToken}`);
+
+        expect(res.status).toBe(200);
     });
 
     // TC-R-002 Unauthenticated request to /admin/users redirects to login

@@ -440,7 +440,7 @@ app.post('/admin/users/:id/role', authenticateToken, requireRole('admin'), async
     }
 });
 
-app.get('/admin/orders/:id/history', authenticateToken, requireRole('admin'), async (req, res) => {
+app.get('/admin/orders/:id/history', authenticateToken, requireRole(['admin']), async (req, res) => {
     const rawId = req.params.id;
     const parsedId = Number.parseInt(rawId, 10);
 
