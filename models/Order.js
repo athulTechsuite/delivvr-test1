@@ -216,6 +216,41 @@ class Order {
             );
         });
     }
+
+    // Insert a row into order_status_history. Non-blocking — caller should
+    // chain .catch(console.error) for fire-and-forget use.
+    static logStatusChange(orderId, changedByUserId, oldStatus, newStatus) {
+        return new Promise((resolve, reject) => {
+            if (!isPositiveInteger(orderId)) {
+                return reject(new Error('Invalid orderId'));
+            }
+            if (!isPositiveInteger(changedByUserId)) {
+                return reject(new Error('Invalid changedByUserId'));
+            }
+            db.run(
+                'INSERT INTO order_status_history (order_id, changed_by_user_id, old_status, new_status) VALUES (?, ?, ?, ?)',
+                [orderId, changedByUserId, oldStatus, newStatus],
+                function (err) {
+                    if (err) reject(err);
+                    else resolve(this.lastID);
+                }
+            );
+        });
+    }
+
+    // Retrieve the full audit history for a single order, newest-first.
+    static getStatusHistory(orderId) {
+        return new Promise((resolve, reject) => {
+            db.all(
+                'SELECT * FROM order_status_history WHERE order_id = ? ORDER BY changed_at DESC',
+                [orderId],
+                (err, rows) => {
+                    if (err) reject(err);
+                    else resolve(rows || []);
+                }
+            );
+        });
+    }
 }
 
 Order.STATUS = ORDER_STATUS;

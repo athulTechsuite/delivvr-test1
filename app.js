@@ -134,7 +134,7 @@ app.get('/login', (req, res) => {
 
 app.get('/dashboard', authenticateToken, (req, res) => {
     // Get user info from database
-    db.get('SELECT id, name, email, created_at FROM users WHERE id = ?', [req.user.id], async (err, user) => {
+    db.get('SELECT id, name, email, role, created_at FROM users WHERE id = ?', [req.user.id], async (err, user) => {
         if (err) {
             console.error('Database error loading dashboard user:', err);
             return res.redirect('/login');
@@ -375,14 +375,89 @@ app.get('/orders/:id', authenticateToken, async (req, res) => {
     }
 });
 
+// Valid user roles constant
+const VALID_USER_ROLES = ['user', 'manager', 'admin'];
+
 // Admin routes
-app.get('/admin/orders', authenticateToken, requireRole('admin'), async (req, res) => {
+app.get('/admin/orders', authenticateToken, requireRole(['admin', 'manager']), async (req, res) => {
     try {
         const orders = await Order.findAll();
         res.render('admin-orders', { user: req.user, orders });
     } catch (err) {
         console.error('Error loading admin orders:', err);
         res.render('admin-orders', { user: req.user, orders: [] });
+    }
+});
+
+app.get('/admin/users', authenticateToken, requireRole('admin'), async (req, res) => {
+    try {
+        const users = await new Promise((resolve, reject) => {
+            db.all('SELECT id, name, email, role, created_at FROM users ORDER BY created_at DESC', [], (err, rows) => {
+                if (err) reject(err);
+                else resolve(rows || []);
+            });
+        });
+        res.render('admin-users', { user: req.user, users });
+    } catch (err) {
+        console.error('Error loading admin users:', err);
+        res.render('admin-users', { user: req.user, users: [] });
+    }
+});
+
+app.post('/admin/users/:id/role', authenticateToken, requireRole('admin'), async (req, res) => {
+    const rawId = req.params.id;
+    const parsedId = Number.parseInt(rawId, 10);
+
+    if (
+        !Number.isInteger(parsedId) ||
+        parsedId <= 0 ||
+        String(parsedId) !== String(rawId).trim()
+    ) {
+        return res.status(404).json({ error: 'User not found' });
+    }
+
+    const { role } = req.body;
+    if (!role || !VALID_USER_ROLES.includes(role)) {
+        return res.status(400).json({
+            error: `Invalid role. Must be one of: ${VALID_USER_ROLES.join(', ')}`
+        });
+    }
+
+    try {
+        const updated = await new Promise((resolve, reject) => {
+            db.run('UPDATE users SET role = ? WHERE id = ?', [role, parsedId], function (err) {
+                if (err) reject(err);
+                else resolve(this.changes > 0);
+            });
+        });
+        if (!updated) {
+            return res.status(404).json({ error: 'User not found' });
+        }
+        return res.redirect('/admin/users');
+    } catch (err) {
+        console.error('Error updating user role:', err);
+        return res.status(500).json({ error: 'Failed to update user role' });
+    }
+});
+
+app.get('/admin/orders/:id/history', authenticateToken, requireRole(['admin']), async (req, res) => {
+    const rawId = req.params.id;
+    const parsedId = Number.parseInt(rawId, 10);
+
+    if (
+        !Number.isInteger(parsedId) ||
+        parsedId <= 0 ||
+        String(parsedId) !== String(rawId).trim()
+    ) {
+        return res.status(404).json({ error: 'Order not found' });
+    }
+
+    try {
+        const history = await Order.getStatusHistory(parsedId);
+        return res.status(200).json({ orderId: parsedId, history });
+    } catch (err) {
+        console.error('Error loading order history:', err);
+        return res.status(500).json({ error: 'Failed to load order history' });
     }
 });
 
@@ -407,10 +482,21 @@ app.patch('/orders/:id/status', authenticateToken, requireRole('admin'), async (
     }
 
     try {
+        // Fetch current status before update for audit log.
+        const currentOrder = await Order.findById(parsedId);
+        if (!currentOrder) {
+            return res.status(404).json({ error: 'Order not found' });
+        }
+        const oldStatus = currentOrder.status;
+
         const updated = await Order.updateStatus(parsedId, status);
         if (!updated) {
             return res.status(404).json({ error: 'Order not found' });
         }
+
+        // Fire-and-forget audit log entry.
+        Order.logStatusChange(parsedId, req.user.id, oldStatus, status).catch(console.error);
+
         return res.status(200).json({ success: true, id: parsedId, status });
     } catch (err) {
         console.error('Error updating order status:', err);
