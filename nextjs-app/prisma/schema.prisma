@@ -1,0 +1,88 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  CUSTOMER
+  RESTAURANT
+  AGENT
+}
+
+enum OrderStatus {
+  PENDING
+  CONFIRMED
+  PREPARING
+  READY_FOR_PICKUP
+  OUT_FOR_DELIVERY
+  DELIVERED
+  CANCELLED
+}
+
+model User {
+  id           String      @id @default(cuid())
+  name         String      @db.VarChar(50)
+  email        String      @unique @db.VarChar(255)
+  passwordHash String
+  role         Role
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+  restaurant   Restaurant?
+  orders       Order[]     @relation("CustomerOrders")
+  deliveries   Order[]     @relation("AgentOrders")
+}
+
+model Restaurant {
+  id        String     @id @default(cuid())
+  name      String     @db.VarChar(100)
+  address   String     @db.VarChar(500)
+  isActive  Boolean    @default(true)
+  ownerId   String     @unique
+  owner     User       @relation(fields: [ownerId], references: [id])
+  menuItems MenuItem[]
+  orders    Order[]
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+}
+
+model MenuItem {
+  id           String      @id @default(cuid())
+  name         String      @db.VarChar(100)
+  description  String?     @db.VarChar(500)
+  price        Decimal     @db.Decimal(6, 2)
+  available    Boolean     @default(true)
+  restaurantId String
+  restaurant   Restaurant  @relation(fields: [restaurantId], references: [id])
+  orderItems   OrderItem[]
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+}
+
+model Order {
+  id              String      @id @default(cuid())
+  customerId      String
+  customer        User        @relation("CustomerOrders", fields: [customerId], references: [id])
+  restaurantId    String
+  restaurant      Restaurant  @relation(fields: [restaurantId], references: [id])
+  agentId         String?
+  agent           User?       @relation("AgentOrders", fields: [agentId], references: [id])
+  status          OrderStatus @default(PENDING)
+  deliveryAddress String      @db.VarChar(500)
+  items           OrderItem[]
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+}
+
+model OrderItem {
+  id         String   @id @default(cuid())
+  orderId    String
+  order      Order    @relation(fields: [orderId], references: [id])
+  menuItemId String
+  menuItem   MenuItem @relation(fields: [menuItemId], references: [id])
+  quantity   Int
+  unitPrice  Decimal  @db.Decimal(6, 2)
+}
